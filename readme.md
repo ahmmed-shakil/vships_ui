@@ -2,7 +2,7 @@
 
 **Run the following commands from the packages root**
 
-First install the dependencies by running the following command.
+First install the dependencies by running the following command using pnpm.
 
 ```bash
 pnpm install
