@@ -1,6 +1,7 @@
 import OperationMonitorLayout from '@/app/shared/operation-monitor';
 import PageHeader from '@/app/shared/page-header';
 import { metaObject } from '@/config/site.config';
+import OperationPageHeaderAction from './header-action';
 
 export const metadata = {
   ...metaObject('Operation Monitoring'),
@@ -22,7 +23,9 @@ const pageHeader = {
 export default function OperationMonitoringPage() {
   return (
     <>
-      <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb} />
+      <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb}>
+        <OperationPageHeaderAction />
+      </PageHeader>
       <OperationMonitorLayout />
     </>
   );

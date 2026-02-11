@@ -1,8 +1,10 @@
+'use client';
+
+import { useSetAtom } from 'jotai';
 import Autocomplete, {
   locationAtom,
   type Location,
 } from '../google-map/autocomplete';
-import { useSetAtom } from 'jotai';
 
 export default function GoogleMap() {
   const setLocation = useSetAtom(locationAtom);
