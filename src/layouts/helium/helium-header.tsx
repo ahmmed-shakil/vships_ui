@@ -1,21 +1,21 @@
 'use client';
 
-import Link from 'next/link';
-import { Badge } from 'rizzui/badge';
-import { ActionIcon } from 'rizzui/action-icon';
-import cn from '@/utils/class-names';
-import SearchWidget from '@/app/shared/search/search';
+import HeaderBreadcrumb from '@/app/shared/header-breadcrumb';
+import Logo from '@/components/logo';
+import HamburgerButton from '@/layouts/hamburger-button';
 import MessagesDropdown from '@/layouts/messages-dropdown';
 import NotificationDropdown from '@/layouts/notification-dropdown';
 import ProfileMenu from '@/layouts/profile-menu';
 import SettingsButton from '@/layouts/settings-button';
-import HamburgerButton from '@/layouts/hamburger-button';
-import Logo from '@/components/logo';
+import cn from '@/utils/class-names';
+import Link from 'next/link';
 import {
-  PiChatCircleDotsFill,
   PiBellSimpleRingingFill,
+  PiChatCircleDotsFill,
   PiGearFill,
 } from 'react-icons/pi';
+import { ActionIcon } from 'rizzui/action-icon';
+import { Badge } from 'rizzui/badge';
 import Sidebar from './helium-sidebar';
 
 function HeaderMenuRight() {
@@ -83,7 +83,7 @@ export default function Header() {
         >
           <Logo iconOnly={true} />
         </Link>
-        <SearchWidget />
+        <HeaderBreadcrumb />
       </div>
       <HeaderMenuRight />
     </header>

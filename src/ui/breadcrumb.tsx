@@ -16,7 +16,7 @@ const BreadcrumbItem = ({
   <Link
     href={href}
     role="button"
-    className={cn('inline-flex items-center gap-2 text-sm', className)}
+    className={cn('inline-flex items-center gap-2 text-xs', className)}
   >
     {children}
   </Link>

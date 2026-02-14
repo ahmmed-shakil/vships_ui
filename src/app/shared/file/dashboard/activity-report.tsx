@@ -80,7 +80,7 @@ const data = [
 export default function ActivityReport({ className }: { className?: string }) {
   return (
     <WidgetCard
-      title={'Activity'}
+      title={'Daily Report'}
       titleClassName="text-lg xl:text-xl font-semibold"
       className={className}
     >
@@ -90,9 +90,9 @@ export default function ActivityReport({ className }: { className?: string }) {
             <PiDownloadSimple className="h-6 w-6" />
           </div>
           <div>
-            <Text className="text-gray-500">Downloads</Text>
+            <Text className="text-gray-500">Starboard</Text>
             <Text className="font-lexend text-sm font-semibold text-gray-900 dark:text-gray-700 2xl:text-base">
-              15,556
+              3
             </Text>
           </div>
         </div>
@@ -101,9 +101,9 @@ export default function ActivityReport({ className }: { className?: string }) {
             <PiUploadSimple className="h-6 w-6" />
           </div>
           <div>
-            <Text className="text-gray-500">Uploads</Text>
+            <Text className="text-gray-500">Center</Text>
             <Text className="font-lexend text-sm font-semibold text-gray-900 dark:text-gray-700 2xl:text-base">
-              10,065
+              2
             </Text>
           </div>
         </div>

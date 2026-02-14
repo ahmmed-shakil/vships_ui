@@ -21,7 +21,7 @@ export default function GoogleMap() {
     <Autocomplete
       apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY as string}
       onPlaceSelect={handlePlaceSelect}
-      className="relative h-[500px] w-full flex-grow rounded-lg bg-gray-50"
+      className="relative h-full w-full flex-grow rounded-lg bg-gray-50"
       inputProps={{
         size: 'lg',
         type: 'text',

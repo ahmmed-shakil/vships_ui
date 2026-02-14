@@ -43,8 +43,8 @@ export default function BoronHeader() {
           className={cn(
             'text-gray-100 xl:border-gray-300/40 xl:outline-gray-700 xl:hover:border-gray-200 xl:hover:outline-gray-0 dark:xl:border-gray-200 dark:xl:outline-gray-200 dark:xl:hover:border-gray-900 dark:xl:hover:outline-gray-900 [&_.magnifying-glass]:text-gray-300 dark:[&_.magnifying-glass]:text-gray-600',
             colorPresetName === 'black' &&
-              theme === 'light' &&
-              '[&_.search-command]:bg-gray-0 [&_.search-command]:text-gray-900'
+            theme === 'light' &&
+            '[&_.search-command]:bg-gray-0 [&_.search-command]:text-gray-900'
           )}
           placeholderClassName="group-hover:text-gray-200 duration-150 dark:group-hover:text-gray-200 text-gray-300 dark:text-gray-600"
         />

@@ -2,17 +2,17 @@
 
 import WidgetCard from '@/components/cards/widget-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
+import { useMedia } from '@/hooks/use-media';
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
+  BarChart,
   CartesianGrid,
-  Tooltip,
   Legend,
   ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
-import { useMedia } from '@/hooks/use-media';
 
 const data = [
   {
@@ -63,7 +63,7 @@ export default function SimpleBarChart({ className }: { className?: string }) {
   const isMediumScreen = useMedia('(max-width: 1200px)', false);
   return (
     <WidgetCard title={'Simple Bar Chart'} className={className}>
-      <div className="mt-5 aspect-[1060/660] w-full lg:mt-7">
+      <div className="mt-5 aspect-[1060/660] w-full lg:mt-7 h-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
