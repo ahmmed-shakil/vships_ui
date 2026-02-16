@@ -1,11 +1,8 @@
 'use client';
 
 import WidgetCard from '@/components/cards/widget-card';
-import TrendingUpIcon from '@/components/icons/trending-up';
-import cn from '@/utils/class-names';
-import { toCurrency } from '@/utils/to-currency';
 import { Cell, Label, Pie, PieChart, ResponsiveContainer } from 'recharts';
-import { Button, Text, Title } from 'rizzui';
+import { Button } from 'rizzui';
 
 const bgData = [{ name: 'Total', value: 100 }];
 

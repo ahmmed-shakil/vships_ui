@@ -1,6 +1,5 @@
 import OperationMonitorLayout from '@/app/shared/operation-monitor';
 import { metaObject } from '@/config/site.config';
-import OperationMonitorShipSelection from '@/app/shared/operation-monitor/ship-selection';
 
 export const metadata = {
   ...metaObject('Operation Monitoring'),
@@ -24,7 +23,6 @@ export default function OperationMonitoringPage() {
     <>
       {/* <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb}>
       </PageHeader> */}
-      <OperationMonitorShipSelection />
       <OperationMonitorLayout />
     </>
   );

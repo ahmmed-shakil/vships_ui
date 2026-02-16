@@ -80,16 +80,16 @@ export const menuItems = [
     href: routes.fleet.alarmMonitoring,
     icon: <PiBellSimpleRinging />,
   },
-  {
-    name: 'Daily Overview',
-    href: routes.fleet.dailyOverview,
-    icon: <PiCalendarDuotone />,
-  },
-  {
-    name: 'Operation Overview',
-    href: routes.fleet.operationOverview,
-    icon: <PiChartBar />,
-  },
+  // {
+  //   name: 'Daily Overview',
+  //   href: routes.fleet.dailyOverview,
+  //   icon: <PiCalendarDuotone />,
+  // },
+  // {
+  //   name: 'Operation Overview',
+  //   href: routes.fleet.operationOverview,
+  //   icon: <PiChartBar />,
+  // },
   // Machinery section
   {
     name: 'Machinery',
@@ -99,36 +99,39 @@ export const menuItems = [
     href: routes.machinery.conditionMonitoring,
     icon: <PiHammer />,
   },
-  {
-    name: 'System Monitoring',
-    href: routes.machinery.systemMonitoring,
-    icon: <PiCodesandboxLogoDuotone />,
-  },
-  {
-    name: 'Alarms',
-    href: routes.machinery.alarms,
-    icon: <PiBellSimpleRinging />,
-  },
+  // {
+  //   name: 'System Monitoring',
+  //   href: routes.machinery.systemMonitoring,
+  //   icon: <PiCodesandboxLogoDuotone />,
+  // },
+  // {
+  //   name: 'Alarms',
+  //   href: routes.machinery.alarms,
+  //   icon: <PiBellSimpleRinging />,
+  // },
   // Reports section
-  {
-    name: 'Reports',
-  },
-  {
-    name: 'Unified Report',
-    href: routes.reports.unified,
-    icon: <PiNewspaperClippingDuotone />,
-  },
-  {
-    name: 'Day Report',
-    href: routes.reports.day,
-    icon: <PiCalendarPlus />,
-  },
-  {
-    name: 'Consumption Report',
-    href: routes.reports.consumption,
-    icon: <PiChartPieSlice />,
-  },
+  // {
+  //   name: 'Reports',
+  // },
+  // {
+  //   name: 'Unified Report',
+  //   href: routes.reports.unified,
+  //   icon: <PiNewspaperClippingDuotone />,
+  // },
+  // {
+  //   name: 'Day Report',
+  //   href: routes.reports.day,
+  //   icon: <PiCalendarPlus />,
+  // },
+  // {
+  //   name: 'Consumption Report',
+  //   href: routes.reports.consumption,
+  //   icon: <PiChartPieSlice />,
+  // },
   // Original items
+  {
+    name: 'Template Components',
+  },
   {
     name: 'File Manager',
     href: '/',
