@@ -1,14 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-import { useState } from 'react';
+import { Form } from '@/ui/form';
+import { loginSchema, LoginSchema } from '@/validators/login.schema';
 import { signIn } from 'next-auth/react';
+import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import { PiArrowRightBold } from 'react-icons/pi';
-import { Checkbox, Password, Button, Input, Text } from 'rizzui';
-import { Form } from '@/ui/form';
-import { routes } from '@/config/routes';
-import { loginSchema, LoginSchema } from '@/validators/login.schema';
+import { Button, Input, Password } from 'rizzui';
 
 const initialValues: LoginSchema = {
   email: 'admin@admin.com',
@@ -58,7 +56,7 @@ export default function SignInForm() {
               {...register('password')}
               error={errors.password?.message}
             />
-            <div className="flex items-center justify-between pb-2">
+            {/* <div className="flex items-center justify-between pb-2">
               <Checkbox
                 {...register('rememberMe')}
                 label="Remember Me"
@@ -70,7 +68,7 @@ export default function SignInForm() {
               >
                 Forget Password?
               </Link>
-            </div>
+            </div> */}
             <Button className="w-full" type="submit" size="lg">
               <span>Sign in</span>{' '}
               <PiArrowRightBold className="ms-2 mt-0.5 h-5 w-5" />
@@ -78,7 +76,7 @@ export default function SignInForm() {
           </div>
         )}
       </Form>
-      <Text className="mt-6 text-center leading-loose text-gray-500 lg:mt-8 lg:text-start">
+      {/* <Text className="mt-6 text-center leading-loose text-gray-500 lg:mt-8 lg:text-start">
         Don’t have an account?{' '}
         <Link
           href={routes.auth.signUp1}
@@ -86,7 +84,7 @@ export default function SignInForm() {
         >
           Sign Up
         </Link>
-      </Text>
+      </Text> */}
     </>
   );
 }

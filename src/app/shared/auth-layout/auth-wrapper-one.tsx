@@ -1,14 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-import logoImg from '@public/logo-primary.svg';
-import logoImgText from '@public/logo-primary-text.svg';
-import Image from 'next/image';
-import { Button, Title, Text } from 'rizzui';
-import { PiAppleLogoFill, PiArrowLeftBold } from 'react-icons/pi';
-import { FcGoogle } from 'react-icons/fc';
 import OrSeparation from '@/app/shared/auth-layout/or-separation';
+import perfomaxLogo from '@public/desktop-dark.png';
+import Image from 'next/image';
+import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { FcGoogle } from 'react-icons/fc';
+import { PiAppleLogoFill, PiArrowLeftBold } from 'react-icons/pi';
+import { Button, Text, Title } from 'rizzui';
 
 export default function AuthWrapperOne({
   children,
@@ -65,12 +64,7 @@ export default function AuthWrapperOne({
                 href={'/'}
                 className="mb-6 inline-flex max-w-[168px] xl:mb-8"
               >
-                <Image src={logoImg} alt="Isomorphic" />
-                <Image
-                  src={logoImgText}
-                  alt="Isomorphic"
-                  className="ps-2.5 dark:invert"
-                />
+                <Image src={perfomaxLogo} alt="Isomorphic" height={100} />
               </Link>
               <Title
                 as="h2"

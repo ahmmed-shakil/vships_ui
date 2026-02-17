@@ -1,8 +1,8 @@
-import SignInForm from '@/app/signin/sign-in-form';
 import AuthWrapperOne from '@/app/shared/auth-layout/auth-wrapper-one';
-import Image from 'next/image';
+import SignInForm from '@/app/signin/sign-in-form';
 import UnderlineShape from '@/components/shape/underline';
 import { metaObject } from '@/config/site.config';
+import Image from 'next/image';
 
 export const metadata = {
   ...metaObject('Sign In'),
@@ -13,7 +13,7 @@ export default function SignIn() {
     <AuthWrapperOne
       title={
         <>
-          Welcome back! Please{' '}
+          Welcome to Perfomax! Please{' '}
           <span className="relative inline-block">
             Sign in to
             <UnderlineShape className="absolute -bottom-2 start-0 h-2.5 w-24 text-blue md:w-28 xl:-bottom-1.5 xl:w-36" />
@@ -21,14 +21,12 @@ export default function SignIn() {
           continue.
         </>
       }
-      description="By signing up, you will gain access to exclusive content, special
-      offers, and be the first to hear about exciting news and updates."
-      bannerTitle="The simplest way to manage your workspace."
-      bannerDescription="Amet minim mollit non deserunt ullamco est sit aliqua dolor do
-      amet sint velit officia consequat duis."
-      isSocialLoginActive={true}
+      description="By signing in, you will gain access to to the management and monitoring of your vessel."
+      bannerTitle="The simplest way to manage your vessel."
+      bannerDescription="Manage and monitor your vessel with ease."
+      isSocialLoginActive={false}
       pageImage={
-        <div className="relative mx-auto aspect-[4/3.37] w-[500px] xl:w-[620px] 2xl:w-[820px]">
+        <div className="relative mx-auto aspect-[4/3.37] w-[400px] xl:w-[520px] 2xl:w-[620px]">
           <Image
             src={
               'https://isomorphic-furyroad.s3.amazonaws.com/public/auth/sign-up.webp'
