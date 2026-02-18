@@ -1,8 +1,15 @@
 'use client';
 
-import GoogleMap from '@/components/google-map';
+import { fleetVesselData } from '@/data/nura/fleet-data';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { Loader, Text } from 'rizzui';
+
+// Leaflet requires `window` — load it client-only
+const VesselMap = dynamic(
+    () => import('@/components/vessel-map/vessel-map'),
+    { ssr: false }
+);
 
 export default function FleetOverviewLayout() {
     // map will update every 10 seconds
@@ -16,22 +23,28 @@ export default function FleetOverviewLayout() {
         }, 10000);
         return () => clearInterval(interval);
     }, []);
+
     return (
         <>
             {/* Loading Overlay */}
             {showMapUpdating && <MapLoadingSpinner />}
 
-            {/* Full Map */}
-            <GoogleMap />
+            {/* Leaflet Vessel Map */}
+            <VesselMap
+                vessels={fleetVesselData}
+                minHeight="calc(100vh - 135px)"
+            />
         </>
     );
 }
 
 const MapLoadingSpinner = () => {
-    return <div className="fixed top-20 left-1/2 translate-x-1/4 z-10 flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-sm bg-primary/50 text-secondary-lighter">
-        <Loader variant="spinner" size="sm" />
-        <Text className="font-medium text-gray-700 dark:text-gray-200">
-            Map Updating
-        </Text>
-    </div>
-}
+    return (
+        <div className="fixed top-20 left-1/2 translate-x-1/4 z-[999] flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-sm bg-primary/50 text-secondary-lighter">
+            <Loader variant="spinner" size="sm" />
+            <Text className="font-medium text-gray-700 dark:text-gray-200">
+                Map Updating
+            </Text>
+        </div>
+    );
+};
