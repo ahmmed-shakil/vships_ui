@@ -119,41 +119,25 @@ export const engineMonitorData: EngineMonitorData[] = [
       total_fuel: 13.61,
       running_hours: 7699.65,
     },
-  },
-  {
-    id: 'me4',
-    label: 'ME STBD',
-    flowMeter: {
-      fm_in: 0.0,
-      fm_cons: 0.0,
-      fm_out: 0.0,
-    },
-    gauge: {
-      engine_rpm: 1178.2,
-      engine_load: 11.52,  // → ~119.0 kW
-      fuel_cons: 13.6,
-    },
-    totals: {
-      total_fuel: 13.61,
-      running_hours: 7699.65,
-    },
-  },
-  {
-    id: 'me5',
-    label: 'ME STBD',
-    flowMeter: {
-      fm_in: 0.0,
-      fm_cons: 0.0,
-      fm_out: 0.0,
-    },
-    gauge: {
-      engine_rpm: 1178.2,
-      engine_load: 11.52,  // → ~119.0 kW
-      fuel_cons: 13.6,
-    },
-    totals: {
-      total_fuel: 13.61,
-      running_hours: 7699.65,
-    },
-  },
+  }
 ];
+
+// ─── Dummy vessel position for the operation-monitor map ─────────────────────
+
+export interface VesselPosition {
+  name: string;
+  lat: number;
+  long: number;
+  direction: number;
+  /** Unix timestamp in seconds */
+  timestamp: number;
+}
+
+/** Position of the currently monitored vessel (demo) */
+export const vesselPosition: VesselPosition = {
+  name: 'MV Nusantara',
+  lat: 1.29,
+  long: 103.85,
+  direction: 45,
+  timestamp: Math.floor(Date.now() / 1000) - 120, // 2 min ago
+};

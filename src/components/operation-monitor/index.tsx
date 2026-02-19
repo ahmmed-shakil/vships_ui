@@ -1,7 +1,6 @@
 "use client"
 
 import WidgetCard from '@/components/cards/widget-card';
-import GoogleMap from '@/components/google-map';
 import SpeedMeter from '@/components/speed-meter/speed-meter';
 import {
   computeGKWH,
@@ -9,14 +8,21 @@ import {
   engineMonitorData,
   FUEL_GAUGE_MAX,
   RPM_GAUGE_MAX,
+  vesselPosition,
   type EngineMonitorData,
 } from '@/data/nura/engine-data';
 import { shipData } from '@/data/nura/ships';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { Box } from 'rizzui/box';
 import { Select } from 'rizzui/select';
-import CustomizedMixChart from '../chart-widgets/customized-mix-chart';
-import MixBarChart from '../chart-widgets/mix-bar-chart';
+import CustomizedMixChart from '../../app/shared/chart-widgets/customized-mix-chart';
+import MixBarChart from '../../app/shared/chart-widgets/mix-bar-chart';
+
+const OperationMonitorMap = dynamic(
+  () => import('@/components/operation-monitor/operation-monitor-map'),
+  { ssr: false }
+);
 
 // ─── Flow-meter row component ────────────────────────────────────────────────
 
@@ -172,7 +178,14 @@ const OperationMonitorLayout = () => {
 
           {/* Right column — 30% */}
           <Box className="col-span-10 lg:col-span-3">
-            <GoogleMap />
+            <OperationMonitorMap
+              name={vesselPosition.name}
+              lat={vesselPosition.lat}
+              long={vesselPosition.long}
+              direction={vesselPosition.direction}
+              timestamp={vesselPosition.timestamp}
+              minHeight={600}
+            />
           </Box>
         </Box>
         {/* Row 2 */}

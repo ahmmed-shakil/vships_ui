@@ -1,4 +1,4 @@
-import FleetOverviewLayout from '@/app/shared/fleet-overview';
+import FleetOverviewLayout from '@/components/fleet-overview';
 import { metaObject } from '@/config/site.config';
 
 export const metadata = {

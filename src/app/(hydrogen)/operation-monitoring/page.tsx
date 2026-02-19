@@ -1,4 +1,4 @@
-import OperationMonitorLayout from '@/app/shared/operation-monitor';
+import OperationMonitorLayout from '@/components/operation-monitor';
 import { metaObject } from '@/config/site.config';
 
 export const metadata = {
