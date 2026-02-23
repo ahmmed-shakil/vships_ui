@@ -1,4 +1,4 @@
-import { AlarmMonitorLayout } from '@/app/shared/alarm-monitor';
+import { AlarmMonitorLayout } from '@/components/alarm-monitor';
 import { metaObject } from '@/config/site.config';
 
 export const metadata = {

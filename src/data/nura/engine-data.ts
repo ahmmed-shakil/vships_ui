@@ -270,6 +270,133 @@ export const vesselEngineData: Record<number, EngineMonitorData[]> = {
   ],
 };
 
+// ─── Helper: find an engine by id within a vessel ────────────────────────────
+
+export function findEngine(vesselId: number, engineId: string): EngineMonitorData | undefined {
+  return vesselEngineData[vesselId]?.find((e) => e.id === engineId);
+}
+
+// ─── Genset (Auxiliary Engine) data per vessel ───────────────────────────────
+
+/** Map of vessel ID → auxiliary engine data (AE1 = Genset 1, AE2 = Genset 2) */
+export const vesselGensetData: Record<number, EngineMonitorData[]> = {
+  // Ocean Voyager — 2 gensets
+  1: [
+    {
+      id: 'ae1', label: 'Genset 1',
+      flowMeter: { fm_in: 3.2, fm_cons: 2.8, fm_out: 0.4 },
+      gauge: { engine_rpm: 720, engine_load: 35, fuel_cons: 18.5 },
+      totals: { total_fuel: 0.00, running_hours: 0.000 },
+    },
+    {
+      id: 'ae2', label: 'Genset 2',
+      flowMeter: { fm_in: 3.0, fm_cons: 2.5, fm_out: 0.5 },
+      gauge: { engine_rpm: 710, engine_load: 33, fuel_cons: 17.2 },
+      totals: { total_fuel: 51.95, running_hours: 0.000 },
+    },
+  ],
+
+  // Sea Explorer — 2 gensets
+  2: [
+    {
+      id: 'ae1', label: 'Genset 1',
+      flowMeter: { fm_in: 4.0, fm_cons: 3.5, fm_out: 0.5 },
+      gauge: { engine_rpm: 750, engine_load: 40, fuel_cons: 22.0 },
+      totals: { total_fuel: 38.20, running_hours: 3200.50 },
+    },
+    {
+      id: 'ae2', label: 'Genset 2',
+      flowMeter: { fm_in: 3.8, fm_cons: 3.3, fm_out: 0.5 },
+      gauge: { engine_rpm: 740, engine_load: 38, fuel_cons: 20.5 },
+      totals: { total_fuel: 36.00, running_hours: 3180.20 },
+    },
+  ],
+
+  // Wave Rider — 1 genset only
+  3: [
+    {
+      id: 'ae1', label: 'Genset 1',
+      flowMeter: { fm_in: 5.0, fm_cons: 4.2, fm_out: 0.8 },
+      gauge: { engine_rpm: 780, engine_load: 45, fuel_cons: 25.0 },
+      totals: { total_fuel: 55.10, running_hours: 4500.00 },
+    },
+  ],
+
+  // Storm Chaser — 2 gensets
+  4: [
+    {
+      id: 'ae1', label: 'Genset 1',
+      flowMeter: { fm_in: 2.8, fm_cons: 2.3, fm_out: 0.5 },
+      gauge: { engine_rpm: 690, engine_load: 28, fuel_cons: 14.0 },
+      totals: { total_fuel: 22.50, running_hours: 2100.00 },
+    },
+    {
+      id: 'ae2', label: 'Genset 2',
+      flowMeter: { fm_in: 2.6, fm_cons: 2.1, fm_out: 0.5 },
+      gauge: { engine_rpm: 680, engine_load: 26, fuel_cons: 13.0 },
+      totals: { total_fuel: 20.80, running_hours: 2050.00 },
+    },
+  ],
+
+  // Blue Horizon — no gensets (empty)
+  5: [],
+
+  // Coral Navigator — 1 genset
+  6: [
+    {
+      id: 'ae1', label: 'Genset 1',
+      flowMeter: { fm_in: 3.5, fm_cons: 3.0, fm_out: 0.5 },
+      gauge: { engine_rpm: 730, engine_load: 36, fuel_cons: 19.0 },
+      totals: { total_fuel: 40.00, running_hours: 3500.00 },
+    },
+  ],
+
+  // Aurora Spirit — 2 gensets
+  7: [
+    {
+      id: 'ae1', label: 'Genset 1',
+      flowMeter: { fm_in: 5.5, fm_cons: 4.8, fm_out: 0.7 },
+      gauge: { engine_rpm: 800, engine_load: 50, fuel_cons: 28.0 },
+      totals: { total_fuel: 65.00, running_hours: 5200.00 },
+    },
+    {
+      id: 'ae2', label: 'Genset 2',
+      flowMeter: { fm_in: 5.2, fm_cons: 4.5, fm_out: 0.7 },
+      gauge: { engine_rpm: 790, engine_load: 48, fuel_cons: 26.5 },
+      totals: { total_fuel: 62.00, running_hours: 5100.00 },
+    },
+  ],
+
+  // Tide Breaker — no gensets
+  8: [],
+
+  // Harbor Guardian — 2 gensets
+  9: [
+    {
+      id: 'ae1', label: 'Genset 1',
+      flowMeter: { fm_in: 4.5, fm_cons: 3.8, fm_out: 0.7 },
+      gauge: { engine_rpm: 760, engine_load: 42, fuel_cons: 23.0 },
+      totals: { total_fuel: 48.00, running_hours: 4000.00 },
+    },
+    {
+      id: 'ae2', label: 'Genset 2',
+      flowMeter: { fm_in: 4.2, fm_cons: 3.6, fm_out: 0.6 },
+      gauge: { engine_rpm: 750, engine_load: 40, fuel_cons: 21.5 },
+      totals: { total_fuel: 45.00, running_hours: 3950.00 },
+    },
+  ],
+
+  // Sea Sentinel — 1 genset
+  10: [
+    {
+      id: 'ae1', label: 'Genset 1',
+      flowMeter: { fm_in: 2.0, fm_cons: 1.6, fm_out: 0.4 },
+      gauge: { engine_rpm: 620, engine_load: 15, fuel_cons: 10.0 },
+      totals: { total_fuel: 15.00, running_hours: 1500.00 },
+    },
+  ],
+};
+
 // ─── Backwards-compatible export (vessel 1's data) ───────────────────────────
 
 export const engineMonitorData: EngineMonitorData[] = vesselEngineData[1];
