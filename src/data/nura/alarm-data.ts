@@ -85,7 +85,7 @@ export const vesselAlarmData: Record<number, AlarmEntry[]> = {
     { id: 'a3-01', timestamp: minsAgo(2),  alarm_text: 'Low fuel pressure',           engine: 'ME PORT',   value: 135, threshold_min: 150, threshold_max: null, severity: 1, status: 'active' },
     { id: 'a3-02', timestamp: minsAgo(12), alarm_text: 'High coolant temperature',    engine: 'ME CENTER', value: 97,  threshold_min: null, threshold_max: 95,  severity: 1, status: 'active' },
     { id: 'a3-03', timestamp: minsAgo(28), alarm_text: 'High intake air temperature', engine: 'ME STBD',   value: 60,  threshold_min: null, threshold_max: 55,  severity: 2, status: 'resolved' },
-    { id: 'a3-04', timestamp: minsAgo(40), alarm_text: 'Low lube oil pressure',       engine: 'ME AUX',    value: 175, threshold_min: 200, threshold_max: null, severity: 1, status: 'active' },
+    { id: 'a3-04', timestamp: minsAgo(40), alarm_text: 'Low lube oil pressure',       engine: 'AUX 1',    value: 175, threshold_min: 200, threshold_max: null, severity: 1, status: 'active' },
     { id: 'a3-05', timestamp: minsAgo(65), alarm_text: 'Engine overspeed',            engine: 'ME PORT',   value: 2500, threshold_min: null, threshold_max: 2400, severity: 1, status: 'resolved' },
   ],
 
@@ -114,12 +114,12 @@ export const vesselAlarmData: Record<number, AlarmEntry[]> = {
 
   // Aurora Spirit
   7: [
-    { id: 'a7-01', timestamp: minsAgo(1),   alarm_text: 'Low battery voltage',         engine: 'ME AUX',    value: 22.5, threshold_min: 24,  threshold_max: null, severity: 1, status: 'active' },
+    { id: 'a7-01', timestamp: minsAgo(1),   alarm_text: 'Low battery voltage',         engine: 'AUX 2',    value: 22.5, threshold_min: 24,  threshold_max: null, severity: 1, status: 'active' },
     { id: 'a7-02', timestamp: minsAgo(15),  alarm_text: 'High coolant temperature',    engine: 'ME PORT',   value: 101,  threshold_min: null, threshold_max: 95,  severity: 1, status: 'active' },
     { id: 'a7-03', timestamp: minsAgo(30),  alarm_text: 'Low lube oil pressure',       engine: 'ME CENTER', value: 188,  threshold_min: 200, threshold_max: null, severity: 1, status: 'active' },
     { id: 'a7-04', timestamp: minsAgo(55),  alarm_text: 'High intake air temperature', engine: 'ME STBD',   value: 57,   threshold_min: null, threshold_max: 55,  severity: 2, status: 'resolved' },
     { id: 'a7-05', timestamp: minsAgo(75),  alarm_text: 'Engine overspeed',            engine: 'ME PORT',   value: 2460, threshold_min: null, threshold_max: 2400, severity: 1, status: 'resolved' },
-    { id: 'a7-06', timestamp: minsAgo(100), alarm_text: 'High fuel pressure',          engine: 'ME AUX',    value: 515,  threshold_min: null, threshold_max: 500, severity: 2, status: 'active' },
+    { id: 'a7-06', timestamp: minsAgo(100), alarm_text: 'High fuel pressure',          engine: 'AUX 1',    value: 515,  threshold_min: null, threshold_max: 500, severity: 2, status: 'active' },
   ],
 
   // Tide Breaker

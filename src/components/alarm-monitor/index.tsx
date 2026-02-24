@@ -18,6 +18,8 @@ import { Text } from "rizzui/typography";
 
 import SpeedMeter from "../speed-meter/speed-meter";
 import AlarmTable from "./alarm-table";
+import EngineDetailView from "./engine-detail-view";
+import MachineryScoreTable from "./machinery-score-table";
 
 const OperationMonitorMap = dynamic(
     () => import('@/components/operation-monitor/operation-monitor-map'),
@@ -132,7 +134,7 @@ function GensetGroup({
 
 export const AlarmMonitorLayout = () => {
     const [selectedShip, setSelectedShip] = useState<Ship>(shipData[0]);
-    const [selectedEngine, setSelectedEngine] = useState<string>(engineData[0].value);
+    const [selectedEngine, setSelectedEngine] = useState(engineData[0]);
 
     // Get alarm data for the selected vessel
     const alarms = useMemo(
@@ -170,37 +172,42 @@ export const AlarmMonitorLayout = () => {
             {/* main grid */}
             <div className='grid grid-cols-4 mt-4 shadow-lg'>
                 <div className='col-span-3 mt-2'>
-                    {/* meter section */}
-                    <div className="grid grid-cols-12">
-                        {/* Labels */}
-                        <div className="col-span-full flex justify-around uppercase">
-                            <h6 className="font-semibold">ME Port</h6>
-                            <h6 className="font-semibold">ME STBD</h6>
-                        </div>
+                    {selectedEngine.value === 'all' ? (
+                        /* ── All Engine: 10-meter layout (DO NOT MODIFY) ── */
+                        <div className="grid grid-cols-12">
+                            {/* Labels */}
+                            <div className="col-span-full flex justify-around uppercase">
+                                <h6 className="font-semibold">ME Port</h6>
+                                <h6 className="font-semibold">ME STBD</h6>
+                            </div>
 
-                        {/* Row 1: ME PORT (RPM + Fuel) | ME STBD (RPM + Fuel) */}
-                        <EngineGroup engine={mePort} className="col-span-6" />
-                        <EngineGroup engine={meStbd} className="col-span-6" />
+                            {/* Row 1: ME PORT (RPM + Fuel) | ME STBD (RPM + Fuel) */}
+                            <EngineGroup engine={mePort} className="col-span-6" />
+                            <EngineGroup engine={meStbd} className="col-span-6" />
 
-                        {/* Row 2: Genset 1 | ME CENTER | Genset 2 */}
-                        <GensetGroup
-                            engine={genset1}
-                            label="Genset 1"
-                            className="col-span-4 my-auto -z-10"
-                        />
-                        <div className="col-span-4 relative p-0 m-0 -mt-10">
-                            {/* Half-height border lines */}
-                            <div className="absolute left-0 top-1/4 bottom-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
-                            <div className="absolute right-0 top-1/4 bottom-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
-                            <h6 className="uppercase text-center text-sm font-semibold">ME Center</h6>
-                            <EngineGroup engine={meCenter} layout="vertical" className2="-mt-20" className3="-mt-10" />
+                            {/* Row 2: Genset 1 | ME CENTER | Genset 2 */}
+                            <GensetGroup
+                                engine={genset1}
+                                label="Genset 1"
+                                className="col-span-4 my-auto -z-10"
+                            />
+                            <div className="col-span-4 relative p-0 m-0 -mt-10">
+                                {/* Half-height border lines */}
+                                <div className="absolute left-0 top-1/4 bottom-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
+                                <div className="absolute right-0 top-1/4 bottom-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
+                                <h6 className="uppercase text-center text-sm font-semibold">ME Center</h6>
+                                <EngineGroup engine={meCenter} layout="vertical" className2="-mt-20" className3="-mt-10" />
+                            </div>
+                            <GensetGroup
+                                engine={genset2}
+                                label="Genset 2"
+                                className="col-span-4 my-auto -z-10"
+                            />
                         </div>
-                        <GensetGroup
-                            engine={genset2}
-                            label="Genset 2"
-                            className="col-span-4 my-auto -z-10"
-                        />
-                    </div>
+                    ) : (
+                        /* ── Individual Engine: lube oil / coolant view ── */
+                        <EngineDetailView vesselId={vesselId} engineId={selectedEngine.value} />
+                    )}
                 </div>
 
                 {/* Map */}
@@ -214,11 +221,16 @@ export const AlarmMonitorLayout = () => {
                 />
             </div>
 
-            {/* Alarm table */}
-            <div className="mt-4">
+            {/* Alarm table + Machinery score */}
+            <div className="grid grid-cols-4 gap-4 mt-4">
                 <AlarmTable
                     data={alarms}
                     title={`Alarms — ${selectedShip.label}`}
+                    className="col-span-3"
+                />
+                <MachineryScoreTable
+                    vesselId={vesselId}
+                    className="col-span-1"
                 />
             </div>
         </>

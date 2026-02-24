@@ -26,7 +26,7 @@ const ENGINE_LABELS: Record<string, string> = {
     me1: 'ME PORT',
     me2: 'ME STBD',
     me3: 'ME CENTER',
-    me4: 'ME AUX',
+    me4: 'AUX 1',
 };
 
 interface Props {

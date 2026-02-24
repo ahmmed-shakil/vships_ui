@@ -27,12 +27,23 @@ export interface EngineTotals {
   running_hours: number;
 }
 
+export interface EngineDetailData {
+  lubeoil_press: number;     // kPa
+  lubeoil_temp: number;      // °C
+  coolant_press: number;     // kPa
+  coolant_temp: number;      // °C
+  batt_volt: number;         // VDC
+  exhgas_temp_left: number;  // °C
+  exhgas_temp_right: number; // °C
+}
+
 export interface EngineMonitorData {
   id: string;
   label: string;
   flowMeter: EngineFlowMeter;
   gauge: EngineGaugeData;
   totals: EngineTotals;
+  detail?: EngineDetailData;
 }
 
 // ─── RPM gauge config ────────────────────────────────────────────────────────
@@ -120,7 +131,7 @@ export const vesselEngineData: Record<number, EngineMonitorData[]> = {
       totals: { total_fuel: 220.10, running_hours: 11950.80 },
     },
     {
-      id: 'me4', label: 'ME AUX',
+      id: 'me4', label: 'AUX 1',
       flowMeter: { fm_in: 8.5, fm_cons: 7.2, fm_out: 1.3 },
       gauge: { engine_rpm: 980.0, engine_load: 25.0, fuel_cons: 45.0 },
       totals: { total_fuel: 98.50, running_hours: 9800.00 },
@@ -208,7 +219,7 @@ export const vesselEngineData: Record<number, EngineMonitorData[]> = {
       totals: { total_fuel: 350.00, running_hours: 18000.00 },
     },
     {
-      id: 'me4', label: 'ME AUX',
+      id: 'me4', label: 'AUX 1',
       flowMeter: { fm_in: 10.0, fm_cons: 8.5, fm_out: 1.5 },
       gauge: { engine_rpm: 1100.0, engine_load: 35.0, fuel_cons: 60.0 },
       totals: { total_fuel: 150.00, running_hours: 12000.00 },
@@ -400,3 +411,88 @@ export const vesselGensetData: Record<number, EngineMonitorData[]> = {
 // ─── Backwards-compatible export (vessel 1's data) ───────────────────────────
 
 export const engineMonitorData: EngineMonitorData[] = vesselEngineData[1];
+
+// ─── Per-engine detail data (lube oil, coolant, battery, exhaust) ────────────
+
+/** Key format: "vesselId:engineId" e.g. "1:me1" */
+const engineDetailMap: Record<string, EngineDetailData> = {
+  // Ocean Voyager
+  '1:me1': { lubeoil_press: 420, lubeoil_temp: 78,  coolant_press: 185, coolant_temp: 82, batt_volt: 24.8, exhgas_temp_left: 340, exhgas_temp_right: 345 },
+  '1:me2': { lubeoil_press: 410, lubeoil_temp: 76,  coolant_press: 180, coolant_temp: 80, batt_volt: 24.6, exhgas_temp_left: 335, exhgas_temp_right: 340 },
+  '1:me3': { lubeoil_press: 0,   lubeoil_temp: 0,   coolant_press: 0,   coolant_temp: 0,  batt_volt: 24.2, exhgas_temp_left: 0,   exhgas_temp_right: 0 },
+  '1:ae1': { lubeoil_press: 350, lubeoil_temp: 65,  coolant_press: 160, coolant_temp: 72, batt_volt: 24.5, exhgas_temp_left: 280, exhgas_temp_right: 285 },
+  '1:ae2': { lubeoil_press: 340, lubeoil_temp: 63,  coolant_press: 155, coolant_temp: 70, batt_volt: 24.4, exhgas_temp_left: 275, exhgas_temp_right: 280 },
+
+  // Sea Explorer
+  '2:me1': { lubeoil_press: 480, lubeoil_temp: 85,  coolant_press: 200, coolant_temp: 88, batt_volt: 25.0, exhgas_temp_left: 380, exhgas_temp_right: 385 },
+  '2:me2': { lubeoil_press: 465, lubeoil_temp: 83,  coolant_press: 195, coolant_temp: 86, batt_volt: 24.9, exhgas_temp_left: 375, exhgas_temp_right: 378 },
+  '2:ae1': { lubeoil_press: 360, lubeoil_temp: 68,  coolant_press: 165, coolant_temp: 74, batt_volt: 24.7, exhgas_temp_left: 290, exhgas_temp_right: 292 },
+  '2:ae2': { lubeoil_press: 355, lubeoil_temp: 66,  coolant_press: 162, coolant_temp: 73, batt_volt: 24.6, exhgas_temp_left: 288, exhgas_temp_right: 290 },
+
+  // Wave Rider
+  '3:me1': { lubeoil_press: 520, lubeoil_temp: 92,  coolant_press: 220, coolant_temp: 94, batt_volt: 25.2, exhgas_temp_left: 410, exhgas_temp_right: 415 },
+  '3:me2': { lubeoil_press: 510, lubeoil_temp: 90,  coolant_press: 215, coolant_temp: 92, batt_volt: 25.1, exhgas_temp_left: 405, exhgas_temp_right: 408 },
+  '3:me3': { lubeoil_press: 500, lubeoil_temp: 88,  coolant_press: 210, coolant_temp: 90, batt_volt: 25.0, exhgas_temp_left: 400, exhgas_temp_right: 403 },
+  '3:ae1': { lubeoil_press: 380, lubeoil_temp: 72,  coolant_press: 175, coolant_temp: 78, batt_volt: 24.8, exhgas_temp_left: 310, exhgas_temp_right: 315 },
+
+  // Storm Chaser
+  '4:me1': { lubeoil_press: 400, lubeoil_temp: 74,  coolant_press: 178, coolant_temp: 79, batt_volt: 24.5, exhgas_temp_left: 320, exhgas_temp_right: 325 },
+  '4:me2': { lubeoil_press: 395, lubeoil_temp: 72,  coolant_press: 175, coolant_temp: 77, batt_volt: 24.4, exhgas_temp_left: 315, exhgas_temp_right: 320 },
+  '4:me3': { lubeoil_press: 405, lubeoil_temp: 75,  coolant_press: 180, coolant_temp: 80, batt_volt: 24.6, exhgas_temp_left: 322, exhgas_temp_right: 328 },
+  '4:ae1': { lubeoil_press: 330, lubeoil_temp: 60,  coolant_press: 150, coolant_temp: 68, batt_volt: 24.3, exhgas_temp_left: 265, exhgas_temp_right: 268 },
+  '4:ae2': { lubeoil_press: 325, lubeoil_temp: 58,  coolant_press: 148, coolant_temp: 66, batt_volt: 24.2, exhgas_temp_left: 260, exhgas_temp_right: 265 },
+
+  // Blue Horizon
+  '5:me1': { lubeoil_press: 550, lubeoil_temp: 96,  coolant_press: 230, coolant_temp: 98, batt_volt: 25.5, exhgas_temp_left: 430, exhgas_temp_right: 435 },
+  '5:me2': { lubeoil_press: 540, lubeoil_temp: 94,  coolant_press: 225, coolant_temp: 96, batt_volt: 25.4, exhgas_temp_left: 425, exhgas_temp_right: 430 },
+
+  // Coral Navigator
+  '6:me1': { lubeoil_press: 450, lubeoil_temp: 80,  coolant_press: 190, coolant_temp: 84, batt_volt: 24.8, exhgas_temp_left: 350, exhgas_temp_right: 355 },
+  '6:me2': { lubeoil_press: 440, lubeoil_temp: 78,  coolant_press: 185, coolant_temp: 82, batt_volt: 24.7, exhgas_temp_left: 345, exhgas_temp_right: 350 },
+  '6:me3': { lubeoil_press: 0,   lubeoil_temp: 0,   coolant_press: 0,   coolant_temp: 0,  batt_volt: 24.5, exhgas_temp_left: 0,   exhgas_temp_right: 0 },
+  '6:ae1': { lubeoil_press: 355, lubeoil_temp: 65,  coolant_press: 162, coolant_temp: 72, batt_volt: 24.5, exhgas_temp_left: 285, exhgas_temp_right: 288 },
+
+  // Aurora Spirit
+  '7:me1': { lubeoil_press: 580, lubeoil_temp: 100, coolant_press: 240, coolant_temp: 102, batt_volt: 25.8, exhgas_temp_left: 450, exhgas_temp_right: 455 },
+  '7:me2': { lubeoil_press: 570, lubeoil_temp: 98,  coolant_press: 235, coolant_temp: 100, batt_volt: 25.7, exhgas_temp_left: 445, exhgas_temp_right: 450 },
+  '7:me3': { lubeoil_press: 555, lubeoil_temp: 95,  coolant_press: 228, coolant_temp: 97,  batt_volt: 25.5, exhgas_temp_left: 435, exhgas_temp_right: 440 },
+  '7:ae1': { lubeoil_press: 400, lubeoil_temp: 75,  coolant_press: 180, coolant_temp: 80,  batt_volt: 25.0, exhgas_temp_left: 330, exhgas_temp_right: 335 },
+  '7:ae2': { lubeoil_press: 395, lubeoil_temp: 73,  coolant_press: 178, coolant_temp: 78,  batt_volt: 24.9, exhgas_temp_left: 325, exhgas_temp_right: 330 },
+
+  // Tide Breaker
+  '8:me1': { lubeoil_press: 380, lubeoil_temp: 70,  coolant_press: 170, coolant_temp: 75, batt_volt: 24.3, exhgas_temp_left: 300, exhgas_temp_right: 305 },
+  '8:me2': { lubeoil_press: 375, lubeoil_temp: 68,  coolant_press: 168, coolant_temp: 73, batt_volt: 24.2, exhgas_temp_left: 295, exhgas_temp_right: 300 },
+
+  // Harbor Guardian
+  '9:me1': { lubeoil_press: 500, lubeoil_temp: 88,  coolant_press: 210, coolant_temp: 90, batt_volt: 25.0, exhgas_temp_left: 395, exhgas_temp_right: 400 },
+  '9:me2': { lubeoil_press: 490, lubeoil_temp: 86,  coolant_press: 205, coolant_temp: 88, batt_volt: 24.9, exhgas_temp_left: 390, exhgas_temp_right: 395 },
+  '9:me3': { lubeoil_press: 480, lubeoil_temp: 84,  coolant_press: 200, coolant_temp: 86, batt_volt: 24.8, exhgas_temp_left: 385, exhgas_temp_right: 388 },
+  '9:ae1': { lubeoil_press: 370, lubeoil_temp: 70,  coolant_press: 170, coolant_temp: 76, batt_volt: 24.6, exhgas_temp_left: 300, exhgas_temp_right: 305 },
+  '9:ae2': { lubeoil_press: 365, lubeoil_temp: 68,  coolant_press: 168, coolant_temp: 74, batt_volt: 24.5, exhgas_temp_left: 295, exhgas_temp_right: 300 },
+
+  // Sea Sentinel
+  '10:me1': { lubeoil_press: 350, lubeoil_temp: 62,  coolant_press: 155, coolant_temp: 68, batt_volt: 24.0, exhgas_temp_left: 270, exhgas_temp_right: 275 },
+  '10:me2': { lubeoil_press: 345, lubeoil_temp: 60,  coolant_press: 152, coolant_temp: 66, batt_volt: 23.9, exhgas_temp_left: 265, exhgas_temp_right: 270 },
+  '10:ae1': { lubeoil_press: 300, lubeoil_temp: 55,  coolant_press: 140, coolant_temp: 62, batt_volt: 23.8, exhgas_temp_left: 240, exhgas_temp_right: 245 },
+};
+
+/** Find an engine and merge detail data onto it */
+export function findEngineWithDetail(vesselId: number, engineId: string): EngineMonitorData | undefined {
+  const engine =
+    vesselEngineData[vesselId]?.find((e) => e.id === engineId) ??
+    vesselGensetData[vesselId]?.find((e) => e.id === engineId);
+  if (!engine) return undefined;
+  const detail = engineDetailMap[`${vesselId}:${engineId}`];
+  return detail ? { ...engine, detail } : engine;
+}
+
+/** Get all engines + gensets for a vessel (with detail merged) */
+export function getAllEnginesForVessel(vesselId: number): EngineMonitorData[] {
+  const mains = vesselEngineData[vesselId] ?? [];
+  const gensets = vesselGensetData[vesselId] ?? [];
+  return [...mains, ...gensets].map((e) => {
+    const detail = engineDetailMap[`${vesselId}:${e.id}`];
+    return detail ? { ...e, detail } : e;
+  });
+}
+

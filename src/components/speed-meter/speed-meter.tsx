@@ -12,7 +12,7 @@ export interface SpeedMeterSegment {
     color?: string;
 }
 
-export type SpeedMeterSize = 'sm' | 'default';
+export type SpeedMeterSize = 'sm' | 'default' | 'lg';
 
 export interface SpeedMeterProps {
     /** Card title (e.g. "ME PORT") */
@@ -45,6 +45,9 @@ export interface SpeedMeterProps {
     /** Callback when the "View" button is clicked */
     onAction?: () => void;
 
+    /** If true, fills the gauge from right-to-left. Default: false */
+    reverseFill?: boolean;
+
     /**
      * Render in "bare" mode — just the gauge arc, no WidgetCard wrapper.
      * Use this when embedding inside a parent card (e.g. EngineMonitorCard).
@@ -70,6 +73,7 @@ const ARC_START = 220;   // recharts angles — top-left start
 const ARC_END = -40;     // bottom-right end (260° sweep)
 
 const SIZE_CONFIG = {
+    lg: { innerR: 110, outerR: 135, cornerR: 50, gaugeHeight: 320, centerFontSize: '36px', tickScale: 'scale-[1.0]' },
     default: { innerR: 90, outerR: 110, cornerR: 40, gaugeHeight: 250, centerFontSize: '28px', tickScale: 'scale-[0.8]' },
     sm: { innerR: 55, outerR: 70, cornerR: 25, gaugeHeight: 160, centerFontSize: '18px', tickScale: 'scale-[0.55]' },
 } as const;
@@ -135,6 +139,7 @@ export default function SpeedMeter({
     showAction = true,
     onAction,
     bare = false,
+    reverseFill = false,
     gaugeHeight: gaugeHeightProp,
     size = 'default',
     className,
@@ -149,10 +154,15 @@ export default function SpeedMeter({
     const effectiveSegments: SpeedMeterSegment[] = segments
         ? segments
         : value !== undefined
-            ? [
-                { name: 'value', value: Math.min(Math.max(value - min, 0), range), color: fillColor },
-                { name: 'remaining', value: Math.max(range - (value - min), 0), color: 'transparent' },
-            ]
+            ? reverseFill
+                ? [
+                    { name: 'remaining', value: Math.max(range - (value - min), 0), color: 'transparent' },
+                    { name: 'value', value: Math.min(Math.max(value - min, 0), range), color: fillColor },
+                ]
+                : [
+                    { name: 'value', value: Math.min(Math.max(value - min, 0), range), color: fillColor },
+                    { name: 'remaining', value: Math.max(range - (value - min), 0), color: 'transparent' },
+                ]
             : [{ name: 'value', value: range, color: fillColor }];
 
 

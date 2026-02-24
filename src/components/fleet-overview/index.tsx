@@ -40,7 +40,7 @@ export default function FleetOverviewLayout() {
 
 const MapLoadingSpinner = () => {
     return (
-        <div className="fixed top-20 left-1/2 translate-x-1/4 z-[999] flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-sm bg-primary/50 text-secondary-lighter">
+        <div className="fixed top-28 left-80 z-[999] flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-sm bg-primary/50 text-secondary-lighter">
             <Loader variant="spinner" size="sm" />
             <Text className="font-medium text-gray-700 dark:text-gray-200">
                 Map Updating

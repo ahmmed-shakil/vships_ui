@@ -33,7 +33,7 @@ export const shipData: Ship[] = [
   },
   {
     label: 'Wave Rider', value: 'wave-rider', id: 3,
-    engines: ['ME PORT', 'ME STBD', 'ME CENTER', 'ME AUX'],
+    engines: ['ME PORT', 'ME STBD', 'ME CENTER', 'AUX 1'],
     position: { lat: 1.10, long: 103.60, direction: 270, timestamp: minutesAgo(45) },
   },
   {
@@ -53,7 +53,7 @@ export const shipData: Ship[] = [
   },
   {
     label: 'Aurora Spirit', value: 'aurora-spirit', id: 7,
-    engines: ['ME PORT', 'ME STBD', 'ME CENTER', 'ME AUX'],
+    engines: ['ME PORT', 'ME STBD', 'ME CENTER', 'AUX 1'],
     position: { lat: 1.25, long: 103.20, direction: 135, timestamp: minutesAgo(1) },
   },
   {
@@ -74,9 +74,10 @@ export const shipData: Ship[] = [
 ];
 
 export const engineData = [
+  { label: 'All Engine', value: 'all' },
+  { label: 'ME Port', value: 'me1' },
+  { label: 'ME Stbd', value: 'me2' },
+  { label: 'ME Center', value: 'me3' },
   { label: 'AE1', value: 'ae1' },
   { label: 'AE2', value: 'ae2' },
-  { label: 'ME Port', value: 'me-port' },
-  { label: 'ME Stbd', value: 'me-stbd' },
-  { label: 'ME Center', value: 'me-center' },
 ];
