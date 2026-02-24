@@ -1,9 +1,9 @@
 "use client"
 
 import WidgetCard from "@/components/cards/widget-card";
-import DateFiled from "@/components/controlled-table/date-field";
+import DateRangePicker from "@/components/date/date-range";
 import SpeedMeter from "@/components/speed-meter/speed-meter";
-import { shipData } from "@/data/nura/ships";
+import { engineData, shipData } from "@/data/nura/ships";
 import cn from "@/utils/class-names";
 import Image from "next/image";
 import { useState } from "react";
@@ -23,14 +23,70 @@ function DottedRow({ label, value, className }: { label: string; value: React.Re
 
 export default function ConditionMonitoringLayout() {
     const [selectedShip, setSelectedShip] = useState(shipData[0]);
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString());
+    const [selectedEngine, setSelectedEngine] = useState(engineData[0]);
+
+    // Time selection state
+    const timeOptions = ['1h', '1d', '7d', '1m', '3m', 'Custom Time'];
+    const [selectedTime, setSelectedTime] = useState('7d');
+    const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
 
     return (
         <>
-            <div className="flex space-x-4 mb-6">
-                <Select options={shipData} value={selectedShip} onChange={setSelectedShip} className="max-w-72" />
-                <Select options={shipData} value={selectedShip} onChange={setSelectedShip} className="max-w-72" />
-                <DateFiled value={selectedDate} className="max-w-72" />
+            {/* selection ui */}
+            <div className="flex flex-wrap items-center gap-4 p-3 rounded shadow-sm">
+
+                <Select
+                    options={shipData}
+                    value={selectedShip}
+                    onChange={setSelectedShip}
+                    className="w-36"
+                    selectClassName="bg-transparent border-white/50 text-white hover:border-white focus:border-white focus:ring-0 [&>span]:text-white h-9"
+                    dropdownClassName="text-gray-900"
+                />
+
+                <Select
+                    options={engineData}
+                    value={selectedEngine}
+                    onChange={setSelectedEngine}
+                    className="w-36"
+                    selectClassName="bg-transparent border-white/50 text-white hover:border-white focus:border-white focus:ring-0 [&>span]:text-white h-9"
+                    dropdownClassName="text-gray-900"
+                />
+
+                {/* Time Range Toggle Group */}
+                <div className="flex rounded border border-white/50 overflow-hidden shrink-0">
+                    {timeOptions.map((opt) => (
+                        <button
+                            key={opt}
+                            onClick={() => setSelectedTime(opt)}
+                            className={cn(
+                                "px-4 py-1.5 text-sm border-r border-white/50 last:border-r-0 hover:scale-110 transition-all duration-300",
+                                selectedTime === opt
+                                    ? "bg-muted text-primary-lighter font-semibold"
+                                    : "text-foreground hover:bg-muted font-medium"
+                            )}
+                        >
+                            {opt}
+                        </button>
+                    ))}
+                </div>
+
+                {selectedTime === 'Custom Time' && (
+                    <div className="w-56 shrink-0 rounded p-0.5 border-2 border-muted">
+                        <DateRangePicker
+                            startDate={dateRange[0]}
+                            endDate={dateRange[1]}
+                            onChange={setDateRange}
+                            className="h-8 border-none bg-background text-primary-lighter text-sm w-full focus:ring-0"
+                            placeholder="Select custom dates"
+                        />
+                    </div>
+                )}
+
+                {/* Parameters Dropdown Placeholder */}
+                {/* <div className="flex-1 flex items-center justify-center border-2 border-dashed border-white rounded py-1.5 px-6 text-white text-xs whitespace-nowrap min-w-[200px]">
+                    drop down for the parameters
+                </div> */}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
