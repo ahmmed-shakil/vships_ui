@@ -159,7 +159,6 @@ export default function EngineDetailView({ vesselId, engineId }: EngineDetailVie
                         flexShrink: 0,
                         marginLeft: -120,
                         marginTop: 20,
-                        // remove a little from the left side
                         clipPath: 'polygon(25% 0, 100% 0, 100% 100%, 25% 100%)',
                         overflow: 'hidden',
                         zIndex: 2,

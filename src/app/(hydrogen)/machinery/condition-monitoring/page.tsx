@@ -1,4 +1,4 @@
-import ConditionMonitoringLayout from '@/app/shared/machinery/condition-monitoring';
+import ConditionMonitoringLayout from '@/components/machinery/condition-monitoring';
 import { metaObject } from '@/config/site.config';
 
 export const metadata = {
