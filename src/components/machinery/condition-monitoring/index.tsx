@@ -1,13 +1,13 @@
 "use client"
 
 import WidgetCard from "@/components/cards/widget-card";
-import DateRangePicker from "@/components/date/date-range";
 import SpeedMeter from "@/components/speed-meter/speed-meter";
-import { engineData, shipData } from "@/data/nura/ships";
+import { selectedEngineAtom, selectedShipAtom } from "@/store/condition-monitoring-atoms";
 import cn from "@/utils/class-names";
+import { useAtomValue } from "jotai";
 import Image from "next/image";
-import { useState } from "react";
-import { Select } from "rizzui/select";
+
+import ConditionBasedAnalysisTable from "./condition-based-analysis-table";
 
 // ─── Reusable Dotted Row Component ───────────────────────────────────────────
 function DottedRow({ label, value, className }: { label: string; value: React.ReactNode; className?: string }) {
@@ -22,78 +22,17 @@ function DottedRow({ label, value, className }: { label: string; value: React.Re
 }
 
 export default function ConditionMonitoringLayout() {
-    const [selectedShip, setSelectedShip] = useState(shipData[0]);
-    const [selectedEngine, setSelectedEngine] = useState(engineData[0]);
-
-    // Time selection state
-    const timeOptions = ['1h', '1d', '7d', '1m', '3m', 'Custom Time'];
-    const [selectedTime, setSelectedTime] = useState('7d');
-    const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+    // Read global state from atoms (selectors are in the header)
+    const selectedShip = useAtomValue(selectedShipAtom);
+    const selectedEngine = useAtomValue(selectedEngineAtom);
 
     return (
         <>
-            {/* selection ui */}
-            <div className="flex flex-wrap items-center gap-4 p-3 rounded shadow-sm">
-
-                <Select
-                    options={shipData}
-                    value={selectedShip}
-                    onChange={setSelectedShip}
-                    className="w-36"
-                    selectClassName="bg-transparent border-white/50 text-white hover:border-white focus:border-white focus:ring-0 [&>span]:text-white h-9"
-                    dropdownClassName="text-gray-900"
-                />
-
-                <Select
-                    options={engineData}
-                    value={selectedEngine}
-                    onChange={setSelectedEngine}
-                    className="w-36"
-                    selectClassName="bg-transparent border-white/50 text-white hover:border-white focus:border-white focus:ring-0 [&>span]:text-white h-9"
-                    dropdownClassName="text-gray-900"
-                />
-
-                {/* Time Range Toggle Group */}
-                <div className="flex rounded border border-white/50 overflow-hidden shrink-0">
-                    {timeOptions.map((opt) => (
-                        <button
-                            key={opt}
-                            onClick={() => setSelectedTime(opt)}
-                            className={cn(
-                                "px-4 py-1.5 text-sm border-r border-white/50 last:border-r-0 hover:scale-110 transition-all duration-300",
-                                selectedTime === opt
-                                    ? "bg-muted text-primary-lighter font-semibold"
-                                    : "text-foreground hover:bg-muted font-medium"
-                            )}
-                        >
-                            {opt}
-                        </button>
-                    ))}
-                </div>
-
-                {selectedTime === 'Custom Time' && (
-                    <div className="w-56 shrink-0 rounded p-0.5 border-2 border-muted">
-                        <DateRangePicker
-                            startDate={dateRange[0]}
-                            endDate={dateRange[1]}
-                            onChange={setDateRange}
-                            className="h-8 border-none bg-background text-primary-lighter text-sm w-full focus:ring-0"
-                            placeholder="Select custom dates"
-                        />
-                    </div>
-                )}
-
-                {/* Parameters Dropdown Placeholder */}
-                {/* <div className="flex-1 flex items-center justify-center border-2 border-dashed border-white rounded py-1.5 px-6 text-white text-xs whitespace-nowrap min-w-[200px]">
-                    drop down for the parameters
-                </div> */}
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* ─── Card 1: ME 2 Port ──────────────────────────────────────────────── */}
                 <WidgetCard title="ME 2 Port" className="flex flex-col">
                     <div className="flex items-center flex-1">
-                        <div className="w-2/5 shrink-0 flex items-center justify-center">
+                        <div className="w-2/5 px-2 shrink-0 flex items-center justify-center">
                             <Image
                                 src="/engine/engine-1.png"
                                 alt="Engine Make"
@@ -103,9 +42,9 @@ export default function ConditionMonitoringLayout() {
                             />
                         </div>
                         <div className="w-full flex flex-col justify-center">
-                            <DottedRow label="Make" value="MaK 9M25C" />
-                            <DottedRow label="Built" value="2016" />
-                            <DottedRow label="Rating" value="2500 kW" />
+                            <DottedRow label="Make" value="MaK 9M25C" className="my-2 text-lg" />
+                            <DottedRow label="Built" value="2016" className="my-2 text-lg" />
+                            <DottedRow label="Rating" value="2500 kW" className="my-2 text-lg" />
                         </div>
                     </div>
                 </WidgetCard>
@@ -130,12 +69,12 @@ export default function ConditionMonitoringLayout() {
                         </div>
                     }
                 >
-                    <div className="flex flex-col flex-1 justify-center gap-2">
-                        <DottedRow label="Last overhaul" value="12 Nov 2025" />
-                        <DottedRow label="Total running hours" value="5403 hrs" />
-                        <DottedRow label="Period running hours" value="251 hrs" />
-                        <DottedRow label="Duration fuel consumption" value="-- kg" />
-                        <DottedRow label="Duration average load" value="-- %" />
+                    <div className="flex flex-col flex-1 justify-center gap-1">
+                        <DottedRow label="Last overhaul" value="12 Nov 2025" className="my-0 py-0" />
+                        <DottedRow label="Total running hours" value="5403 hrs" className="my-0 py-0" />
+                        <DottedRow label="Period running hours" value="251 hrs" className="my-0 py-0" />
+                        <DottedRow label="Duration fuel consumption" value="-- kg" className="my-0 py-0" />
+                        <DottedRow label="Duration average load" value="-- %" className="my-0 py-0" />
                     </div>
                 </WidgetCard>
 
@@ -150,7 +89,7 @@ export default function ConditionMonitoringLayout() {
                     className="flex flex-col"
                     titleClassName="inline-flex items-center"
                 >
-                    <div className="flex flex-col items-center justify-center h-full min-h-[220px] mt-4 relative">
+                    <div className="flex flex-col items-center justify-center h-full min-h-[150px] mt-4 relative">
                         {/* Placeholder cross pattern matching screenshot */}
                         <div className="absolute inset-0 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900 overflow-hidden text-clip flex items-center justify-center">
                             <svg className="absolute inset-0 w-full h-full stroke-gray-300 dark:stroke-gray-700 stroke-1" preserveAspectRatio="none">
@@ -161,6 +100,21 @@ export default function ConditionMonitoringLayout() {
                     </div>
                 </WidgetCard>
             </div>
+
+            {/* ─── Condition Based Analysis Table ─────────────────────────────────── */}
+            <div className="mt-6">
+                <ConditionBasedAnalysisTable />
+            </div>
+
+            {/* ─── Charts Row 1: Trendline + Scatter ─────────────────────────────── */}
+            {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6">
+                <div className="lg:col-span-3">
+                    <DeltaDeviationTrendline />
+                </div>
+                <div className="lg:col-span-2">
+                    <ParameterScatterChart className="h-full" />
+                </div>
+            </div> */}
         </>
     );
 }
