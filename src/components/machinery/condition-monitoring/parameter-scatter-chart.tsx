@@ -10,7 +10,6 @@ import {
 import { useState } from 'react';
 import {
     CartesianGrid,
-    Legend,
     ResponsiveContainer,
     Scatter,
     ScatterChart,
@@ -25,6 +24,7 @@ import { Select } from 'rizzui/select';
  *
  * Shows two scatter series (green + purple) with a dropdown to select
  * which parameter pair is displayed (dummy for now).
+ * Legend items are placed in the widget header action area.
  */
 export default function ParameterScatterChart({ className }: { className?: string }) {
     const [selectedParam, setSelectedParam] = useState(scatterParamOptions[0]);
@@ -34,14 +34,27 @@ export default function ParameterScatterChart({ className }: { className?: strin
             title="Scatter Op 1 vs Op 2"
             className={className}
             action={
-                <Select
-                    options={scatterParamOptions}
-                    value={selectedParam}
-                    onChange={setSelectedParam}
-                    className="w-28"
-                    selectClassName="h-8 text-xs"
-                    dropdownClassName="text-sm"
-                />
+                <div className="flex items-center gap-3">
+                    <Select
+                        options={scatterParamOptions}
+                        value={selectedParam}
+                        onChange={setSelectedParam}
+                        className="w-28"
+                        selectClassName="h-8 text-xs"
+                        dropdownClassName="text-sm"
+                    />
+                    {/* Inline legend */}
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block h-2 w-4 rounded-sm" style={{ backgroundColor: '#22C55E' }} />
+                            Series 1
+                        </span>
+                        <span className="flex items-center gap-1">
+                            <span className="inline-block h-2 w-2 rotate-45 rounded-sm" style={{ backgroundColor: '#A855F7' }} />
+                            Series 2
+                        </span>
+                    </div>
+                </div>
             }
         >
             <div className="mt-4 aspect-[1060/700] w-full">
@@ -74,12 +87,12 @@ export default function ParameterScatterChart({ className }: { className?: strin
                             }}
                             tick={{ fontSize: 11 }}
                             domain={[0, 5]}
+                            tickCount={11}
                         />
                         <Tooltip
                             content={<CustomTooltip />}
                             cursor={{ strokeDasharray: '3 3' }}
                         />
-                        <Legend wrapperStyle={{ fontSize: 11 }} />
                         <Scatter
                             name="Series 1"
                             data={scatterDataGreen}

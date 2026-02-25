@@ -9,17 +9,33 @@ import {
     Legend,
     Line,
     LineChart,
+    ReferenceArea,
     ResponsiveContainer,
     Tooltip,
     XAxis,
     YAxis,
 } from 'recharts';
 
+/** Custom X-axis tick that renders date on top line, time on bottom line */
+function DateTimeTick({ x, y, payload }: any) {
+    const parts = (payload.value as string).split('\n');
+    return (
+        <g transform={`translate(${x},${y})`}>
+            <text x={0} y={0} dy={10} textAnchor="middle" fontSize={8} fill="#9FA6B5">
+                {parts[0]}
+            </text>
+            <text x={0} y={0} dy={20} textAnchor="middle" fontSize={8} fill="#9FA6B5">
+                {parts[1] ?? ''}
+            </text>
+        </g>
+    );
+}
+
 /**
  * Delta Deviation Trendline — multi-series line chart with interactive legend.
  *
  * 7 parameters matching the reference screenshot. Clicking a legend item
- * toggles that series' visibility.
+ * toggles that series' visibility. Orange overlay band for the 10-20 range.
  */
 export default function DeltaDeviationTrendline({ className }: { className?: string }) {
     // Track which series are hidden (all visible by default)
@@ -43,13 +59,24 @@ export default function DeltaDeviationTrendline({ className }: { className?: str
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                         data={trendlineData}
-                        margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+                        margin={{ top: 5, right: 20, left: -10, bottom: 20 }}
                     >
                         <CartesianGrid strokeDasharray="3 3" />
+
+                        {/* Orange overlay band for parameter range 10–20 */}
+                        <ReferenceArea
+                            y1={12}
+                            y2={24}
+                            fill="#F97316"
+                            fillOpacity={0.15}
+                            ifOverflow="hidden"
+                        />
+
                         <XAxis
                             dataKey="date"
-                            tick={{ fontSize: 10 }}
+                            tick={<DateTimeTick />}
                             interval={0}
+                            height={40}
                         />
                         <YAxis
                             label={{
@@ -57,14 +84,15 @@ export default function DeltaDeviationTrendline({ className }: { className?: str
                                 angle: -90,
                                 position: 'insideLeft',
                                 offset: 20,
-                                style: { fontSize: 12, fill: '#6B7280' },
+                                style: { fontSize: 12, fill: '#9FA6B5' },
                             }}
-                            tick={{ fontSize: 11 }}
+                            tick={{ fontSize: 11, fill: '#9FA6B5' }}
+                            tickCount={11}
                         />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend
                             onClick={(e: any) => handleLegendClick(e.dataKey)}
-                            wrapperStyle={{ cursor: 'pointer', fontSize: 11 }}
+                            wrapperStyle={{ cursor: 'pointer', fontSize: 11, color: '#9FA6B5' }}
                         />
 
                         {trendlineSeries.map((s) => (

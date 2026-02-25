@@ -1,13 +1,18 @@
 "use client"
 
 import WidgetCard from "@/components/cards/widget-card";
-import SpeedMeter from "@/components/speed-meter/speed-meter";
 import { selectedEngineAtom, selectedShipAtom } from "@/store/condition-monitoring-atoms";
 import cn from "@/utils/class-names";
 import { useAtomValue } from "jotai";
 import Image from "next/image";
 
+import HealthGauge from "@/components/machinery-overview/health-gauge";
 import ConditionBasedAnalysisTable from "./condition-based-analysis-table";
+import CoolantPressureChart from "./coolant-pressure-chart";
+import DeltaDeviationTrendline from "./delta-deviation-trendline";
+import HealthScoreCard from "./health-score-card";
+import ParameterScatterChart from "./parameter-scatter-chart";
+import ParameterVsPchargeChart from "./parameter-vs-pcharge-chart";
 
 // ─── Reusable Dotted Row Component ───────────────────────────────────────────
 function DottedRow({ label, value, className }: { label: string; value: React.ReactNode; className?: string }) {
@@ -59,9 +64,9 @@ export default function ConditionMonitoringLayout() {
                                 <div className="text-[11px] font-semibold text-foreground uppercase tracking-widest leading-tight text-right">
                                     Health<br />Score
                                 </div>
-                                <SpeedMeter bare size="sm" className="w-36" max={100} min={0} fillColor="orange" value={80} />
+                                <HealthGauge value={80} />
                             </div>
-                            <div className="text-[9px] text-muted -mt-9 flex gap-2 mr-1">
+                            <div className="text-[10px] text-foreground/50 mt-2 flex gap-2 mr-1">
                                 <span>Low: param 1</span>
                                 <span>param 2</span>
                                 <span>param 3</span>
@@ -107,14 +112,20 @@ export default function ConditionMonitoringLayout() {
             </div>
 
             {/* ─── Charts Row 1: Trendline + Scatter ─────────────────────────────── */}
-            {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6">
                 <div className="lg:col-span-3">
                     <DeltaDeviationTrendline />
                 </div>
                 <div className="lg:col-span-2">
                     <ParameterScatterChart className="h-full" />
                 </div>
-            </div> */}
+            </div>
+            {/* ─── Charts Row 2: Coolant + Health Score + Pcharge ─────────────────── */}
+            <div className="grid grid-cols-1 lg:grid-cols-11 gap-6 mt-6">
+                <CoolantPressureChart className="col-span-5" />
+                <HealthScoreCard className="col-span-3" />
+                <ParameterVsPchargeChart className="col-span-3" />
+            </div>
         </>
     );
 }
