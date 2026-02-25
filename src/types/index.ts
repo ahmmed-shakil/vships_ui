@@ -1,4 +1,4 @@
-import { CouponType } from "../config/enums";
+import { CouponType } from '../config/enums';
 
 export interface Coupon {
   id: string;
@@ -140,3 +140,32 @@ export type TanTableProductsDataType = {
   price: string;
   quantity: number;
 };
+
+// Machinery Overview Types
+export interface MachineryAlarms {
+  /** blue / info level */
+  info: number;
+  /** yellow / notice level */
+  notice: number;
+  /** orange / warning level */
+  warning: number;
+  /** red / critical level */
+  critical: number;
+}
+
+export interface MachineryMetric {
+  label: string;
+  value: string;
+  unit: string;
+}
+
+export interface MachineryCardProps {
+  id: number;
+  title: string;
+  /** health score as percentage from 0 to 100 */
+  healthScore: number;
+  /** alarm counts by severity */
+  alarms: MachineryAlarms;
+  /** engine metrics list */
+  metrics: MachineryMetric[];
+}

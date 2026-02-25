@@ -29,6 +29,7 @@ import {
   PiFolderLockDuotone,
   PiFoldersDuotone,
   PiFolderUserDuotone,
+  PiGearDuotone,
   PiGridFourDuotone,
   PiHammerDuotone,
   PiHeadsetDuotone,
@@ -99,6 +100,11 @@ export const menuItems = [
     name: 'Condition Monitoring',
     href: routes.machinery.conditionMonitoring,
     icon: <PiHammerDuotone />,
+  },
+  {
+    name: 'Machinery Overview',
+    href: routes.machinery.machineryOverview,
+    icon: <PiGearDuotone />,
   },
   {
     name: 'System Monitoring',

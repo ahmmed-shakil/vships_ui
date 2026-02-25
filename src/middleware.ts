@@ -2,8 +2,6 @@ import { pagesOptions } from '@/app/api/auth/[...nextauth]/pages-options';
 import { getToken } from 'next-auth/jwt';
 import { NextRequest, NextResponse } from 'next/server';
 
-
-
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = await getToken({ req });
@@ -37,6 +35,7 @@ export const config = {
     '/operation-monitoring',
     '/alarm-monitoring',
     '/machinery/condition-monitoring',
+    '/machinery/machinery-overview',
     '/signin',
   ],
 };

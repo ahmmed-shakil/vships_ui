@@ -9,6 +9,7 @@ export const routes = {
   },
   machinery: {
     conditionMonitoring: '/machinery/condition-monitoring',
+    machineryOverview: '/machinery/machinery-overview',
     systemMonitoring: '/machinery/system-monitoring',
     alarms: '/machinery/alarms',
   },

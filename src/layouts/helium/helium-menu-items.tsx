@@ -26,6 +26,7 @@ import {
   PiFolder,
   PiFolderLock,
   PiFolderUser,
+  PiGear,
   PiGridFour,
   PiHammer,
   PiHeadset,
@@ -98,6 +99,11 @@ export const menuItems = [
     name: 'Condition Monitoring',
     href: routes.machinery.conditionMonitoring,
     icon: <PiHammer />,
+  },
+  {
+    name: 'Machinery Overview',
+    href: routes.machinery.machineryOverview,
+    icon: <PiGear />,
   },
   // {
   //   name: 'System Monitoring',
