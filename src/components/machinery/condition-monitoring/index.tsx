@@ -1,13 +1,13 @@
 "use client"
 
 import WidgetCard from "@/components/cards/widget-card";
-import DateFiled from "@/components/controlled-table/date-field";
 import SpeedMeter from "@/components/speed-meter/speed-meter";
-import { shipData } from "@/data/nura/ships";
+import { selectedEngineAtom, selectedShipAtom } from "@/store/condition-monitoring-atoms";
 import cn from "@/utils/class-names";
+import { useAtomValue } from "jotai";
 import Image from "next/image";
-import { useState } from "react";
-import { Select } from "rizzui/select";
+
+import ConditionBasedAnalysisTable from "./condition-based-analysis-table";
 
 // ─── Reusable Dotted Row Component ───────────────────────────────────────────
 function DottedRow({ label, value, className }: { label: string; value: React.ReactNode; className?: string }) {
@@ -22,22 +22,17 @@ function DottedRow({ label, value, className }: { label: string; value: React.Re
 }
 
 export default function ConditionMonitoringLayout() {
-    const [selectedShip, setSelectedShip] = useState(shipData[0]);
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString());
+    // Read global state from atoms (selectors are in the header)
+    const selectedShip = useAtomValue(selectedShipAtom);
+    const selectedEngine = useAtomValue(selectedEngineAtom);
 
     return (
         <>
-            <div className="flex space-x-4 mb-6">
-                <Select options={shipData} value={selectedShip} onChange={setSelectedShip} className="max-w-72" />
-                <Select options={shipData} value={selectedShip} onChange={setSelectedShip} className="max-w-72" />
-                <DateFiled value={selectedDate} className="max-w-72" />
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* ─── Card 1: ME 2 Port ──────────────────────────────────────────────── */}
                 <WidgetCard title="ME 2 Port" className="flex flex-col">
                     <div className="flex items-center flex-1">
-                        <div className="w-2/5 shrink-0 flex items-center justify-center">
+                        <div className="w-2/5 px-2 shrink-0 flex items-center justify-center">
                             <Image
                                 src="/engine/engine-1.png"
                                 alt="Engine Make"
@@ -47,9 +42,9 @@ export default function ConditionMonitoringLayout() {
                             />
                         </div>
                         <div className="w-full flex flex-col justify-center">
-                            <DottedRow label="Make" value="MaK 9M25C" />
-                            <DottedRow label="Built" value="2016" />
-                            <DottedRow label="Rating" value="2500 kW" />
+                            <DottedRow label="Make" value="MaK 9M25C" className="my-2 text-lg" />
+                            <DottedRow label="Built" value="2016" className="my-2 text-lg" />
+                            <DottedRow label="Rating" value="2500 kW" className="my-2 text-lg" />
                         </div>
                     </div>
                 </WidgetCard>
@@ -74,12 +69,12 @@ export default function ConditionMonitoringLayout() {
                         </div>
                     }
                 >
-                    <div className="flex flex-col flex-1 justify-center gap-2">
-                        <DottedRow label="Last overhaul" value="12 Nov 2025" />
-                        <DottedRow label="Total running hours" value="5403 hrs" />
-                        <DottedRow label="Period running hours" value="251 hrs" />
-                        <DottedRow label="Duration fuel consumption" value="-- kg" />
-                        <DottedRow label="Duration average load" value="-- %" />
+                    <div className="flex flex-col flex-1 justify-center gap-1">
+                        <DottedRow label="Last overhaul" value="12 Nov 2025" className="my-0 py-0" />
+                        <DottedRow label="Total running hours" value="5403 hrs" className="my-0 py-0" />
+                        <DottedRow label="Period running hours" value="251 hrs" className="my-0 py-0" />
+                        <DottedRow label="Duration fuel consumption" value="-- kg" className="my-0 py-0" />
+                        <DottedRow label="Duration average load" value="-- %" className="my-0 py-0" />
                     </div>
                 </WidgetCard>
 
@@ -94,7 +89,7 @@ export default function ConditionMonitoringLayout() {
                     className="flex flex-col"
                     titleClassName="inline-flex items-center"
                 >
-                    <div className="flex flex-col items-center justify-center h-full min-h-[220px] mt-4 relative">
+                    <div className="flex flex-col items-center justify-center h-full min-h-[150px] mt-4 relative">
                         {/* Placeholder cross pattern matching screenshot */}
                         <div className="absolute inset-0 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900 overflow-hidden text-clip flex items-center justify-center">
                             <svg className="absolute inset-0 w-full h-full stroke-gray-300 dark:stroke-gray-700 stroke-1" preserveAspectRatio="none">
@@ -105,6 +100,21 @@ export default function ConditionMonitoringLayout() {
                     </div>
                 </WidgetCard>
             </div>
+
+            {/* ─── Condition Based Analysis Table ─────────────────────────────────── */}
+            <div className="mt-6">
+                <ConditionBasedAnalysisTable />
+            </div>
+
+            {/* ─── Charts Row 1: Trendline + Scatter ─────────────────────────────── */}
+            {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6">
+                <div className="lg:col-span-3">
+                    <DeltaDeviationTrendline />
+                </div>
+                <div className="lg:col-span-2">
+                    <ParameterScatterChart className="h-full" />
+                </div>
+            </div> */}
         </>
     );
 }

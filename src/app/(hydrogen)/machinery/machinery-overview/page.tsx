@@ -1,35 +1,29 @@
 'use client';
 
-import PageHeader from '@/app/shared/page-header';
+// import PageHeader from '@/app/shared/page-header';
 import MachineryCard from '@/components/cards/machinery-card';
 import { MachineryCardProps } from '@/types';
 import { Box } from 'rizzui/box';
-import { Select } from 'rizzui';
+
 import { useState } from 'react';
 
-const pageHeader = {
-  title: 'Machinery Overview',
-  breadcrumb: [
-    {
-      href: '/',
-      name: 'Home',
-    },
-    {
-      name: 'Machinery',
-    },
-    {
-      name: 'Machinery Overview',
-    },
-  ],
-};
+// const pageHeader = {
+//   title: 'Machinery Overview',
+//   breadcrumb: [
+//     {
+//       href: '/',
+//       name: 'Home',
+//     },
+//     {
+//       name: 'Machinery',
+//     },
+//     {
+//       name: 'Machinery Overview',
+//     },
+//   ],
+// };
 
-const vesselOptions = [
-  { label: 'MV Ocean Star', value: 'mv-ocean-star' },
-  { label: 'MV Pacific Voyager', value: 'mv-pacific-voyager' },
-  { label: 'MV Atlantic Pioneer', value: 'mv-atlantic-pioneer' },
-  { label: 'MV Nordic Explorer', value: 'mv-nordic-explorer' },
-  { label: 'MV Southern Cross', value: 'mv-southern-cross' },
-];
+
 
 const defaultMetrics = [
   { label: 'RPM', value: '74', unit: 'mm/s' },
@@ -100,25 +94,14 @@ const machineryData: MachineryCardProps[] = [
 ];
 
 export default function MachineryOverviewPage() {
-  const [selectedVessel, setSelectedVessel] = useState(vesselOptions[0]);
+  
 
   return (
     <div className=' pt-5'>
-      <PageHeader
+      {/* <PageHeader
         title={pageHeader.title}
         breadcrumb={pageHeader.breadcrumb}
-        isFixed
-        rightContent={
-          <Select
-            size="sm"
-            options={vesselOptions}
-            value={selectedVessel}
-            onChange={setSelectedVessel}
-            placeholder="Select Vessel"
-            className="w-52"
-          />
-        }
-      />
+      /> */}
       <Box className="@container/pd">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {machineryData.map((item) => (
