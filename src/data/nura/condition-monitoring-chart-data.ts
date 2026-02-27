@@ -88,3 +88,54 @@ export const scatterParamOptions = [
   { label: 'Param 2', value: 'param2' },
   { label: 'Param 3', value: 'param3' },
 ];
+
+
+// ─── Coolant Pressure - ME Port ──────────────────────────────────────────────
+
+export interface CoolantPressurePoint {
+  date: string;
+  temperature: number;
+  upperLimit: number;
+  outOfBound: number;
+}
+
+export const coolantPressureData: CoolantPressurePoint[] = [
+  { date: '01.05.25\n11:00', temperature: 4.8, upperLimit: 5.0, outOfBound: 0.5 },
+  { date: '01.05.25\n11:00', temperature: 4.8, upperLimit: 5.0, outOfBound: 0.5 },
+  { date: '02.05.25\n11:00', temperature: 4.7, upperLimit: 5.0, outOfBound: 0.5 },
+  { date: '03.05.25\n11:00', temperature: 4.6, upperLimit: 5.0, outOfBound: 0.5 },
+  { date: '04.05.25\n11:00', temperature: 3.2, upperLimit: 5.0, outOfBound: 0.5 },
+  { date: '05.05.25\n11:00', temperature: 3.0, upperLimit: 5.0, outOfBound: 0.5 },
+  { date: '06.05.25\n11:00', temperature: 3.1, upperLimit: 5.0, outOfBound: 0.5 },
+  { date: '07.05.25\n11:00', temperature: 3.3, upperLimit: 5.0, outOfBound: 0.5 },
+];
+
+
+// ─── Parameter vs Pcharge - iso ──────────────────────────────────────────────
+
+export const pchargeScatterLine: ScatterPoint[] = [
+  { x: 0.2, y: 50 },
+  { x: 0.5, y: 80 },
+  { x: 1.0, y: 120 },
+  { x: 1.5, y: 160 },
+  { x: 2.0, y: 200 },
+  { x: 2.5, y: 230 },
+  { x: 3.0, y: 270 },
+  { x: 3.5, y: 310 },
+  { x: 4.0, y: 340 },
+  { x: 4.5, y: 370 },
+  { x: 5.0, y: 400 },
+];
+
+export const pchargeScatterDots: ScatterPoint[] = [
+  { x: 0.3, y: 60 },
+  { x: 0.8, y: 110 },
+  { x: 1.2, y: 140 },
+  { x: 1.8, y: 185 },
+  { x: 2.2, y: 215 },
+  { x: 2.8, y: 260 },
+  { x: 3.2, y: 290 },
+  { x: 3.8, y: 330 },
+  { x: 4.2, y: 355 },
+  { x: 4.8, y: 390 },
+];
