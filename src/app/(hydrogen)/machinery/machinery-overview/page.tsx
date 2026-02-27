@@ -1,29 +1,11 @@
 'use client';
 
-// import PageHeader from '@/app/shared/page-header';
-import MachineryCard from '@/components/cards/machinery-card';
+import PerfomaxCard from '@/components/cards/perfomax-card';
+import HealthScoreHeader from '@/components/cards/health-score-header';
+import MachineryCardBody from '@/components/cards/machinery-card-body';
+import { getHealthColor } from '@/utils/get-health-color';
 import { MachineryCardProps } from '@/types';
 import { Box } from 'rizzui/box';
-
-import { useState } from 'react';
-
-// const pageHeader = {
-//   title: 'Machinery Overview',
-//   breadcrumb: [
-//     {
-//       href: '/',
-//       name: 'Home',
-//     },
-//     {
-//       name: 'Machinery',
-//     },
-//     {
-//       name: 'Machinery Overview',
-//     },
-//   ],
-// };
-
-
 
 const defaultMetrics = [
   { label: 'RPM', value: '74', unit: 'mm/s' },
@@ -94,18 +76,19 @@ const machineryData: MachineryCardProps[] = [
 ];
 
 export default function MachineryOverviewPage() {
-  
-
   return (
-    <div className=' pt-5'>
-      {/* <PageHeader
-        title={pageHeader.title}
-        breadcrumb={pageHeader.breadcrumb}
-      /> */}
+    <div className="pt-5">
       <Box className="@container/pd">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {machineryData.map((item) => (
-            <MachineryCard key={item.id} data={item} />
+            <PerfomaxCard
+              key={item.id}
+              title={item.title}
+              // accentColor={getHealthColor(item.healthScore)}
+              // action={<HealthScoreHeader score={item.healthScore} />}
+            >
+              <MachineryCardBody data={item} />
+            </PerfomaxCard>
           ))}
         </div>
       </Box>
