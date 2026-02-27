@@ -84,8 +84,8 @@ export default function MachineryOverviewPage() {
             <PerfomaxCard
               key={item.id}
               title={item.title}
-              // accentColor={getHealthColor(item.healthScore)}
-              // action={<HealthScoreHeader score={item.healthScore} />}
+              accentColor={getHealthColor(item.healthScore)}
+              action={<HealthScoreHeader score={item.healthScore} />}
             >
               <MachineryCardBody data={item} />
             </PerfomaxCard>
