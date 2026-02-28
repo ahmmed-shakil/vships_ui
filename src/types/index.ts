@@ -157,13 +157,19 @@ export interface MachineryMetric {
   label: string;
   value: string;
   unit: string;
+  /** If true, show a small sparkline after the value */
+  showSparkline?: boolean;
 }
+
+export type MachineryStatus = 'running' | 'standby' | 'off';
 
 export interface MachineryCardProps {
   id: number;
   title: string;
   /** health score as percentage from 0 to 100 */
   healthScore: number;
+  /** engine operational status */
+  status: MachineryStatus;
   /** alarm counts by severity */
   alarms: MachineryAlarms;
   /** engine metrics list */

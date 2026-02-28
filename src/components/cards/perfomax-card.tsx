@@ -52,6 +52,8 @@ export interface PerfomaxCardProps
   titleClassName?: string;
   /** Extra class on the action wrapper */
   actionClassName?: string;
+  /** Content rendered between the title and the action slot (e.g. StatusGauge). */
+  headerRight?: ReactNode;
   /** Extra class on the description wrapper */
   descriptionClassName?: string;
   /** Extra class on the body (children) wrapper */
@@ -75,6 +77,7 @@ const PerfomaxCard = forwardRef<HTMLDivElement, PerfomaxCardProps>(
       headerClassName,
       titleClassName,
       actionClassName,
+      headerRight,
       descriptionClassName,
       bodyClassName,
       children,
@@ -104,29 +107,32 @@ const PerfomaxCard = forwardRef<HTMLDivElement, PerfomaxCardProps>(
         )}
 
         {/* ── Header ─────────────────────────────────────────────────── */}
-        {(title || action) && (
+        {(title || action || headerRight) && (
           <div
             className={cn(
               'px-3 pb-2 pt-3',
-              action && 'flex items-center justify-between',
+              (action || headerRight) && 'flex items-center justify-between',
               headerClassName
             )}
           >
-            <div>
-              {title && (
-                <Title
-                  as="h3"
-                  className={cn(
-                    'text-[20px] font-bold leading-7',
-                    titleClassName
-                  )}
-                >
-                  {title}
-                </Title>
-              )}
-              {description && (
-                <div className={descriptionClassName}>{description}</div>
-              )}
+            <div className="flex items-center gap-2">
+              <div>
+                {title && (
+                  <Title
+                    as="h3"
+                    className={cn(
+                      'text-[20px] font-bold leading-7',
+                      titleClassName
+                    )}
+                  >
+                    {title}
+                  </Title>
+                )}
+                {description && (
+                  <div className={descriptionClassName}>{description}</div>
+                )}
+              </div>
+              {headerRight}
             </div>
 
             {action && (

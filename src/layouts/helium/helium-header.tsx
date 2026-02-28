@@ -19,15 +19,16 @@ import {
 import { ActionIcon } from 'rizzui/action-icon';
 import { Badge } from 'rizzui/badge';
 import Sidebar from './helium-sidebar';
-import { Select } from 'rizzui';
-import { useState } from 'react';
-import { shipData } from '@/data/nura/ships';
 
 const ConditionMonitoringHeaderSelectors = dynamic(
   () => import('@/components/machinery/condition-monitoring/header-selectors'),
   { ssr: false }
 );
 
+const MachineryOverviewHeaderSelectors = dynamic(
+  () => import('@/components/machinery/machinery-overview/header-selectors'),
+  { ssr: false }
+);
 
 function HeaderMenuRight() {
   return (
@@ -75,7 +76,6 @@ function HeaderMenuRight() {
 }
 
 export default function Header() {
-  const [selectedVessel, setSelectedVessel] = useState(shipData[0]);
   const pathname = usePathname();
   const isConditionMonitoring = pathname.startsWith('/machinery/condition-monitoring');
   const isMachineryOverview = pathname.startsWith('/machinery/machinery-overview');
@@ -86,7 +86,7 @@ export default function Header() {
         'sticky top-0 z-[990] flex items-center bg-gray-0/80 px-4 py-4 backdrop-blur-xl dark:bg-gray-50/50 md:px-5 lg:px-6 xl:-ms-1.5 xl:pl-4 2xl:-ms-0 2xl:py-6 2xl:pl-6 3xl:px-8 3xl:pl-6 4xl:px-10 4xl:pl-9'
       }
     >
-      <div className={cn('flex items-center', isConditionMonitoring ? 'w-auto shrink-0' : 'w-full max-w-2xl')}>
+      <div className={cn('flex items-center', (isConditionMonitoring || isMachineryOverview) ? 'w-auto shrink-0' : 'w-full max-w-2xl')}>
         <HamburgerButton
           view={
             <Sidebar className="static w-full xl:p-0 2xl:w-full [&>div]:xl:rounded-none" />
@@ -107,23 +107,14 @@ export default function Header() {
           <ConditionMonitoringHeaderSelectors />
         </div>
       )}
-      {
-        isMachineryOverview && (
-          <div className="mx-4 2xl:mx-10 flex-1 overflow-x-auto">
-           <Select
-            size="sm"
-            options={shipData}
-            value={selectedVessel}
-            onChange={setSelectedVessel}
-            placeholder="Select Vessel"
-            className="w-52"
-          />
-          </div>
-        )
-      }
+
+      {isMachineryOverview && (
+        <div className="mx-4 2xl:mx-10 flex-1 overflow-x-auto">
+          <MachineryOverviewHeaderSelectors />
+        </div>
+      )}
 
       <HeaderMenuRight />
     </header>
   );
 }
-
