@@ -1,6 +1,6 @@
 'use client';
 
-import WidgetCard from '@/components/cards/widget-card';
+import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
 import { coolantPressureData } from '@/data/nura/condition-monitoring-chart-data';
 import {
@@ -40,9 +40,10 @@ function DateTimeTick({ x, y, payload }: any) {
  */
 export default function CoolantPressureChart({ className }: { className?: string }) {
     return (
-        <WidgetCard
+        <PerfomaxCard
             title="Coolant Pressure - ME Port"
             className={className}
+            bodyClassName="p-5"
             action={
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-1">
@@ -131,6 +132,6 @@ export default function CoolantPressureChart({ className }: { className?: string
                     </LineChart>
                 </ResponsiveContainer>
             </div>
-        </WidgetCard>
+        </PerfomaxCard>
     );
 }

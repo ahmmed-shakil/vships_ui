@@ -1,6 +1,6 @@
 'use client';
 
-import WidgetCard from '@/components/cards/widget-card';
+import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
 import { trendlineData, trendlineSeries } from '@/data/nura/condition-monitoring-chart-data';
 import { useCallback, useState } from 'react';
@@ -54,7 +54,7 @@ export default function DeltaDeviationTrendline({ className }: { className?: str
     }, []);
 
     return (
-        <WidgetCard title="Delta Deviation Trendline" className={className}>
+        <PerfomaxCard title="Delta Deviation Trendline" className={className} bodyClassName="p-5">
             <div className="mt-4 aspect-[1060/500] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
@@ -112,6 +112,6 @@ export default function DeltaDeviationTrendline({ className }: { className?: str
                     </LineChart>
                 </ResponsiveContainer>
             </div>
-        </WidgetCard>
+        </PerfomaxCard>
     );
 }

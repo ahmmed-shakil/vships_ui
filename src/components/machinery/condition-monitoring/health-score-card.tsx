@@ -1,6 +1,6 @@
 'use client';
 
-import WidgetCard from '@/components/cards/widget-card';
+import PerfomaxCard from '@/components/cards/perfomax-card';
 import cn from '@/utils/class-names';
 
 /**
@@ -22,11 +22,11 @@ function BellCurve({ className }: { className?: string }) {
 }
 
 /** Stat card — a bordered card section with a title and 3 rows of key-value pairs */
-function StatCard({ title, rows }: { title: string; rows: { label: string; value: React.ReactNode }[] }) {
+function StatCard({ title, rows, className }: { title: string; rows: { label: string; value: React.ReactNode }[]; className?: string }) {
     return (
-        <div className="rounded-lg border border-muted bg-background p-3">
-            <h4 className="text-xs font-bold text-foreground text-center mb-2.5">{title}</h4>
-            <div className="flex flex-col gap-4">
+        <div className={cn("rounded-lg bg-background/90 px-3 py-5", className)}>
+            <h4 className="text-xs font-bold text-foreground text-center">{title}</h4>
+            <div className="flex flex-col gap-6 mt-6">
                 {rows.map((row, i) => (
                     <div key={i} className="flex items-center justify-between">
                         <span className="text-xs text-muted-foreground font-medium">{row.label}</span>
@@ -46,9 +46,9 @@ function StatCard({ title, rows }: { title: string; rows: { label: string; value
  */
 export default function HealthScoreCard({ className }: { className?: string }) {
     return (
-        <WidgetCard
-            title=""
+        <PerfomaxCard
             className={cn('relative', className)}
+            bodyClassName="p-5"
         >
             {/* ─── Header: Health + Delta ─────────────────────────────── */}
             <div className="flex items-baseline gap-8 mb-5">
@@ -70,14 +70,14 @@ export default function HealthScoreCard({ className }: { className?: string }) {
                 </div>
                 <div className="flex flex-col items-end gap-1.5">
                     <span className="text-xs font-semibold text-foreground">Causality</span>
-                    <span className="rounded-md bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    <span className="rounded-md bg-green-100 py-1 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
                         No Attention
                     </span>
                 </div>
             </div>
 
             {/* ─── Stat Cards ─────────────────────────────────────────── */}
-            <div className="grid grid-cols-3 gap-1 mt-4 border-t-2 pt-6">
+            <div className="grid grid-cols-3 gap-0.5 mt-4 border-t-2 pt-10">
                 <StatCard
                     title="Title"
                     rows={[
@@ -110,6 +110,6 @@ export default function HealthScoreCard({ className }: { className?: string }) {
                     ]}
                 />
             </div>
-        </WidgetCard>
+        </PerfomaxCard>
     );
 }

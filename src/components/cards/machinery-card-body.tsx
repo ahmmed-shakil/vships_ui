@@ -137,7 +137,7 @@ function AlarmTooltipContent({ severity }: { severity: keyof MachineryAlarms }) 
                 <td className="py-2 pr-3 font-medium">{row.description}</td>
                 <td className="py-2 pr-2 text-right">{row.value}</td>
                 <td className="py-2 pr-2">{row.unit}</td>
-                <td className="py-2">{row.level}</td>
+                {/* <td className="py-2">{row.level}</td> */}
               </tr>
             );
           })}

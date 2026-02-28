@@ -1,6 +1,6 @@
 'use client';
 
-import WidgetCard from '@/components/cards/widget-card';
+import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
 import {
     pchargeScatterDots,
@@ -24,9 +24,10 @@ import {
  */
 export default function ParameterVsPchargeChart({ className }: { className?: string }) {
     return (
-        <WidgetCard
+        <PerfomaxCard
             title="Parameter vs Pcharge - iso"
             className={className}
+            bodyClassName="p-5"
             action={
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-1">
@@ -93,6 +94,6 @@ export default function ParameterVsPchargeChart({ className }: { className?: str
                     </ScatterChart>
                 </ResponsiveContainer>
             </div>
-        </WidgetCard>
+        </PerfomaxCard>
     );
 }
