@@ -159,6 +159,10 @@ export interface MachineryMetric {
   unit: string;
   /** If true, show a small sparkline after the value */
   showSparkline?: boolean;
+  /** Override sparkline data (default: dummy) */
+  sparklineData?: { v: number }[];
+  /** Stroke colour for sparkline (default: blue #3872FA) */
+  sparklineColor?: string;
 }
 
 export type MachineryStatus = 'running' | 'standby' | 'off';

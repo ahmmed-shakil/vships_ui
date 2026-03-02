@@ -13,13 +13,218 @@ import { getHealthColor } from '@/utils/get-health-color';
 import { useMemo, useState } from 'react';
 import { Box } from 'rizzui/box';
 
+// Unique dummy data for each metric type
+const rpmData = [
+  { v: 0 },
+  { v: 10 },
+  { v: 20 },
+  { v: 30 },
+  { v: 56 },
+  { v: 82 },
+  { v: 70 },
+  { v: 65 },
+  { v: 30 },
+  { v: 5 },
+  { v: 20 },
+  { v: 69 },
+  { v: 77 },
+  { v: 83 },
+  { v: 67 },
+  { v: 79 },
+  { v: 100 },
+  { v: 73 },
+  { v: 64 },
+  { v: 75 },
+  { v: 81 },
+  { v: 70 },
+  { v: 40 },
+  { v: 20 },
+];
+
+const exhaustTempData = [
+  { v: 40 },
+  { v: 42 },
+  { v: 45 },
+  { v: 48 },
+  { v: 50 },
+  { v: 55 },
+  { v: 60 },
+  { v: 58 },
+  { v: 52 },
+  { v: 48 },
+  { v: 45 },
+  { v: 65 },
+  { v: 72 },
+  { v: 78 },
+  { v: 82 },
+  { v: 85 },
+  { v: 90 },
+  { v: 88 },
+  { v: 80 },
+  { v: 75 },
+  { v: 70 },
+  { v: 68 },
+  { v: 65 },
+  { v: 62 },
+];
+
+const oilPressureData = [
+  { v: 60 },
+  { v: 62 },
+  { v: 64 },
+  { v: 66 },
+  { v: 65 },
+  { v: 63 },
+  { v: 61 },
+  { v: 60 },
+  { v: 58 },
+  { v: 55 },
+  { v: 57 },
+  { v: 59 },
+  { v: 61 },
+  { v: 63 },
+  { v: 65 },
+  { v: 67 },
+  { v: 68 },
+  { v: 66 },
+  { v: 64 },
+  { v: 62 },
+  { v: 60 },
+  { v: 58 },
+  { v: 56 },
+  { v: 55 },
+];
+
+const oilTempData = [
+  { v: 30 },
+  { v: 32 },
+  { v: 35 },
+  { v: 38 },
+  { v: 40 },
+  { v: 45 },
+  { v: 50 },
+  { v: 52 },
+  { v: 55 },
+  { v: 58 },
+  { v: 60 },
+  { v: 62 },
+  { v: 64 },
+  { v: 66 },
+  { v: 68 },
+  { v: 70 },
+  { v: 72 },
+  { v: 70 },
+  { v: 68 },
+  { v: 65 },
+  { v: 62 },
+  { v: 60 },
+  { v: 58 },
+  { v: 56 },
+];
+
+const coolantTempData = [
+  { v: 20 },
+  { v: 22 },
+  { v: 25 },
+  { v: 28 },
+  { v: 30 },
+  { v: 35 },
+  { v: 40 },
+  { v: 42 },
+  { v: 45 },
+  { v: 50 },
+  { v: 52 },
+  { v: 55 },
+  { v: 58 },
+  { v: 60 },
+  { v: 62 },
+  { v: 64 },
+  { v: 66 },
+  { v: 68 },
+  { v: 70 },
+  { v: 72 },
+  { v: 75 },
+  { v: 78 },
+  { v: 80 },
+  { v: 78 },
+];
+
+const consumptionData = [
+  { v: 10 },
+  { v: 12 },
+  { v: 14 },
+  { v: 16 },
+  { v: 18 },
+  { v: 20 },
+  { v: 22 },
+  { v: 24 },
+  { v: 26 },
+  { v: 28 },
+  { v: 30 },
+  { v: 32 },
+  { v: 34 },
+  { v: 36 },
+  { v: 38 },
+  { v: 40 },
+  { v: 42 },
+  { v: 44 },
+  { v: 46 },
+  { v: 48 },
+  { v: 50 },
+  { v: 52 },
+  { v: 54 },
+  { v: 56 },
+];
+
 const defaultMetrics = [
-  { label: 'RPM', value: '74', unit: 'mm/s', showSparkline: true },
-  { label: 'Exhaust Temp', value: '435', unit: '°C' },
-  { label: 'Oil pressure', value: '--', unit: 'bar' },
-  { label: 'Oil temp', value: '--', unit: 'bar' },
-  { label: 'Coolant temp', value: '--', unit: 'bar' },
-  { label: 'Consumption', value: 'xx', unit: 'l' },
+  {
+    label: 'RPM',
+    value: '74',
+    unit: 'mm/s',
+    showSparkline: true,
+    sparklineData: rpmData,
+    sparklineColor: '#3872FA',
+  },
+  {
+    label: 'Exhaust Temp',
+    value: '435',
+    unit: '°C',
+    showSparkline: true,
+    sparklineData: exhaustTempData,
+    sparklineColor: '#FF6B6B',
+  },
+  {
+    label: 'Oil pressure',
+    value: '--',
+    unit: 'bar',
+    showSparkline: true,
+    sparklineData: oilPressureData,
+    sparklineColor: '#4ECDC4',
+  },
+  {
+    label: 'Oil temp',
+    value: '--',
+    unit: 'bar',
+    showSparkline: true,
+    sparklineData: oilTempData,
+    sparklineColor: '#45B7D1',
+  },
+  {
+    label: 'Coolant temp',
+    value: '--',
+    unit: 'bar',
+    showSparkline: true,
+    sparklineData: coolantTempData,
+    sparklineColor: '#96CEB4',
+  },
+  {
+    label: 'Consumption',
+    value: 'xx',
+    unit: 'l',
+    showSparkline: true,
+    sparklineData: consumptionData,
+    sparklineColor: '#FFEAA7',
+  },
 ];
 
 const machineryData: MachineryCardProps[] = [
@@ -104,7 +309,7 @@ export default function MachineryOverviewPage() {
 
   return (
     <>
-      <Box className="@container/pd pt-5">
+      <Box className="pt-5 @container/pd">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {machineryData.map((item) => (
             <PerfomaxCard
@@ -122,7 +327,7 @@ export default function MachineryOverviewPage() {
       <AlarmTable
         data={alarms}
         title={`Alarms — ${selectedShip.label}`}
-        className='mt-10'
+        className="mt-10"
       />
     </>
   );

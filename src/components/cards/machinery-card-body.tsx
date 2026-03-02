@@ -310,7 +310,12 @@ export default function MachineryCardBody({
             <Text className="shrink-0 text-right text-base leading-5">
               {metric.value} {metric.unit}
             </Text>
-            {metric.showSparkline && <RpmSparkline />}
+            {metric.showSparkline && (
+              <RpmSparkline 
+                data={metric.sparklineData} 
+                color={metric.sparklineColor} 
+              />
+            )}
           </div>
         ))}
       </div>

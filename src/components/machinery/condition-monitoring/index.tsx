@@ -1,6 +1,6 @@
 'use client';
 
-import HealthScoreHeader from "@/components/cards/health-score-header";
+import HealthScoreHeader from '@/components/cards/health-score-header';
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import {
   selectedEngineAtom,
@@ -78,6 +78,7 @@ export default function ConditionMonitoringLayout() {
           title="Basic Information"
           className="flex flex-col"
           bodyClassName="px-5 border-t-2 py-2"
+          headerClassName="items-start"
           action={
             <div className="flex flex-col items-end gap-2">
               <HealthScoreHeader score={80} />
@@ -91,7 +92,6 @@ export default function ConditionMonitoringLayout() {
             </div>
           }
         >
-
           <div className="flex flex-1 flex-col justify-center gap-1">
             <DottedRow
               label="Last overhaul"
@@ -125,13 +125,7 @@ export default function ConditionMonitoringLayout() {
         <PerfomaxCard
           title="SFOC Scatter"
           bodyClassName="px-2 border-t border-muted/50"
-          description={
-            <span className="ml-2 text-xs font-normal text-muted-foreground">
-              ( SFOC - Specific fuel oil consumption )
-            </span>
-          }
           className="flex flex-col"
-          titleClassName="inline-flex items-center"
         >
           <div className="relative mt-4 flex h-full min-h-[150px] flex-col items-center justify-center">
             {/* Placeholder cross pattern matching screenshot */}
