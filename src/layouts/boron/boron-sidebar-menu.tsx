@@ -1,15 +1,15 @@
 'use client';
 
-import Link from 'next/link';
-import { Fragment } from 'react';
-import { usePathname } from 'next/navigation';
-import { Title, Collapse } from 'rizzui';
-import cn from '@/utils/class-names';
-import { PiCaretDownBold, PiCommand } from 'react-icons/pi';
 import { menuItems } from '@/layouts/boron/boron-menu-items';
 import { useBoronKbdShortcuts } from '@/layouts/boron/boron-utils';
 import { useColorPresetName } from '@/layouts/settings/use-theme-color';
+import cn from '@/utils/class-names';
 import { useTheme } from 'next-themes';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Fragment } from 'react';
+import { PiCaretDownBold, PiCommand } from 'react-icons/pi';
+import { Collapse, Title } from 'rizzui';
 
 export function BoronSidebarMenu() {
   const pathname = usePathname();
@@ -20,11 +20,11 @@ export function BoronSidebarMenu() {
 
   return (
     <div className="mt-4 pb-3 2xl:pt-1.5 3xl:mt-6">
-      {menuItems.map((item, index) => {
+      {(menuItems as any[]).map((item, index) => {
         const Icon = item.icon;
         const isActive = pathname === (item?.href as string);
         const pathnameExistInDropdowns: any = item?.dropdownItems?.filter(
-          (dropdownItem) => dropdownItem.href === pathname
+          (dropdownItem: any) => dropdownItem.href === pathname
         );
         const isDropdownOpen = Boolean(pathnameExistInDropdowns?.length);
 
@@ -78,7 +78,7 @@ export function BoronSidebarMenu() {
                       </div>
                     )}
                   >
-                    {item?.dropdownItems?.map((dropdownItem, index) => {
+                    {item?.dropdownItems?.map((dropdownItem: any, index: any) => {
                       const isChildActive =
                         pathname === (dropdownItem?.href as string);
 
@@ -162,7 +162,7 @@ export function BoronSidebarMenu() {
                 className={cn(
                   'mx-6 mb-2 truncate text-xs font-normal uppercase tracking-widest text-gray-500 2xl:mx-8',
                   index !== 0 &&
-                    'mt-6 border-t border-gray-100 pt-6 2xl:pt-8 3xl:mt-7'
+                  'mt-6 border-t border-gray-100 pt-6 2xl:pt-8 3xl:mt-7'
                 )}
               >
                 {item.name}

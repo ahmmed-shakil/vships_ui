@@ -1,8 +1,8 @@
 'use client';
 
-import { berylliumSidebarMenuItems } from '@/layouts/beryllium/beryllium-sidebar-menu-items';
 import StatusBadge from '@/components/get-status-badge';
 import Logo from '@/components/logo';
+import { berylliumSidebarMenuItems } from '@/layouts/beryllium/beryllium-sidebar-menu-items';
 import cn from '@/utils/class-names';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -31,10 +31,10 @@ export default function Sidebar({ className }: { className?: string }) {
 
       <div className="custom-scrollbar overflow-y-auto scroll-smooth h-[calc(100%-80px)]">
         <div className="mt-4 pb-3 3xl:mt-6">
-          {berylliumSidebarMenuItems.map((item, index) => {
+          {(berylliumSidebarMenuItems as any[]).map((item, index) => {
             const isActive = pathname === (item?.href as string);
             const pathnameExistInDropdowns: any = item?.dropdownItems?.filter(
-              (dropdownItem) => dropdownItem.href === pathname
+              (dropdownItem: any) => dropdownItem.href === pathname
             );
             const isDropdownOpen = Boolean(pathnameExistInDropdowns?.length);
 
@@ -81,7 +81,7 @@ export default function Sidebar({ className }: { className?: string }) {
                           </div>
                         )}
                       >
-                        {item?.dropdownItems?.map((dropdownItem, index) => {
+                        {item?.dropdownItems?.map((dropdownItem: any, index: number) => {
                           const isChildActive =
                             pathname === (dropdownItem?.href as string);
 

@@ -1,8 +1,7 @@
 'use client';
 
 import BasicTableWidget from '@/components/controlled-table/basic-table-widget';
-import type { AlarmEntry } from '@/data/nura/alarm-data';
-import { getAlarmUnit, getSeverityLabel } from '@/data/nura/alarm-data';
+import { type AlarmEntry, getAlarmUnit, getSeverityLabel } from '@/data/nura/alarm-data';
 import cn from '@/utils/class-names';
 import { Badge, Text } from 'rizzui';
 

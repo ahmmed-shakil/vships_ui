@@ -1,21 +1,21 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import React, { ElementType, Fragment, useState } from 'react';
-import { carbonMenuItems } from '@/layouts/carbon/carbon-menu-items';
-import { Text } from 'rizzui';
-import cn from '@/utils/class-names';
-import { PiCaretDownBold } from 'react-icons/pi';
-import Menu from '@/ui/carbon-menu/dropdown/menu';
-import StatusBadge from '@/components/get-status-badge';
 import { SortableList } from '@/components/dnd/dnd-sortable-list';
+import StatusBadge from '@/components/get-status-badge';
+import { carbonMenuItems } from '@/layouts/carbon/carbon-menu-items';
+import Menu from '@/ui/carbon-menu/dropdown/menu';
+import cn from '@/utils/class-names';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ElementType, Fragment, useState } from 'react';
+import { PiCaretDownBold } from 'react-icons/pi';
+import { Text } from 'rizzui';
 
 export function CarbonSidebarMenu() {
   const pathname = usePathname();
-  const [items, setItems] = useState(carbonMenuItems);
+  const [items, setItems] = useState<any[]>(carbonMenuItems);
 
   function handleChange(event: DragEndEvent) {
     const { active, over } = event;
@@ -39,10 +39,10 @@ export function CarbonSidebarMenu() {
           {items.map((item, index) => {
             const Icon = item.icon;
             const pathnameExistInDropdowns: boolean = item?.menuItems?.some(
-              (dropdownItem) =>
+              (dropdownItem: any) =>
                 dropdownItem.href === pathname ||
                 dropdownItem.subMenuItems?.some(
-                  (subMenuItem) => subMenuItem.href === pathname
+                  (subMenuItem: any) => subMenuItem.href === pathname
                 )
             );
             const isDropdownOpen = Boolean(pathnameExistInDropdowns);
@@ -98,12 +98,12 @@ export function CarbonSidebarMenu() {
                       </div>
                     </Menu.Trigger>
                     <Menu.List className="relative w-[280px] !border-transparent !px-2 !py-3 after:absolute after:-start-5 after:top-0 after:h-full after:w-5 dark:border-gray-300">
-                      {item?.menuItems?.map((dropdownItem, index) => {
+                      {item?.menuItems?.map((dropdownItem: any, index: any) => {
                         const isChildActive =
                           pathname === (dropdownItem?.href as string);
                         const pathnameExistInChildDropdowns: any =
                           dropdownItem?.subMenuItems?.filter(
-                            (dropdownItem) => dropdownItem.href === pathname
+                            (dropdownItem: any) => dropdownItem.href === pathname
                           );
                         const isChildDropdownActive = Boolean(
                           pathnameExistInChildDropdowns?.length
@@ -116,7 +116,7 @@ export function CarbonSidebarMenu() {
                             className={cn(
                               'px-0 py-0 transition-all data-[hover=true]:dark:bg-gray-200',
                               isChildDropdownActive &&
-                                'bg-gray-100 dark:bg-gray-200'
+                              'bg-gray-100 dark:bg-gray-200'
                             )}
                           >
                             {dropdownItem?.subMenuItems?.length ? (
@@ -165,7 +165,7 @@ export function CarbonSidebarMenu() {
                                   </Menu.Trigger>
                                   <Menu.List className="!border-transparent dark:border-gray-300 dark:bg-gray-100">
                                     {dropdownItem?.subMenuItems?.map(
-                                      (subMenuItem, index) => {
+                                      (subMenuItem: any, index: any) => {
                                         const isChildActive =
                                           pathname ===
                                           (subMenuItem?.href as string);

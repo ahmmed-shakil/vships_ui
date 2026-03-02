@@ -1,24 +1,24 @@
 'use client';
 
-import Link from 'next/link';
-import { Fragment } from 'react';
-import { usePathname } from 'next/navigation';
-import { Title } from 'rizzui/typography';
-import { Collapse } from 'rizzui/collapse';
-import cn from '@/utils/class-names';
-import { PiCaretDownBold } from 'react-icons/pi';
-import { menuItems } from '@/layouts/helium/helium-menu-items';
 import StatusBadge from '@/components/get-status-badge';
+import { menuItems } from '@/layouts/helium/helium-menu-items';
+import cn from '@/utils/class-names';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Fragment } from 'react';
+import { PiCaretDownBold } from 'react-icons/pi';
+import { Collapse } from 'rizzui/collapse';
+import { Title } from 'rizzui/typography';
 
 export function HeliumSidebarMenu() {
   const pathname = usePathname();
 
   return (
     <div className="mt-4 pb-3 3xl:mt-6">
-      {menuItems.map((item, index) => {
+      {(menuItems as any[]).map((item, index) => {
         const isActive = pathname === (item?.href as string);
         const pathnameExistInDropdowns: any = item?.dropdownItems?.filter(
-          (dropdownItem) => dropdownItem.href === pathname
+          (dropdownItem: any) => dropdownItem.href === pathname
         );
         const isDropdownOpen = Boolean(pathnameExistInDropdowns?.length);
 
@@ -65,7 +65,7 @@ export function HeliumSidebarMenu() {
                       </div>
                     )}
                   >
-                    {item?.dropdownItems?.map((dropdownItem, index) => {
+                    {item?.dropdownItems?.map((dropdownItem: any, index: any) => {
                       const isChildActive =
                         pathname === (dropdownItem?.href as string);
 
