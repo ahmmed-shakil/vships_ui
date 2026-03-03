@@ -23,10 +23,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: Load nvm environment
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          echo "Node: $(node --version)"
+          echo "npm: $(npm --version)"
+          echo "PATH=$PATH" >> $GITHUB_ENV
+          echo "NVM_DIR=$NVM_DIR" >> $GITHUB_ENV
 
       - name: Create .env.local file
         run: |
