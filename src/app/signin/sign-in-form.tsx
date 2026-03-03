@@ -9,8 +9,8 @@ import { PiArrowRightBold } from 'react-icons/pi';
 import { Button, Input, Password } from 'rizzui';
 
 const initialValues: LoginSchema = {
-  email: 'admin@admin.com',
-  password: 'admin',
+  email: '',
+  password: '',
   rememberMe: true,
 };
 

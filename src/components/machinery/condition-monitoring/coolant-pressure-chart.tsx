@@ -41,7 +41,7 @@ const COLORS = {
 
 /**
  * Fuel Consumption - ME Port Status
- * 
+ *
  * Line chart with temperature line that changes color based on thresholds using an SVG gradient.
  * - White: within limits
  * - Red: >= upper limit
@@ -88,14 +88,26 @@ export default function CoolantPressureChart({
               <linearGradient id="colorTemperature" x1="0" y1="1" x2="0" y2="0">
                 {/* 0% to lowerOffset% -> Below Lower Limit (Blue) */}
                 <stop offset="0%" stopColor={COLORS.belowLimit} />
-                <stop offset={`${lowerOffset}%`} stopColor={COLORS.belowLimit} />
+                <stop
+                  offset={`${lowerOffset}%`}
+                  stopColor={COLORS.belowLimit}
+                />
 
                 {/* Sudden change at lower limit to White for normal range */}
-                <stop offset={`${lowerOffset}%`} stopColor={COLORS.normalLine} />
-                <stop offset={`${upperOffset}%`} stopColor={COLORS.normalLine} />
+                <stop
+                  offset={`${lowerOffset}%`}
+                  stopColor={COLORS.normalLine}
+                />
+                <stop
+                  offset={`${upperOffset}%`}
+                  stopColor={COLORS.normalLine}
+                />
 
                 {/* Sudden change at upper limit to Red */}
-                <stop offset={`${upperOffset}%`} stopColor={COLORS.aboveLimit} />
+                <stop
+                  offset={`${upperOffset}%`}
+                  stopColor={COLORS.aboveLimit}
+                />
                 <stop offset="100%" stopColor={COLORS.aboveLimit} />
               </linearGradient>
             </defs>
@@ -126,7 +138,11 @@ export default function CoolantPressureChart({
               ifOverflow="extendDomain"
             />
 
-            <CartesianGrid vertical={false} stroke={COLORS.grid} strokeDasharray="3 3" />
+            <CartesianGrid
+              vertical={false}
+              stroke={COLORS.grid}
+              strokeDasharray="3 3"
+            />
 
             <XAxis
               dataKey="date"
@@ -172,7 +188,6 @@ export default function CoolantPressureChart({
               dot={false}
               isAnimationActive={false}
             />
-
           </LineChart>
         </ResponsiveContainer>
       </div>

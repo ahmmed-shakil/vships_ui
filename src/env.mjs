@@ -22,6 +22,10 @@ export const env = createEnv({
 
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
+
+    // UAT credentials
+    UAT_EMAIL: z.string().email(),
+    UAT_PASSWORD: z.string().min(1),
   },
   /*
    * Environment variables available on the client (and server).

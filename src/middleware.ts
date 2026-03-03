@@ -30,12 +30,14 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    '/',
-    '/fleet-overview',
-    '/operation-monitoring',
-    '/alarm-monitoring',
-    '/machinery/condition-monitoring',
-    '/machinery/machinery-overview',
-    '/signin',
+    /*
+     * Match all routes except:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization)
+     * - favicon.ico
+     * - public assets
+     */
+    '/((?!api|_next/static|_next/image|favicon\\.ico|logo|auth|engine|airlines-logo|email-templates|public).*)',
   ],
 };
