@@ -1,7 +1,7 @@
 'use client';
 
 import OrSeparation from '@/app/shared/auth-layout/or-separation';
-import perfomaxLogo from '@public/desktop-dark.png';
+import perfomaxLogo from '@public/desktop-logo.png';
 import Image from 'next/image';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
