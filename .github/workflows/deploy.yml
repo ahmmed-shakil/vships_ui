@@ -23,15 +23,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Load nvm environment
-        run: |
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          echo "Node: $(node --version)"
-          echo "npm: $(npm --version)"
-          echo "PATH=$PATH" >> $GITHUB_ENV
-          echo "NVM_DIR=$NVM_DIR" >> $GITHUB_ENV
-
       - name: Create .env.local file
         run: |
           echo "NODE_ENV=production" > .env.local
@@ -41,12 +32,6 @@ jobs:
           echo "UAT_EMAIL=${{ secrets.UAT_EMAIL }}" >> .env.local
           echo "UAT_PASSWORD=${{ secrets.UAT_PASSWORD }}" >> .env.local
 
-      - name: Install pnpm (if not installed)
-        run: |
-          if ! command -v pnpm &> /dev/null; then
-            npm install -g pnpm
-          fi
-
       - name: Install dependencies
         run: |
           rm -rf node_modules
@@ -54,12 +39,6 @@ jobs:
 
       - name: Build application
         run: pnpm build
-
-      - name: Install PM2 globally (if not installed)
-        run: |
-          if ! command -v pm2 &> /dev/null; then
-            npm install -g pm2
-          fi
 
       - name: Start application with PM2
         run: |

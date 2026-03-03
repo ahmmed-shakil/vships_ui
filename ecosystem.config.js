@@ -2,9 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'perfomax-client',
-      script: 'npm',
+      script: 'node_modules/.bin/next',
       args: 'start',
-      cwd: './',
+      cwd: '/home/deploy/actions-runner/_work/nura_client/nura_client',
       exec_mode: 'fork',
       instances: 1,
       autorestart: true,
