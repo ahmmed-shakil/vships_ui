@@ -53,21 +53,6 @@ jobs:
       - name: Build application
         run: pnpm build
 
-      - name: Deploy to permanent location
-        run: |
-          DEPLOY_DIR="${{ secrets.DEPLOY_PATH }}"
-
-          echo "Deploying to $DEPLOY_DIR..."
-          mkdir -p $DEPLOY_DIR
-
-          rsync -av --delete \
-            --exclude='.git' \
-            --exclude='.github' \
-            ./ $DEPLOY_DIR/
-
-          echo "Files deployed to $DEPLOY_DIR"
-          ls -la $DEPLOY_DIR/
-
       - name: Install PM2 globally (if not installed)
         run: |
           if ! command -v pm2 &> /dev/null; then
@@ -76,14 +61,11 @@ jobs:
 
       - name: Start application with PM2
         run: |
-          DEPLOY_DIR="${{ secrets.DEPLOY_PATH }}"
-          cd $DEPLOY_DIR
-
           pm2 delete perfomax-client 2>/dev/null || true
           pm2 start ecosystem.config.js
           pm2 save
 
-          echo "Application started from $DEPLOY_DIR on port 4000"
+          echo "Application started on port 4000"
 
       - name: Health check
         run: |
