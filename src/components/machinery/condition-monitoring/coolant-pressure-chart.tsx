@@ -3,6 +3,7 @@
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
 import { coolantPressureData } from '@/data/nura/condition-monitoring-chart-data';
+import cn from '@/utils/class-names';
 import {
   CartesianGrid,
   Line,
@@ -74,10 +75,10 @@ export default function CoolantPressureChart({
   return (
     <PerfomaxCard
       title="Fuel Consumption - ME Port Status"
-      className={className}
-      bodyClassName=""
+      className={cn('flex flex-col', className)}
+      bodyClassName="flex-1"
     >
-      <div className="aspect-[500/230] w-full">
+      <div className="h-full min-h-[250px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={coolantPressureData}
