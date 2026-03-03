@@ -34,14 +34,12 @@ jobs:
 
       - name: Create .env.local file
         run: |
-          cat > .env.local << EOF
-          NODE_ENV=production
-          NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
-          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
-          NEXT_PUBLIC_APP_NAME=${{ secrets.NEXT_PUBLIC_APP_NAME }}
-          UAT_EMAIL=${{ secrets.UAT_EMAIL }}
-          UAT_PASSWORD=${{ secrets.UAT_PASSWORD }}
-          EOF
+          echo "NODE_ENV=production" > .env.local
+          echo "NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}" >> .env.local
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .env.local
+          echo "NEXT_PUBLIC_APP_NAME=${{ secrets.NEXT_PUBLIC_APP_NAME }}" >> .env.local
+          echo "UAT_EMAIL=${{ secrets.UAT_EMAIL }}" >> .env.local
+          echo "UAT_PASSWORD=${{ secrets.UAT_PASSWORD }}" >> .env.local
 
       - name: Install pnpm (if not installed)
         run: |
