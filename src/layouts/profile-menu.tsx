@@ -28,7 +28,7 @@ export default function ProfileMenu({
         >
           <Avatar
             src="/avatar.webp"
-            name="John Doe"
+            name="Demo User"
             className={cn('!h-9 w-9 sm:!h-10 sm:!w-10', avatarClassName)}
           />
           {!!username && (
@@ -85,12 +85,12 @@ function DropdownMenu() {
   return (
     <div className="w-64 text-left rtl:text-right">
       <div className="flex items-center border-b border-gray-300 px-6 pb-5 pt-6">
-        <Avatar src="/avatar.webp" name="Albert Flores" />
+        <Avatar src="/avatar.webp" name="Demo User" />
         <div className="ms-3">
           <Title as="h6" className="font-semibold">
-            Albert Flores
+            Demo User
           </Title>
-          <Text className="text-gray-600">flores@doe.io</Text>
+          <Text className="text-gray-600">demo@perfomax.tech</Text>
         </div>
       </div>
       <div className="grid px-3.5 py-3.5 font-medium text-gray-700">

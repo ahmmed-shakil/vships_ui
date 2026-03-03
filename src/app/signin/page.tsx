@@ -22,16 +22,14 @@ export default function SignIn() {
         </>
       }
       description="By signing in, you will gain access to to the management and monitoring of your vessel."
-      bannerTitle="The simplest way to manage your vessel."
-      bannerDescription="Manage and monitor your vessel with ease."
+      // bannerTitle="The simplest way to manage your vessel."
+      // bannerDescription="Manage and monitor your vessel with ease."
       isSocialLoginActive={false}
       pageImage={
         <div className="relative mx-auto aspect-[4/3.37] w-[400px] xl:w-[520px] 2xl:w-[620px]">
           <Image
-            src={
-              'https://isomorphic-furyroad.s3.amazonaws.com/public/auth/sign-up.webp'
-            }
-            alt="Sign Up Thumbnail"
+            src="/auth/login.png"
+            alt="Sign In"
             fill
             priority
             sizes="(max-width: 768px) 100vw"

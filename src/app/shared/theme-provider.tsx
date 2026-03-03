@@ -1,7 +1,6 @@
 'use client';
 
 import { Provider } from 'jotai';
-import { siteConfig } from '@/config/site.config';
 // import hideRechartsConsoleError from '@/utils/recharts-console-error';
 import { ThemeProvider as NextThemeProvider } from 'next-themes';
 
@@ -11,8 +10,9 @@ export function ThemeProvider({ children }: React.PropsWithChildren<{}>) {
   return (
     <NextThemeProvider
       enableSystem={false}
-      themes={['light', 'dark']}
-      defaultTheme={String(siteConfig.mode)}
+      themes={['dark']}
+      defaultTheme="dark"
+      forcedTheme="dark"
     >
       {children}
     </NextThemeProvider>

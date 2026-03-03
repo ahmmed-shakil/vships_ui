@@ -4,7 +4,7 @@ import {
   PiChartLineUp,
   PiGear,
   PiHammer,
-  PiShoppingCart
+  PiShoppingCart,
 } from 'react-icons/pi';
 
 // Note: do not add href in the label object, it is rendering as label
@@ -34,14 +34,13 @@ export const menuItems = [
     name: 'Machinery',
   },
   {
-    name: 'Condition Monitoring',
-    href: routes.machinery.conditionMonitoring,
-    icon: <PiHammer />,
-  },
-  {
     name: 'Machinery Overview',
     href: routes.machinery.machineryOverview,
     icon: <PiGear />,
   },
+  {
+    name: 'Condition Monitoring',
+    href: routes.machinery.conditionMonitoring,
+    icon: <PiHammer />,
+  },
 ];
-

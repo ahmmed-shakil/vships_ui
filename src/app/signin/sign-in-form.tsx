@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import { PiArrowRightBold } from 'react-icons/pi';
+import toast from 'react-hot-toast';
 import { Button, Input, Password } from 'rizzui';
 
 const initialValues: LoginSchema = {
@@ -18,11 +19,17 @@ export default function SignInForm() {
   //TODO: why we need to reset it here
   const [reset, setReset] = useState({});
 
-  const onSubmit: SubmitHandler<LoginSchema> = (data) => {
-    console.log(data);
-    signIn('credentials', {
+  const onSubmit: SubmitHandler<LoginSchema> = async (data) => {
+    const result = await signIn('credentials', {
       ...data,
+      redirect: false,
     });
+
+    if (result?.error) {
+      toast.error('Wrong email or password!');
+    } else {
+      window.location.href = '/';
+    }
   };
 
   return (
