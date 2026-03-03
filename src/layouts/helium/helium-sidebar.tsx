@@ -3,6 +3,7 @@
 import { siteConfig } from '@/config/site.config';
 import cn from '@/utils/class-names';
 import Image from 'next/image';
+import logoImg from '@public/desktop-logo.png';
 import Link from 'next/link';
 import { HeliumSidebarMenu } from './helium-sidebar-menu';
 
@@ -18,7 +19,7 @@ export default function HeliumSidebar({ className }: { className?: string }) {
         <div className="sticky top-0 z-40 flex justify-center px-6 pb-5 pt-5 2xl:px-8 2xl:pt-6">
           <Link href={'/'} aria-label="Site Logo">
             <Image
-              src="/desktop-logo.png"
+              src={logoImg}
               alt={siteConfig.title}
               width={150}
               height={35}

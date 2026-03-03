@@ -7,6 +7,7 @@ import ProfileMenu from '@/layouts/profile-menu';
 import cn from '@/utils/class-names';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import logoImg from '@public/desktop-logo.png';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { PiBellSimpleRingingFill } from 'react-icons/pi';
@@ -82,13 +83,7 @@ export default function Header() {
           aria-label="Site Logo"
           className="me-4 shrink-0 lg:me-5 xl:hidden"
         >
-          <Image
-            src="/desktop-logo.png"
-            alt="Logo"
-            width={120}
-            height={30}
-            priority
-          />
+          <Image src={logoImg} alt="Logo" width={120} height={30} priority />
         </Link>
         <HeaderBreadcrumb />
       </div>
