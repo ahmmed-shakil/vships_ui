@@ -58,13 +58,13 @@ export default function ParameterScatterChart({
     <PerfomaxCard
       className={className}
       title={
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
           <span className="text-lg font-bold">Scatter</span>
           <Select
             options={opt1Options}
             value={opt1}
             onChange={setOpt1}
-            className="w-28"
+            className="w-24 min-w-0 shrink"
             selectClassName="h-8 text-xs font-semibold"
             dropdownClassName="text-sm"
           />
@@ -73,7 +73,7 @@ export default function ParameterScatterChart({
             options={opt2Options}
             value={opt2}
             onChange={setOpt2}
-            className="w-28"
+            className="w-24 min-w-0 shrink"
             selectClassName="h-8 text-xs font-semibold"
             dropdownClassName="text-sm"
           />
@@ -113,7 +113,7 @@ export default function ParameterScatterChart({
 
         {/* Chart + X-axis */}
         <div className="mt-4 flex flex-1 flex-col">
-          <div className="aspect-[1060/750] w-full">
+          <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart
                 margin={{ top: 5, right: 20, left: -30, bottom: 5 }}

@@ -94,106 +94,133 @@ export default function CoolantPressureChart({
         </div>
       }
     >
-      <div className="h-full min-h-[250px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={coolantPressureData}
-            margin={{ top: 10, right: 30, left: -20, bottom: 20 }}
+      <div className="flex h-full min-h-[250px] w-full">
+        {/* Y-axis label */}
+        <div className="flex flex-col items-center justify-center gap-1 pr-1">
+          <span
+            className="text-[10px] font-medium text-muted-foreground"
+            style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
-            <defs>
-              <linearGradient id="colorTemperature" x1="0" y1="1" x2="0" y2="0">
-                {/* 0% to lowerOffset% -> Below Lower Limit (Red - out of range) */}
-                <stop offset="0%" stopColor={COLORS.outOfRange} />
-                <stop
-                  offset={`${lowerOffset}%`}
-                  stopColor={COLORS.outOfRange}
+            Fuel Consumption
+          </span>
+        </div>
+
+        <div className="flex flex-1 flex-col">
+          <div className="flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={coolantPressureData}
+                margin={{ top: 10, right: 30, left: -15, bottom: 5 }}
+              >
+                <defs>
+                  <linearGradient
+                    id="colorTemperature"
+                    x1="0"
+                    y1="1"
+                    x2="0"
+                    y2="0"
+                  >
+                    {/* 0% to lowerOffset% -> Below Lower Limit (Red - out of range) */}
+                    <stop offset="0%" stopColor={COLORS.outOfRange} />
+                    <stop
+                      offset={`${lowerOffset}%`}
+                      stopColor={COLORS.outOfRange}
+                    />
+
+                    {/* Sudden change at lower limit to Blue for within range */}
+                    <stop
+                      offset={`${lowerOffset}%`}
+                      stopColor={COLORS.withinRange}
+                    />
+                    <stop
+                      offset={`${upperOffset}%`}
+                      stopColor={COLORS.withinRange}
+                    />
+
+                    {/* Sudden change at upper limit to Red (out of range) */}
+                    <stop
+                      offset={`${upperOffset}%`}
+                      stopColor={COLORS.outOfRange}
+                    />
+                    <stop offset="100%" stopColor={COLORS.outOfRange} />
+                  </linearGradient>
+                </defs>
+
+                <CartesianGrid
+                  vertical={false}
+                  stroke={COLORS.grid}
+                  strokeDasharray="3 3"
                 />
 
-                {/* Sudden change at lower limit to Blue for within range */}
-                <stop
-                  offset={`${lowerOffset}%`}
-                  stopColor={COLORS.withinRange}
+                <XAxis
+                  dataKey="date"
+                  tick={<DateTimeTick />}
+                  interval={0}
+                  height={30}
+                  axisLine={{ stroke: '#374151' }}
+                  tickLine={false}
+                  padding={{ left: 10, right: 10 }}
                 />
-                <stop
-                  offset={`${upperOffset}%`}
-                  stopColor={COLORS.withinRange}
+
+                <YAxis
+                  tick={{ fontSize: 10, fill: '#9FA6B5' }}
+                  domain={[domainMin, domainMax]}
+                  tickCount={7}
+                  axisLine={false}
+                  tickLine={false}
                 />
 
-                {/* Sudden change at upper limit to Red (out of range) */}
-                <stop
-                  offset={`${upperOffset}%`}
-                  stopColor={COLORS.outOfRange}
+                <Tooltip content={<CustomTooltip />} />
+
+                {/* Red background bands for out-of-range areas */}
+                <ReferenceArea
+                  y1={upperLimit}
+                  y2={domainMax}
+                  fill="#EF4444"
+                  fillOpacity={0.15}
                 />
-                <stop offset="100%" stopColor={COLORS.outOfRange} />
-              </linearGradient>
-            </defs>
+                <ReferenceArea
+                  y1={domainMin}
+                  y2={lowerLimit}
+                  fill="#EF4444"
+                  fillOpacity={0.15}
+                />
 
-            <CartesianGrid
-              vertical={false}
-              stroke={COLORS.grid}
-              strokeDasharray="3 3"
-            />
+                {/* Reference Dividers for limits */}
+                <ReferenceArea
+                  y1={upperLimit}
+                  y2={upperLimit + 0.02}
+                  className="fill-gray-700 dark:fill-gray-300"
+                  fillOpacity={0.8}
+                />
+                <ReferenceArea
+                  y1={lowerLimit}
+                  y2={lowerLimit + 0.02}
+                  className="fill-gray-700 dark:fill-gray-300"
+                  fillOpacity={0.8}
+                />
 
-            <XAxis
-              dataKey="date"
-              tick={<DateTimeTick />}
-              interval={0}
-              height={40}
-              axisLine={{ stroke: '#374151' }}
-              tickLine={false}
-              padding={{ left: 10, right: 10 }}
-            />
+                {/* Main Temperature Line */}
+                <Line
+                  type="monotone"
+                  dataKey="temperature"
+                  name="Temperature"
+                  stroke="url(#colorTemperature)"
+                  strokeWidth={3}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
 
-            <YAxis
-              tick={{ fontSize: 10, fill: '#9FA6B5' }}
-              domain={[domainMin, domainMax]}
-              tickCount={7}
-              axisLine={false}
-              tickLine={false}
-            />
-
-            <Tooltip content={<CustomTooltip />} />
-
-            {/* Red background bands for out-of-range areas */}
-            <ReferenceArea
-              y1={upperLimit}
-              y2={domainMax}
-              fill="#EF4444"
-              fillOpacity={0.15}
-            />
-            <ReferenceArea
-              y1={domainMin}
-              y2={lowerLimit}
-              fill="#EF4444"
-              fillOpacity={0.15}
-            />
-
-            {/* Reference Dividers for limits */}
-            <ReferenceArea
-              y1={upperLimit}
-              y2={upperLimit + 0.02}
-              className="fill-gray-700 dark:fill-gray-300"
-              fillOpacity={0.8}
-            />
-            <ReferenceArea
-              y1={lowerLimit}
-              y2={lowerLimit + 0.02}
-              className="fill-gray-700 dark:fill-gray-300"
-              fillOpacity={0.8}
-            />
-
-            {/* Main Temperature Line */}
-            <Line
-              type="monotone"
-              dataKey="temperature"
-              name="Temperature"
-              stroke="url(#colorTemperature)"
-              strokeWidth={3}
-              dot={false}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+          {/* X-axis label */}
+          <div className="mt-1 flex items-center justify-center">
+            <span className="text-[10px] font-medium text-muted-foreground">
+              Date / Time
+            </span>
+          </div>
+        </div>
       </div>
     </PerfomaxCard>
   );

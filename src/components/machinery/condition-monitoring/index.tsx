@@ -16,6 +16,7 @@ import DeltaDeviationTrendline from './delta-deviation-trendline';
 import HealthScoreCard from './health-score-card';
 import ParameterScatterChart from './parameter-scatter-chart';
 import ParameterVsPchargeChart from './parameter-vs-pcharge-chart';
+import SfocScatterCard from './sfoc-scatter-card';
 
 // ─── Reusable Dotted Row Component ───────────────────────────────────────────
 function DottedRow({
@@ -49,9 +50,9 @@ export default function ConditionMonitoringLayout() {
   return (
     <>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* ─── Card 1: ME 2 Port ──────────────────────────────────────────────── */}
+        {/* ─── Card 1: Selected Engine ─────────────────────────────────────────── */}
         <PerfomaxCard
-          title="ME 2 Port"
+          title={selectedEngine.label}
           className="flex flex-col"
           bodyClassName="p-5 border-t border-muted/50"
           action={
@@ -89,7 +90,7 @@ export default function ConditionMonitoringLayout() {
         <PerfomaxCard
           title="Basic Information"
           className="flex flex-col"
-          bodyClassName="px-5 border-t-2 py-2"
+          bodyClassName="px-5 border-t border-muted/50 py-2"
           headerClassName="items-start"
           action={
             <div className="flex flex-col items-end gap-2">
@@ -104,7 +105,7 @@ export default function ConditionMonitoringLayout() {
             </div>
           }
         >
-          <div className="flex flex-1 flex-col justify-center gap-1">
+          <div className="flex flex-1 flex-col justify-center gap-1 border-t border-muted/50">
             <DottedRow
               label="Last overhaul"
               value="12 Nov 2025"
@@ -134,36 +135,7 @@ export default function ConditionMonitoringLayout() {
         </PerfomaxCard>
 
         {/* ─── Card 3: SFOC Scatter ───────────────────────────────────────────── */}
-        <PerfomaxCard
-          title="SFOC Scatter"
-          bodyClassName="px-2 border-t border-muted/50"
-          className="flex flex-col"
-          action={
-            <div className="flex flex-col items-end gap-2">
-              <div className="invisible">
-                <HealthScoreHeader score={80} />
-              </div>
-            </div>
-          }
-          headerFooter={
-            <div className="px-5 pb-1 text-sm font-medium">
-              <span className="invisible">Placeholder</span>
-            </div>
-          }
-        >
-          <div className="relative mt-2 flex h-full min-h-[150px] flex-col items-center justify-center">
-            {/* Placeholder cross pattern matching screenshot */}
-            <div className="absolute inset-0 flex items-center justify-center overflow-hidden text-clip border border-blue-100 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-900/10">
-              <svg
-                className="absolute inset-0 h-full w-full stroke-gray-300 stroke-1 dark:stroke-gray-700"
-                preserveAspectRatio="none"
-              >
-                <line x1="0" y1="0" x2="100%" y2="100%" />
-                <line x1="100%" y1="0" x2="0" y2="100%" />
-              </svg>
-            </div>
-          </div>
-        </PerfomaxCard>
+        <SfocScatterCard className="flex flex-col" />
       </div>
 
       {/* ─── Condition Based Analysis Table ─────────────────────────────────── */}
