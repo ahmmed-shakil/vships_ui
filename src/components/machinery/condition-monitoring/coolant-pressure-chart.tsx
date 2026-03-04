@@ -94,7 +94,7 @@ export default function CoolantPressureChart({
         </div>
       }
     >
-      <div className="flex h-full min-h-[250px] w-full">
+      <div className="flex h-full min-h-[250px] w-full pb-2 pl-2 pt-2">
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span

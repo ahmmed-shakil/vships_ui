@@ -51,7 +51,7 @@ export default function ParameterVsPchargeChart({
         </div>
       }
     >
-      <div className="flex h-full">
+      <div className="flex h-full pt-2">
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span
@@ -63,7 +63,7 @@ export default function ParameterVsPchargeChart({
         </div>
 
         <div className="flex flex-1 flex-col">
-          <div className="aspect-[1060/800] w-full">
+          <div className="aspect-[1060/900] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart
                 margin={{ top: 5, right: 10, left: -15, bottom: 5 }}
