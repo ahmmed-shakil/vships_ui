@@ -113,7 +113,7 @@ export default function ParameterScatterChart({
 
         {/* Chart + X-axis */}
         <div className="mt-4 flex flex-1 flex-col">
-          <div className="aspect-[1060/700] w-full">
+          <div className="aspect-[1060/750] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart
                 margin={{ top: 5, right: 20, left: -30, bottom: 5 }}

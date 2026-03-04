@@ -68,7 +68,7 @@ export default function ConditionMonitoringLayout() {
           }
         >
           <div className="flex flex-1 items-center">
-            <div className="flex w-2/5 shrink-0 items-center justify-center px-2">
+            <div className="flex w-2/6 shrink-0 items-center justify-center px-2">
               <Image
                 src="/engine/engine-1.png"
                 alt="Engine Make"
@@ -78,9 +78,9 @@ export default function ConditionMonitoringLayout() {
               />
             </div>
             <div className="flex w-full flex-col justify-center">
-              <DottedRow label="Make" value="MaK 9M25C" className="my-2" />
-              <DottedRow label="Built" value="2016" className="my-2" />
-              <DottedRow label="Rating" value="2500 kW" className="my-2" />
+              <DottedRow label="Make" value="MaK 9M25C" className="my-1" />
+              <DottedRow label="Built" value="2016" className="my-1" />
+              <DottedRow label="Rating" value="2500 kW" className="my-1" />
             </div>
           </div>
         </PerfomaxCard>
@@ -151,7 +151,7 @@ export default function ConditionMonitoringLayout() {
             </div>
           }
         >
-          <div className="relative mt-4 flex h-full min-h-[150px] flex-col items-center justify-center">
+          <div className="relative mt-2 flex h-full min-h-[150px] flex-col items-center justify-center">
             {/* Placeholder cross pattern matching screenshot */}
             <div className="absolute inset-0 flex items-center justify-center overflow-hidden text-clip border border-blue-100 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-900/10">
               <svg
