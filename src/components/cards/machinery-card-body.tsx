@@ -9,9 +9,11 @@ import { routes } from '../../config/routes';
 import { MachineryAlarms, MachineryCardProps } from '../../types';
 import cn from '../../utils/class-names';
 import RpmSparkline from '../machinery-overview/rpm-sparkline';
+import { selectedMachineryEngineAtom } from '@/store/machinery-alarm-atoms';
+import { useSetAtom } from 'jotai';
 
 /* ------------------------------------------------------------------ */
-/*  Alarm severity configuration — colours taken from Figma            */
+/* Alarm severity configuration — colours taken from Figma */
 /* ------------------------------------------------------------------ */
 
 const alarmLevels: {
@@ -26,7 +28,7 @@ const alarmLevels: {
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Severity → colour mapping for tooltip rows                         */
+/* Severity → colour mapping for tooltip rows */
 /* ------------------------------------------------------------------ */
 
 const severityColors: Record<string, { icon: string; bg: string }> = {
@@ -37,7 +39,7 @@ const severityColors: Record<string, { icon: string; bg: string }> = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Dummy alarm tooltip data                                           */
+/* Dummy alarm tooltip data */
 /* ------------------------------------------------------------------ */
 
 const dummyAlarmRows = [
@@ -69,30 +71,12 @@ const dummyAlarmRows = [
     level: 'L 1',
   },
   {
-    severity: 'warning',
-    date: '01.05.25',
-    time: '15:22:18',
-    description: 'Coolant level below minimum',
-    value: '3.2',
-    unit: 'L',
-    level: 'L 1',
-  },
-  {
     severity: 'notice',
     date: '01.05.25',
     time: '19:35:42',
     description: 'Coolant temp deviation cyl 5',
     value: '88.3',
     unit: '°C',
-    level: 'L 2',
-  },
-  {
-    severity: 'notice',
-    date: '01.05.25',
-    time: '14:10:33',
-    description: 'Air filter differential pressure',
-    value: '45',
-    unit: 'mbar',
     level: 'L 2',
   },
   {
@@ -113,43 +97,20 @@ const dummyAlarmRows = [
     unit: '--',
     level: 'L --',
   },
-  {
-    severity: 'info',
-    date: '01.05.25',
-    time: '13:45:22',
-    description: 'Engine hours milestone reached',
-    value: '5000',
-    unit: 'hrs',
-    level: 'L --',
-  },
-  {
-    severity: 'info',
-    date: '01.05.25',
-    time: '11:20:05',
-    description: 'System diagnostics completed',
-    value: '--',
-    unit: '--',
-    level: 'L --',
-  },
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Alarm Tooltip Content (filtered by severity)                       */
+/* Alarm Tooltip Content (filtered by severity) */
 /* ------------------------------------------------------------------ */
 
 function AlarmTooltipContent({
   severity,
-  count,
 }: {
   severity: keyof MachineryAlarms;
-  count: number;
 }) {
-  // Filter by severity and take only as many as the count
-  const filtered = dummyAlarmRows
-    .filter((r) => r.severity === severity)
-    .slice(0, count);
+  const filtered = dummyAlarmRows.filter((r) => r.severity === severity);
 
-  if (count === 0 || filtered.length === 0) {
+  if (filtered.length === 0) {
     return (
       <div className="rounded-lg border border-muted bg-gray-0 px-4 py-3 shadow-xl dark:bg-gray-100">
         <Text className="text-xs text-muted-foreground">
@@ -186,7 +147,6 @@ function AlarmTooltipContent({
                 <td className="py-2 pr-3 font-medium">{row.description}</td>
                 <td className="py-2 pr-2 text-right">{row.value}</td>
                 <td className="py-2 pr-2">{row.unit}</td>
-                {/* <td className="py-2">{row.level}</td> */}
               </tr>
             );
           })}
@@ -197,15 +157,23 @@ function AlarmTooltipContent({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Component                                                          */
+/* Component */
 /* ------------------------------------------------------------------ */
+
+interface MachineryCardBodyProps {
+  data: MachineryCardProps;
+  /** Engine option to set when clicking "View All" */
+  engineOption?: { label: string; value: string };
+}
 
 export default function MachineryCardBody({
   data,
-}: {
-  data: MachineryCardProps;
-}) {
+  engineOption,
+}: MachineryCardBodyProps) {
   const totalAlarms = Object.values(data.alarms).reduce((a, b) => a + b, 0);
+
+  // Atom setter for engine selection
+  const setSelectedEngine = useSetAtom(selectedMachineryEngineAtom);
 
   // Which severity badge is currently hovered (null = none, tooltip hidden)
   const [hoveredSeverity, setHoveredSeverity] = useState<
@@ -292,6 +260,13 @@ export default function MachineryCardBody({
     scheduleHide();
   };
 
+  // Handle "View All" click - set the engine before navigation
+  const handleViewAllClick = () => {
+    if (engineOption) {
+      setSelectedEngine(engineOption);
+    }
+  };
+
   return (
     <>
       {/* ── Alarms section ───────────────────────────────────────── */}
@@ -302,6 +277,7 @@ export default function MachineryCardBody({
 
           <Link
             href={routes.machinery.alarmOverview}
+            onClick={handleViewAllClick}
             className="flex items-center gap-1 text-xs font-bold hover:opacity-80"
             style={{ color: '#2785E0' }}
           >
@@ -361,10 +337,7 @@ export default function MachineryCardBody({
             onMouseEnter={handleTooltipEnter}
             onMouseLeave={handleTooltipLeave}
           >
-            <AlarmTooltipContent
-              severity={hoveredSeverity}
-              count={data.alarms[hoveredSeverity]}
-            />
+            <AlarmTooltipContent severity={hoveredSeverity} />
           </div>,
           document.body
         )}

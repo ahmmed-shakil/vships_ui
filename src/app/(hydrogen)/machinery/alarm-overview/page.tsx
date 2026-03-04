@@ -2,7 +2,7 @@
 
 import AlarmTable from '@/components/alarm-monitor/alarm-table';
 import { vesselAlarmData, type AlarmEntry } from '@/data/nura/alarm-data';
-import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
+import { selectedMachineryShipAtom, selectedMachineryEngineAtom } from '@/store/machinery-alarm-atoms';
 import { useAtomValue } from 'jotai';
 import { useMemo } from 'react';
 import { Box } from 'rizzui/box';
@@ -63,8 +63,9 @@ function getAlarmSeverityType(
 }
 
 export default function AlarmOverviewPage() {
-  // Get selected ship from global header dropdown
-  const selectedShip = useAtomValue(selectedShipAtom);
+  // Get selected ship and engine from global header dropdowns
+  const selectedShip = useAtomValue(selectedMachineryShipAtom);
+  const selectedEngine = useAtomValue(selectedMachineryEngineAtom);
 
   // Get alarm data for the selected vessel
   const alarms = useMemo(
@@ -90,6 +91,14 @@ export default function AlarmOverviewPage() {
       resolved: resolvedCount,
     };
   }, [alarms]);
+
+  // Build title with engine filter
+  const tableTitle = useMemo(() => {
+    const engineLabel = selectedEngine.value === 'all' 
+      ? '' 
+      : ` — ${selectedEngine.label}`;
+    return `Alarms — ${selectedShip.label}${engineLabel}`;
+  }, [selectedShip.label, selectedEngine]);
 
   return (
     <Box className="pt-5 @container/pd">
@@ -140,7 +149,7 @@ export default function AlarmOverviewPage() {
       </div>
 
       {/* Alarm Table */}
-      <AlarmTable data={alarms} title={`Alarms — ${selectedShip.label}`} />
+      <AlarmTable data={alarms} title={tableTitle} />
     </Box>
   );
 }

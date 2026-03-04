@@ -5,10 +5,11 @@ import MachineryCardBody from '@/components/cards/machinery-card-body';
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import StatusGauge from '@/components/machinery-overview/status-gauge';
 import { vesselGensetData } from '@/data/nura/engine-data';
-import { Ship, shipData } from '@/data/nura/ships';
+import { engineData } from '@/data/nura/ships';
+import { selectedMachineryShipAtom } from '@/store/machinery-alarm-atoms';
 import { MachineryCardProps } from '@/types';
 import { getHealthColor } from '@/utils/get-health-color';
-import { useState } from 'react';
+import { useAtomValue } from 'jotai';
 import { Box } from 'rizzui/box';
 
 // Unique dummy data for each metric type
@@ -225,6 +226,13 @@ const defaultMetrics = [
   },
 ];
 
+// Map card titles to engine data
+const cardToEngineMap: Record<string, typeof engineData[0]> = {
+  'Engine 1': engineData[1], // ME Port
+  'Engine 2': engineData[2], // ME Stbd
+  'Engine 3': engineData[3], // ME Center
+};
+
 const machineryData: MachineryCardProps[] = [
   {
     id: 1,
@@ -293,7 +301,7 @@ const machineryData: MachineryCardProps[] = [
 ];
 
 export default function MachineryOverviewPage() {
-  const [selectedShip, setSelectedShip] = useState<Ship>(shipData[0]);
+  const selectedShip = useAtomValue(selectedMachineryShipAtom);
 
   // Lookup engine data for the selected vessel
   const vesselId = selectedShip.id;
@@ -302,17 +310,22 @@ export default function MachineryOverviewPage() {
   return (
     <Box className="pt-5 @container/pd">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {machineryData.map((item) => (
-          <PerfomaxCard
-            key={item.id}
-            title={item.title}
-            accentColor={getHealthColor(item.healthScore)}
-            headerRight={<StatusGauge status={item.status} />}
-            action={<HealthScoreHeader score={item.healthScore} />}
-          >
-            <MachineryCardBody data={item} />
-          </PerfomaxCard>
-        ))}
+        {machineryData.map((item) => {
+          // Get the engine option for this card (or "All Engine" for non-engine cards)
+          const engineOption = cardToEngineMap[item.title] || engineData[0];
+
+          return (
+            <PerfomaxCard
+              key={item.id}
+              title={item.title}
+              accentColor={getHealthColor(item.healthScore)}
+              headerRight={<StatusGauge status={item.status} />}
+              action={<HealthScoreHeader score={item.healthScore} />}
+            >
+              <MachineryCardBody data={item} engineOption={engineOption} />
+            </PerfomaxCard>
+          );
+        })}
       </div>
     </Box>
   );

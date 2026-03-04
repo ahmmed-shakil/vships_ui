@@ -1,12 +1,16 @@
 'use client';
 
-import { shipData, type Ship } from '@/data/nura/ships';
-import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
+import { shipData, engineData, type Ship } from '@/data/nura/ships';
+import {
+  selectedMachineryShipAtom,
+  selectedMachineryEngineAtom,
+} from '@/store/machinery-alarm-atoms';
 import { useAtom } from 'jotai';
 import { Select } from 'rizzui/select';
 
 export default function AlarmOverviewHeaderSelectors() {
-  const [selectedShip, setSelectedShip] = useAtom(selectedShipAtom);
+  const [selectedShip, setSelectedShip] = useAtom(selectedMachineryShipAtom);
+  const [selectedEngine, setSelectedEngine] = useAtom(selectedMachineryEngineAtom);
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -18,6 +22,16 @@ export default function AlarmOverviewHeaderSelectors() {
         selectClassName="h-9 text-sm"
         dropdownClassName="text-gray-900"
         placeholder="Select Vessel"
+      />
+
+      <Select
+        options={engineData}
+        value={selectedEngine}
+        onChange={(v) => setSelectedEngine(v)}
+        className="w-36"
+        selectClassName="h-9 text-sm"
+        dropdownClassName="text-gray-900"
+        placeholder="Select Engine"
       />
     </div>
   );

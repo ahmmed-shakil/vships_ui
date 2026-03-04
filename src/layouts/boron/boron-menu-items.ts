@@ -1,10 +1,10 @@
 import { routes } from '@/config/routes';
 import {
-    PiBellSimpleRingingDuotone,
-    PiChartLineUpDuotone,
-    PiGearDuotone,
-    PiHammerDuotone,
-    PiShoppingCartDuotone,
+  PiBellSimpleRingingDuotone,
+  PiChartLineUpDuotone,
+  PiGearDuotone,
+  PiHammerDuotone,
+  PiShoppingCartDuotone,
 } from 'react-icons/pi';
 
 export const menuItems = [
@@ -39,7 +39,7 @@ export const menuItems = [
     icon: PiHammerDuotone,
   },
   {
-    name: 'Machinery Overview',
+    name: 'Machinery Overview 2',
     href: routes.machinery.machineryOverview,
     icon: PiGearDuotone,
   },

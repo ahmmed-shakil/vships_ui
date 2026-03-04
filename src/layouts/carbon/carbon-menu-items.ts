@@ -1,12 +1,12 @@
 import { routes } from '@/config/routes';
 import { atom } from 'jotai';
 import {
-    PiBellSimpleRinging,
-    PiBrowser,
-    PiChartLineUp,
-    PiGear,
-    PiHammer,
-    PiShoppingCart,
+  PiBellSimpleRinging,
+  PiBrowser,
+  PiChartLineUp,
+  PiGear,
+  PiHammer,
+  PiShoppingCart,
 } from 'react-icons/pi';
 
 export interface SubMenuItemType {
@@ -69,7 +69,7 @@ export const carbonMenuItems: MenuItemsType[] = [
         icon: PiHammer,
       },
       {
-        name: 'Machinery Overview',
+        name: 'Machinery Overview 2',
         href: routes.machinery.machineryOverview,
         icon: PiGear,
       },

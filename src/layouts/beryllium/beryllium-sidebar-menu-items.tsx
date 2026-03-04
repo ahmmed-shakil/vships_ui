@@ -41,7 +41,7 @@ export const berylliumSidebarMenuItems = [
     icon: <PiHammer />,
   },
   {
-    name: 'Machinery Overview',
+    name: 'Machinery Overview 2',
     href: routes.machinery.machineryOverview,
     icon: <PiGear />,
   },

@@ -43,4 +43,9 @@ export const menuItems = [
     href: routes.machinery.conditionMonitoring,
     icon: <PiHammer />,
   },
+  // {
+  //   name: 'Alarm Monitoring',
+  //   href: routes.machinery.alarmOverview,
+  //   icon: <PiHammer />,
+  // },
 ];
