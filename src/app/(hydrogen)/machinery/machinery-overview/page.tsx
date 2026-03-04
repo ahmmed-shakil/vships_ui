@@ -4,12 +4,19 @@ import HealthScoreHeader from '@/components/cards/health-score-header';
 import MachineryCardBody from '@/components/cards/machinery-card-body';
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import StatusGauge from '@/components/machinery-overview/status-gauge';
+import { routes } from '@/config/routes';
+import { getActiveAlarmCounts } from '@/data/nura/alarm-data';
 import { vesselGensetData } from '@/data/nura/engine-data';
-import { engineData } from '@/data/nura/ships';
-import { selectedMachineryShipAtom } from '@/store/machinery-alarm-atoms';
+import { engineData, Ship, shipData } from '@/data/nura/ships';
+import {
+  selectedEngineAtom,
+  selectedShipAtom,
+} from '@/store/condition-monitoring-atoms';
 import { MachineryCardProps } from '@/types';
 import { getHealthColor } from '@/utils/get-health-color';
-import { useAtomValue } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
+import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 import { Box } from 'rizzui/box';
 
 // Unique dummy data for each metric type
@@ -226,60 +233,55 @@ const defaultMetrics = [
   },
 ];
 
-// Map card titles to engine data
-const cardToEngineMap: Record<string, typeof engineData[0]> = {
-  'Engine 1': engineData[1], // ME Port
-  'Engine 2': engineData[2], // ME Stbd
-  'Engine 3': engineData[3], // ME Center
-};
-
-const machineryData: MachineryCardProps[] = [
+const machineryData: (Omit<MachineryCardProps, 'alarms'> & {
+  engineValue?: string;
+})[] = [
   {
     id: 1,
-    title: 'Engine 1',
+    title: 'ME Port',
+    engineValue: 'me1',
     healthScore: 80,
     status: 'running',
-    alarms: { info: 4, notice: 0, warning: 1, critical: 1 },
     metrics: defaultMetrics,
   },
   {
     id: 2,
-    title: 'Engine 2',
+    title: 'ME Stbd',
+    engineValue: 'me2',
     healthScore: 98,
     status: 'running',
-    alarms: { info: 4, notice: 1, warning: 2, critical: 0 },
     metrics: defaultMetrics,
   },
   {
     id: 3,
-    title: 'Engine 3',
+    title: 'ME Center',
+    engineValue: 'me3',
     healthScore: 55,
     status: 'standby',
-    alarms: { info: 3, notice: 0, warning: 0, critical: 0 },
     metrics: defaultMetrics,
   },
   {
     id: 4,
     title: 'Winch',
+    engineValue: 'winch',
     healthScore: 83,
     status: 'running',
-    alarms: { info: 2, notice: 0, warning: 0, critical: 0 },
     metrics: defaultMetrics,
   },
   {
     id: 5,
     title: 'Gen Set 1',
+    engineValue: 'ae1',
     healthScore: 80,
     status: 'running',
-    alarms: { info: 2, notice: 0, warning: 0, critical: 0 },
     metrics: defaultMetrics,
   },
   {
     id: 6,
     title: 'Gen Set 2',
+    engineValue: 'ae2',
     healthScore: 80,
     status: 'running',
-    alarms: { info: 2, notice: 0, warning: 0, critical: 0 },
     metrics: defaultMetrics,
   },
   {
@@ -287,46 +289,85 @@ const machineryData: MachineryCardProps[] = [
     title: 'Gen Set 3',
     healthScore: 98,
     status: 'off',
-    alarms: { info: 1, notice: 0, warning: 0, critical: 0 },
     metrics: defaultMetrics,
   },
   {
     id: 8,
     title: 'Crane',
+    engineValue: 'crane',
     healthScore: 98,
     status: 'off',
-    alarms: { info: 1, notice: 0, warning: 0, critical: 0 },
     metrics: defaultMetrics,
   },
 ];
 
 export default function MachineryOverviewPage() {
-  const selectedShip = useAtomValue(selectedMachineryShipAtom);
+  const [selectedShip] = useAtom(selectedShipAtom);
+  const setSelectedEngine = useSetAtom(selectedEngineAtom);
+  const router = useRouter();
 
   // Lookup engine data for the selected vessel
   const vesselId = selectedShip.id;
   const gensets = vesselGensetData[vesselId] ?? [];
 
+  // Merge real alarm counts from vesselAlarmData into each card
+  const cardsWithAlarms = useMemo(
+    () =>
+      machineryData.map((item) => ({
+        ...item,
+        alarms: getActiveAlarmCounts(vesselId, item.engineValue),
+      })),
+    [vesselId]
+  );
+
+  // Group cards into rows
+  const engines = cardsWithAlarms.filter((item) => item.title.startsWith('ME'));
+  const gensetCards = cardsWithAlarms.filter((item) =>
+    item.title.startsWith('Gen Set')
+  );
+  const rest = cardsWithAlarms.filter(
+    (item) => !item.title.startsWith('ME') && !item.title.startsWith('Gen Set')
+  );
+
+  const handleCardClick = (item: (typeof cardsWithAlarms)[number]) => {
+    // Find matching engine option; fallback to 'All Engine'
+    const match = engineData.find((e) => e.value === item.engineValue);
+    setSelectedEngine(match ?? engineData[0]);
+    router.push(routes.machinery.conditionMonitoring);
+  };
+
+  const renderCard = (item: (typeof cardsWithAlarms)[number]) => (
+    <PerfomaxCard
+      key={item.id}
+      title={item.title}
+      accentColor={getHealthColor(item.healthScore)}
+      headerRight={<StatusGauge status={item.status} />}
+      action={<HealthScoreHeader score={item.healthScore} />}
+      onClick={() => handleCardClick(item)}
+      className="cursor-pointer transition-opacity hover:opacity-90"
+    >
+      <MachineryCardBody data={item} engineValue={item.engineValue} />
+    </PerfomaxCard>
+  );
+
   return (
     <Box className="pt-5 @container/pd">
+      {/* Row 1: Engines */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {machineryData.map((item) => {
-          // Get the engine option for this card (or "All Engine" for non-engine cards)
-          const engineOption = cardToEngineMap[item.title] || engineData[0];
-
-          return (
-            <PerfomaxCard
-              key={item.id}
-              title={item.title}
-              accentColor={getHealthColor(item.healthScore)}
-              headerRight={<StatusGauge status={item.status} />}
-              action={<HealthScoreHeader score={item.healthScore} />}
-            >
-              <MachineryCardBody data={item} engineOption={engineOption} />
-            </PerfomaxCard>
-          );
-        })}
+        {engines.map(renderCard)}
       </div>
+
+      {/* Row 2: Gen Sets */}
+      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {gensetCards.map(renderCard)}
+      </div>
+
+      {/* Row 3: Rest */}
+      {rest.length > 0 && (
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {rest.map(renderCard)}
+        </div>
+      )}
     </Box>
   );
 }

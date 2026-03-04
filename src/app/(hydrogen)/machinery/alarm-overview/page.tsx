@@ -1,8 +1,15 @@
 'use client';
 
 import AlarmTable from '@/components/alarm-monitor/alarm-table';
-import { vesselAlarmData, type AlarmEntry } from '@/data/nura/alarm-data';
-import { selectedMachineryShipAtom, selectedMachineryEngineAtom } from '@/store/machinery-alarm-atoms';
+import {
+  engineValueToAlarmEngine,
+  vesselAlarmData,
+  type AlarmEntry,
+} from '@/data/nura/alarm-data';
+import {
+  selectedEngineAtom,
+  selectedShipAtom,
+} from '@/store/condition-monitoring-atoms';
 import { useAtomValue } from 'jotai';
 import { useMemo } from 'react';
 import { Box } from 'rizzui/box';
@@ -48,37 +55,28 @@ function AlarmSummaryCard({
   );
 }
 
-// Map alarm entries to severity types based on alarm_text patterns
-function getAlarmSeverityType(
-  alarm: AlarmEntry
-): 'critical' | 'warning' | 'notice' | 'info' {
-  // Critical: High severity (1) + active status
-  if (alarm.severity === 1 && alarm.status === 'active') return 'critical';
-  // Warning: High severity (1) but resolved, or certain alarm types
-  if (alarm.severity === 1 && alarm.status === 'resolved') return 'warning';
-  // Notice: Normal severity (2) + active
-  if (alarm.severity === 2 && alarm.status === 'active') return 'notice';
-  // Info: Normal severity (2) + resolved
-  return 'info';
-}
-
 export default function AlarmOverviewPage() {
-  // Get selected ship and engine from global header dropdowns
-  const selectedShip = useAtomValue(selectedMachineryShipAtom);
-  const selectedEngine = useAtomValue(selectedMachineryEngineAtom);
+  // Get selected ship & engine from global header dropdown
+  const selectedShip = useAtomValue(selectedShipAtom);
+  const selectedEngine = useAtomValue(selectedEngineAtom);
 
-  // Get alarm data for the selected vessel
-  const alarms = useMemo(
-    () => vesselAlarmData[selectedShip.id] ?? [],
-    [selectedShip.id]
-  );
+  // Get alarm data for the selected vessel, optionally filtered by engine
+  const alarms = useMemo(() => {
+    const all = vesselAlarmData[selectedShip.id] ?? [];
+    if (selectedEngine.value === 'all') return all;
+    const engineName = engineValueToAlarmEngine[selectedEngine.value];
+    if (!engineName) return all;
+    return all.filter((a) => a.engine === engineName);
+  }, [selectedShip.id, selectedEngine.value]);
 
-  // Calculate alarm counts by severity type (matching machinery-overview)
+  // Calculate alarm counts by category (matching machinery-overview)
   const alarmStats = useMemo(() => {
     const counts = { critical: 0, warning: 0, notice: 0, info: 0 };
+    // Category counts only for active alarms (matching machinery-overview cards)
     alarms.forEach((alarm) => {
-      const type = getAlarmSeverityType(alarm);
-      counts[type]++;
+      if (alarm.status === 'active') {
+        counts[alarm.category]++;
+      }
     });
 
     const activeCount = alarms.filter((a) => a.status === 'active').length;
@@ -91,14 +89,6 @@ export default function AlarmOverviewPage() {
       resolved: resolvedCount,
     };
   }, [alarms]);
-
-  // Build title with engine filter
-  const tableTitle = useMemo(() => {
-    const engineLabel = selectedEngine.value === 'all' 
-      ? '' 
-      : ` — ${selectedEngine.label}`;
-    return `Alarms — ${selectedShip.label}${engineLabel}`;
-  }, [selectedShip.label, selectedEngine]);
 
   return (
     <Box className="pt-5 @container/pd">
@@ -149,7 +139,10 @@ export default function AlarmOverviewPage() {
       </div>
 
       {/* Alarm Table */}
-      <AlarmTable data={alarms} title={tableTitle} />
+      <AlarmTable
+        data={alarms}
+        title={`Alarms — ${selectedShip.label}${selectedEngine.value !== 'all' ? ` — ${selectedEngine.label}` : ''}`}
+      />
     </Box>
   );
 }

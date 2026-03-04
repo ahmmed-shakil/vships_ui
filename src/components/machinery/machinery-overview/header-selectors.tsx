@@ -1,9 +1,14 @@
 'use client';
 
 import { shipData, type Ship } from '@/data/nura/ships';
-import { selectedMachineryShipAtom } from '@/store/machinery-alarm-atoms';
+import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
 import { useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import { Select } from 'rizzui/select';
+
+/* ------------------------------------------------------------------ */
+/*  Shared atoms so the page can read the selected values              */
+/* ------------------------------------------------------------------ */
 
 const timeOptions = [
   { label: 'Last 24h', value: '24h' },
@@ -12,12 +17,22 @@ const timeOptions = [
   { label: 'Last 90 days', value: '90d' },
 ];
 
+export const overviewShipAtom = atomWithStorage<Ship>(
+  'overviewShip',
+  shipData[0]
+);
+export const overviewTimeAtom = atomWithStorage(
+  'overviewTime',
+  timeOptions[1] // default: "Last 7 days"
+);
+
 /* ------------------------------------------------------------------ */
-/* Component */
+/*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
 export default function MachineryOverviewHeaderSelectors() {
-  const [selectedShip, setSelectedShip] = useAtom(selectedMachineryShipAtom);
+  const [selectedShip, setSelectedShip] = useAtom(selectedShipAtom);
+  const [selectedTime, setSelectedTime] = useAtom(overviewTimeAtom);
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -32,8 +47,8 @@ export default function MachineryOverviewHeaderSelectors() {
 
       <Select
         options={timeOptions}
-        value={timeOptions[1]}
-        onChange={() => {}}
+        value={selectedTime}
+        onChange={setSelectedTime}
         className="w-40"
         selectClassName="h-9 text-sm"
         dropdownClassName="text-gray-900"
