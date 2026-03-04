@@ -105,7 +105,7 @@ export default function ConditionMonitoringLayout() {
             </div>
           }
         >
-          <div className="flex flex-1 flex-col justify-center gap-1 border-t border-muted/50">
+          <div className="flex flex-1 flex-col justify-center gap-1">
             <DottedRow
               label="Last overhaul"
               value="12 Nov 2025"
