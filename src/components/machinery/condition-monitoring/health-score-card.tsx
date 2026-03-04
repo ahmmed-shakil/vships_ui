@@ -46,7 +46,9 @@ function StatCard({
 }) {
   return (
     <div className={cn('rounded-lg bg-background/90 px-3 py-5', className)}>
-      <h4 className="text-center text-xs font-bold text-foreground">{title}</h4>
+      <h4 className="text-center text-base font-bold text-foreground">
+        {title}
+      </h4>
       <div className="mt-6 flex flex-col gap-6">
         {rows.map((row, i) => (
           <div key={i} className="flex items-center justify-between">
@@ -75,13 +77,13 @@ export default function HealthScoreCard({ className }: { className?: string }) {
       {/* ─── Header: Health + Delta ─────────────────────────────── */}
       <div className="mb-5 flex items-baseline gap-10">
         <div className="flex items-baseline gap-2">
-          <span className="text-base font-semibold text-muted-foreground">
+          <span className="text-[20px] font-bold leading-7 text-foreground">
             Score
           </span>
           <span className="text-4xl font-bold text-primary">80%</span>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className="text-base font-semibold text-muted-foreground">
+          <span className="text-[20px] font-bold leading-7 text-foreground">
             Delta
           </span>
           <span className="text-4xl font-bold text-foreground">5%</span>
