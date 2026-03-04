@@ -25,6 +25,11 @@ const MachineryOverviewHeaderSelectors = dynamic(
   { ssr: false }
 );
 
+const AlarmOverviewHeaderSelectors = dynamic(
+  () => import('@/components/machinery/alarm-overview/header-selectors'),
+  { ssr: false }
+);
+
 function HeaderMenuRight() {
   return (
     <div className="ms-auto grid shrink-0 grid-cols-2 items-center gap-2 text-gray-700 xs:gap-3 xl:gap-4">
@@ -58,6 +63,7 @@ export default function Header() {
   const isMachineryOverview = pathname.startsWith(
     '/machinery/machinery-overview'
   );
+  const isAlarmOverview = pathname.startsWith('/machinery/alarm-overview');
 
   return (
     <header
@@ -68,7 +74,7 @@ export default function Header() {
       <div
         className={cn(
           'flex items-center',
-          isConditionMonitoring || isMachineryOverview
+          isConditionMonitoring || isMachineryOverview || isAlarmOverview
             ? 'w-auto shrink-0'
             : 'w-full max-w-2xl'
         )}
@@ -97,6 +103,12 @@ export default function Header() {
       {isMachineryOverview && (
         <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
           <MachineryOverviewHeaderSelectors />
+        </div>
+      )}
+
+      {isAlarmOverview && (
+        <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
+          <AlarmOverviewHeaderSelectors />
         </div>
       )}
 

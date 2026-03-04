@@ -1,16 +1,14 @@
 'use client';
 
-import AlarmTable from '@/components/alarm-monitor/alarm-table';
 import HealthScoreHeader from '@/components/cards/health-score-header';
 import MachineryCardBody from '@/components/cards/machinery-card-body';
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import StatusGauge from '@/components/machinery-overview/status-gauge';
-import { vesselAlarmData } from '@/data/nura/alarm-data';
 import { vesselGensetData } from '@/data/nura/engine-data';
 import { Ship, shipData } from '@/data/nura/ships';
 import { MachineryCardProps } from '@/types';
 import { getHealthColor } from '@/utils/get-health-color';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Box } from 'rizzui/box';
 
 // Unique dummy data for each metric type
@@ -297,38 +295,25 @@ const machineryData: MachineryCardProps[] = [
 export default function MachineryOverviewPage() {
   const [selectedShip, setSelectedShip] = useState<Ship>(shipData[0]);
 
-  // Get alarm data for the selected vessel
-  const alarms = useMemo(
-    () => vesselAlarmData[selectedShip.id] ?? [],
-    [selectedShip.id]
-  );
-
   // Lookup engine data for the selected vessel
   const vesselId = selectedShip.id;
   const gensets = vesselGensetData[vesselId] ?? [];
 
   return (
-    <>
-      <Box className="pt-5 @container/pd">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {machineryData.map((item) => (
-            <PerfomaxCard
-              key={item.id}
-              title={item.title}
-              accentColor={getHealthColor(item.healthScore)}
-              headerRight={<StatusGauge status={item.status} />}
-              action={<HealthScoreHeader score={item.healthScore} />}
-            >
-              <MachineryCardBody data={item} />
-            </PerfomaxCard>
-          ))}
-        </div>
-      </Box>
-      <AlarmTable
-        data={alarms}
-        title={`Alarms — ${selectedShip.label}`}
-        className="mt-10"
-      />
-    </>
+    <Box className="pt-5 @container/pd">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {machineryData.map((item) => (
+          <PerfomaxCard
+            key={item.id}
+            title={item.title}
+            accentColor={getHealthColor(item.healthScore)}
+            headerRight={<StatusGauge status={item.status} />}
+            action={<HealthScoreHeader score={item.healthScore} />}
+          >
+            <MachineryCardBody data={item} />
+          </PerfomaxCard>
+        ))}
+      </div>
+    </Box>
   );
 }

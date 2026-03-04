@@ -27,7 +27,7 @@ export default function ProfileMenu({
           )}
         >
           <Avatar
-            src="/avatar.webp"
+            src="/user.jpg"
             name="Demo User"
             className={cn('!h-9 w-9 sm:!h-10 sm:!w-10', avatarClassName)}
           />
@@ -85,7 +85,7 @@ function DropdownMenu() {
   return (
     <div className="w-64 text-left rtl:text-right">
       <div className="flex items-center border-b border-gray-300 px-6 pb-5 pt-6">
-        <Avatar src="/avatar.webp" name="Demo User" />
+        <Avatar src="/user.jpg" name="Demo User" />
         <div className="ms-3">
           <Title as="h6" className="font-semibold">
             Demo User

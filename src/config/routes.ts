@@ -10,6 +10,7 @@ export const routes = {
   machinery: {
     conditionMonitoring: '/machinery/condition-monitoring',
     machineryOverview: '/machinery/machinery-overview',
+    alarmOverview: '/machinery/alarm-overview',
     systemMonitoring: '/machinery/system-monitoring',
     alarms: '/machinery/alarms',
   },
