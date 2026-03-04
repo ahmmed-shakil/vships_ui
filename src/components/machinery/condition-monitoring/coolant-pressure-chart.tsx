@@ -32,10 +32,8 @@ function DateTimeTick({ x, y, payload }: any) {
 
 // Color constants matching the screenshot but optimized for dark theme
 const COLORS = {
-  normalLine: '#FFFFFF', // White line for normal range
-  aboveLimit: '#FF4444', // Red for >= upper limit
-  belowLimit: '#67B7F4', // Light blue for <= lower limit
-  upperLimitLine: '#111827', // Dark divider or dashed line
+  withinRange: '#3B82F6', // Blue for within limits (0.5 to upper)
+  outOfRange: '#EF4444', // Red for outside limits
   grid: 'rgba(75, 85, 99, 0.2)', // Subtle grid
 };
 
@@ -74,9 +72,27 @@ export default function CoolantPressureChart({
 
   return (
     <PerfomaxCard
-      title="Fuel Consumption - ME Port Status"
+      title="Fuel Consumption"
       className={cn('flex flex-col', className)}
       bodyClassName="flex-1"
+      action={
+        <div className="flex items-center gap-4 text-xs">
+          <span className="flex items-center gap-1.5">
+            <span
+              className="inline-block h-0.5 w-4"
+              style={{ backgroundColor: '#3B82F6' }}
+            />
+            Within Range
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span
+              className="inline-block h-0.5 w-4"
+              style={{ backgroundColor: '#EF4444' }}
+            />
+            Out of Range
+          </span>
+        </div>
+      }
     >
       <div className="h-full min-h-[250px] w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -86,57 +102,31 @@ export default function CoolantPressureChart({
           >
             <defs>
               <linearGradient id="colorTemperature" x1="0" y1="1" x2="0" y2="0">
-                {/* 0% to lowerOffset% -> Below Lower Limit (Blue) */}
-                <stop offset="0%" stopColor={COLORS.belowLimit} />
+                {/* 0% to lowerOffset% -> Below Lower Limit (Red - out of range) */}
+                <stop offset="0%" stopColor={COLORS.outOfRange} />
                 <stop
                   offset={`${lowerOffset}%`}
-                  stopColor={COLORS.belowLimit}
+                  stopColor={COLORS.outOfRange}
                 />
 
-                {/* Sudden change at lower limit to White for normal range */}
+                {/* Sudden change at lower limit to Blue for within range */}
                 <stop
                   offset={`${lowerOffset}%`}
-                  stopColor={COLORS.normalLine}
+                  stopColor={COLORS.withinRange}
                 />
                 <stop
                   offset={`${upperOffset}%`}
-                  stopColor={COLORS.normalLine}
+                  stopColor={COLORS.withinRange}
                 />
 
-                {/* Sudden change at upper limit to Red */}
+                {/* Sudden change at upper limit to Red (out of range) */}
                 <stop
                   offset={`${upperOffset}%`}
-                  stopColor={COLORS.aboveLimit}
+                  stopColor={COLORS.outOfRange}
                 />
-                <stop offset="100%" stopColor={COLORS.aboveLimit} />
+                <stop offset="100%" stopColor={COLORS.outOfRange} />
               </linearGradient>
             </defs>
-
-            {/* Background color bands using ReferenceArea */}
-            {/* Top Warning band (Red) */}
-            <ReferenceArea
-              y1={upperLimit}
-              y2={domainMax}
-              fill={COLORS.aboveLimit}
-              fillOpacity={0.05}
-              ifOverflow="extendDomain"
-            />
-            {/* Middle Normal band (Green/Transparent) */}
-            <ReferenceArea
-              y1={lowerLimit}
-              y2={upperLimit}
-              fill="#22C55E"
-              fillOpacity={0.05}
-              ifOverflow="extendDomain"
-            />
-            {/* Bottom Warning band (Blue) */}
-            <ReferenceArea
-              y1={domainMin}
-              y2={lowerLimit}
-              fill={COLORS.belowLimit}
-              fillOpacity={0.05}
-              ifOverflow="extendDomain"
-            />
 
             <CartesianGrid
               vertical={false}
@@ -163,6 +153,20 @@ export default function CoolantPressureChart({
             />
 
             <Tooltip content={<CustomTooltip />} />
+
+            {/* Red background bands for out-of-range areas */}
+            <ReferenceArea
+              y1={upperLimit}
+              y2={domainMax}
+              fill="#EF4444"
+              fillOpacity={0.15}
+            />
+            <ReferenceArea
+              y1={domainMin}
+              y2={lowerLimit}
+              fill="#EF4444"
+              fillOpacity={0.15}
+            />
 
             {/* Reference Dividers for limits */}
             <ReferenceArea

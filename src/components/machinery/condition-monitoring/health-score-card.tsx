@@ -73,35 +73,41 @@ export default function HealthScoreCard({ className }: { className?: string }) {
   return (
     <PerfomaxCard className={cn('relative', className)} bodyClassName="p-5">
       {/* ─── Header: Health + Delta ─────────────────────────────── */}
-      <div className="mb-5 flex items-baseline gap-8">
-        <div className="flex items-baseline gap-2">
-          <span className="text-base font-semibold text-foreground">Score</span>
+      <div className="mb-5 flex items-baseline justify-between gap-8">
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold text-muted-foreground">
+            Score
+          </span>
           <span className="text-3xl font-bold text-primary">80%</span>
         </div>
-        <div className="flex items-baseline gap-2">
-          <span className="text-base font-semibold text-foreground">Delta</span>
+        <div className="flex flex-col items-end">
+          <span className="text-sm font-semibold text-muted-foreground">
+            Delta
+          </span>
           <span className="text-3xl font-bold text-foreground">5%</span>
         </div>
       </div>
 
       {/* ─── Bell Curves + Causality ────────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-end gap-0">
+      <div className="grid grid-cols-3 gap-2">
+        <div className="col-span-1 flex items-center justify-center">
           <BellCurve />
-          <BellCurve className="ml-10" />
         </div>
-        <div className="flex flex-col items-end gap-1.5">
+        <div className="col-span-1 flex items-center justify-center">
+          <BellCurve />
+        </div>
+        <div className="col-span-1 flex flex-col items-center justify-center gap-1.5">
           <span className="text-xs font-semibold text-foreground">
             Causality
           </span>
-          <span className="rounded-md bg-green-100 py-1 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
+          <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
             No Attention
           </span>
         </div>
       </div>
 
       {/* ─── Stat Cards ─────────────────────────────────────────── */}
-      <div className="mt-4 grid grid-cols-3 gap-0.5 border-t-2 pt-10">
+      <div className="mt-4 grid grid-cols-3 gap-2 border-t-2 pt-6">
         <StatCard
           title="Title"
           rows={[

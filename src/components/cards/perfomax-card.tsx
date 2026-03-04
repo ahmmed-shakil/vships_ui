@@ -44,6 +44,8 @@ export interface PerfomaxCardProps
   accentColor?: string;
   /** Optional footer slot rendered below children, full-width. */
   footer?: ReactNode;
+  /** Optional content rendered below the main header row, full-width. */
+  headerFooter?: ReactNode;
   /** Border-radius variant */
   rounded?: keyof typeof cardClasses.rounded;
   /** Extra class on the header row */
@@ -72,6 +74,7 @@ const PerfomaxCard = forwardRef<HTMLDivElement, PerfomaxCardProps>(
       action,
       accentColor,
       footer,
+      headerFooter,
       rounded = 'DEFAULT',
       className,
       headerClassName,
@@ -140,6 +143,9 @@ const PerfomaxCard = forwardRef<HTMLDivElement, PerfomaxCardProps>(
             )}
           </div>
         )}
+
+        {/* ── Header Footer ──────────────────────────────────────────── */}
+        {headerFooter && <div className="w-full">{headerFooter}</div>}
 
         {/* ── Body ───────────────────────────────────────────────────── */}
         {children && <div className={bodyClassName}>{children}</div>}

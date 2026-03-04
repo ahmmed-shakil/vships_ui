@@ -23,28 +23,42 @@ import { Select } from 'rizzui/select';
 /* ------------------------------------------------------------------ */
 
 const paramOptions = [
-  { label: 'Param 1', value: 'param1' },
-  { label: 'Param 2', value: 'param2' },
-  { label: 'Param 3', value: 'param3' },
+  { label: 'Fuel Consumption', value: 'fuelConsumption' },
+  { label: 'Engine RPM', value: 'engineRpm' },
+  { label: 'Engine Load', value: 'engineLoad' },
+  { label: 'Exhaust Temp', value: 'exhaustTemp' },
+  { label: 'Lube Oil Pressure', value: 'lubeOilPressure' },
+  { label: 'Coolant Temp', value: 'coolantTemp' },
+  { label: 'Charge Air Pressure', value: 'chargeAirPressure' },
 ];
 
 /* ------------------------------------------------------------------ */
 /* Component */
 /* ------------------------------------------------------------------ */
 
-export default function ParameterScatterChart({ className }: { className?: string }) {
+export default function ParameterScatterChart({
+  className,
+}: {
+  className?: string;
+}) {
   const [opt1, setOpt1] = useState(paramOptions[0]);
   const [opt2, setOpt2] = useState(paramOptions[1]);
 
   // Exclude selected param from the other dropdown
-  const opt1Options = useMemo(() => paramOptions.filter((o) => o.value !== opt2.value), [opt2]);
-  const opt2Options = useMemo(() => paramOptions.filter((o) => o.value !== opt1.value), [opt1]);
+  const opt1Options = useMemo(
+    () => paramOptions.filter((o) => o.value !== opt2.value),
+    [opt2]
+  );
+  const opt2Options = useMemo(
+    () => paramOptions.filter((o) => o.value !== opt1.value),
+    [opt1]
+  );
 
   return (
     <PerfomaxCard
       className={className}
       title={
-        <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex flex-wrap items-center gap-4">
           <span className="text-lg font-bold">Scatter</span>
           <Select
             options={opt1Options}
@@ -66,25 +80,31 @@ export default function ParameterScatterChart({ className }: { className?: strin
         </div>
       }
       action={
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-3 pt-2 text-xs">
           <span className="flex items-center gap-1">
-            <span className="inline-block h-2 w-4 rounded-sm" style={{ backgroundColor: '#22C55E' }} />
-            Item
+            <span
+              className="inline-block h-2 w-4 rounded-sm"
+              style={{ backgroundColor: '#22C55E' }}
+            />
+            Fuel Cons
           </span>
           <span className="flex items-center gap-1">
-            <span className="inline-block h-2 w-2 rotate-45 rounded-sm" style={{ backgroundColor: '#A855F7' }} />
-            Item
+            <span
+              className="inline-block h-2 w-2 rotate-45 rounded-sm"
+              style={{ backgroundColor: '#A855F7' }}
+            />
+            Engine RPM
           </span>
         </div>
       }
-      bodyClassName="px-3 pb-4"
+      bodyClassName="px-3 pb-4 mt-4"
     >
       {/* Chart with axis labels */}
-      <div className="flex mt-2 h-full">
+      <div className="mt-4 flex h-full">
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span
-            className="text-[10px] text-muted-foreground font-medium"
+            className="text-[10px] font-medium text-muted-foreground"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
             Charge Air Pressure
@@ -92,10 +112,12 @@ export default function ParameterScatterChart({ className }: { className?: strin
         </div>
 
         {/* Chart + X-axis */}
-        <div className="flex-1 flex flex-col">
-          <div className="aspect-[6/5]">
+        <div className="mt-4 flex flex-1 flex-col">
+          <div className="aspect-[1060/700] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 5, right: 20, left: -30, bottom: 5 }}>
+              <ScatterChart
+                margin={{ top: 5, right: 20, left: -30, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   type="number"
@@ -133,8 +155,8 @@ export default function ParameterScatterChart({ className }: { className?: strin
           </div>
 
           {/* X-axis label */}
-          <div className="flex items-center justify-center gap-2 mt-1">
-            <span className="text-[10px] text-muted-foreground font-medium">
+          <div className="mt-1 flex items-center justify-center gap-2">
+            <span className="text-[10px] font-medium text-muted-foreground">
               Fuel Pump Index
             </span>
           </div>

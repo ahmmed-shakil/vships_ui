@@ -54,6 +54,18 @@ export default function ConditionMonitoringLayout() {
           title="ME 2 Port"
           className="flex flex-col"
           bodyClassName="p-5 border-t border-muted/50"
+          action={
+            <div className="flex flex-col items-end gap-2">
+              <div className="invisible">
+                <HealthScoreHeader score={80} />
+              </div>
+            </div>
+          }
+          headerFooter={
+            <div className="px-5 pb-1 text-sm font-medium">
+              <span className="invisible">Placeholder</span>
+            </div>
+          }
         >
           <div className="flex flex-1 items-center">
             <div className="flex w-2/5 shrink-0 items-center justify-center px-2">
@@ -82,13 +94,13 @@ export default function ConditionMonitoringLayout() {
           action={
             <div className="flex flex-col items-end gap-2">
               <HealthScoreHeader score={80} />
-              <div className="w-full">
-                <div className="flex gap-2 text-sm text-foreground">
-                  <span>Low: param 1</span>
-                  <span>param 2</span>
-                  <span>param 3</span>
-                </div>
-              </div>
+            </div>
+          }
+          headerFooter={
+            <div className="flex flex-wrap gap-3 px-5 pb-1 text-sm font-medium">
+              <span className="text-red-500">Low: Exhaust Temp</span>
+              <span className="text-amber-500">Lube Oil Press</span>
+              <span className="text-amber-500">Coolant Temp</span>
             </div>
           }
         >
@@ -126,6 +138,18 @@ export default function ConditionMonitoringLayout() {
           title="SFOC Scatter"
           bodyClassName="px-2 border-t border-muted/50"
           className="flex flex-col"
+          action={
+            <div className="flex flex-col items-end gap-2">
+              <div className="invisible">
+                <HealthScoreHeader score={80} />
+              </div>
+            </div>
+          }
+          headerFooter={
+            <div className="px-5 pb-1 text-sm font-medium">
+              <span className="invisible">Placeholder</span>
+            </div>
+          }
         >
           <div className="relative mt-4 flex h-full min-h-[150px] flex-col items-center justify-center">
             {/* Placeholder cross pattern matching screenshot */}
@@ -147,7 +171,7 @@ export default function ConditionMonitoringLayout() {
       {/* ─── Charts Row 1: Trendline + Scatter ─────────────────────────────── */}
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <DeltaDeviationTrendline />
+          <DeltaDeviationTrendline className="h-full" />
         </div>
         <div className="lg:col-span-2">
           <ParameterScatterChart className="h-full" />
