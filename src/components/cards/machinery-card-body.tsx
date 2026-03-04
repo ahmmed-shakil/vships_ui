@@ -69,12 +69,30 @@ const dummyAlarmRows = [
     level: 'L 1',
   },
   {
+    severity: 'warning',
+    date: '01.05.25',
+    time: '15:22:18',
+    description: 'Coolant level below minimum',
+    value: '3.2',
+    unit: 'L',
+    level: 'L 1',
+  },
+  {
     severity: 'notice',
     date: '01.05.25',
     time: '19:35:42',
     description: 'Coolant temp deviation cyl 5',
     value: '88.3',
     unit: '°C',
+    level: 'L 2',
+  },
+  {
+    severity: 'notice',
+    date: '01.05.25',
+    time: '14:10:33',
+    description: 'Air filter differential pressure',
+    value: '45',
+    unit: 'mbar',
     level: 'L 2',
   },
   {
@@ -95,6 +113,24 @@ const dummyAlarmRows = [
     unit: '--',
     level: 'L --',
   },
+  {
+    severity: 'info',
+    date: '01.05.25',
+    time: '13:45:22',
+    description: 'Engine hours milestone reached',
+    value: '5000',
+    unit: 'hrs',
+    level: 'L --',
+  },
+  {
+    severity: 'info',
+    date: '01.05.25',
+    time: '11:20:05',
+    description: 'System diagnostics completed',
+    value: '--',
+    unit: '--',
+    level: 'L --',
+  },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -103,12 +139,17 @@ const dummyAlarmRows = [
 
 function AlarmTooltipContent({
   severity,
+  count,
 }: {
   severity: keyof MachineryAlarms;
+  count: number;
 }) {
-  const filtered = dummyAlarmRows.filter((r) => r.severity === severity);
+  // Filter by severity and take only as many as the count
+  const filtered = dummyAlarmRows
+    .filter((r) => r.severity === severity)
+    .slice(0, count);
 
-  if (filtered.length === 0) {
+  if (count === 0 || filtered.length === 0) {
     return (
       <div className="rounded-lg border border-muted bg-gray-0 px-4 py-3 shadow-xl dark:bg-gray-100">
         <Text className="text-xs text-muted-foreground">
@@ -320,7 +361,10 @@ export default function MachineryCardBody({
             onMouseEnter={handleTooltipEnter}
             onMouseLeave={handleTooltipLeave}
           >
-            <AlarmTooltipContent severity={hoveredSeverity} />
+            <AlarmTooltipContent
+              severity={hoveredSeverity}
+              count={data.alarms[hoveredSeverity]}
+            />
           </div>,
           document.body
         )}
