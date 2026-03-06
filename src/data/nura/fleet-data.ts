@@ -30,7 +30,7 @@ export const fleetVesselData: FleetVessel[] = [
   {
     vessel_id: 1,
     name: 'MV Nusantara',
-    position: { lat: 1.29, long: 103.85, direction: 45, timestamp: minutesAgo(2) },
+    position: { lat: 1.22, long: 103.85, direction: 45, timestamp: minutesAgo(2) },
     position_status: 'port',
     online: minutesAgo(1),
     me1: minutesAgo(2),
@@ -42,7 +42,7 @@ export const fleetVesselData: FleetVessel[] = [
   {
     vessel_id: 2,
     name: 'MV Seri Ayu',
-    position: { lat: 1.50, long: 104.20, direction: 120, timestamp: minutesAgo(3) },
+    position: { lat: 1.25, long: 104.30, direction: 120, timestamp: minutesAgo(3) },
     position_status: 'at sea',
     online: minutesAgo(2),
     me1: minutesAgo(4),
@@ -66,7 +66,7 @@ export const fleetVesselData: FleetVessel[] = [
   {
     vessel_id: 4,
     name: 'MV Langkawi Star',
-    position: { lat: 1.70, long: 103.85, direction: 0, timestamp: minutesAgo(90) },
+    position: { lat: 1.15, long: 103.95, direction: 0, timestamp: minutesAgo(90) },
     position_status: 'at sea',
     online: minutesAgo(80),
     me1: minutesAgo(85),
@@ -114,7 +114,7 @@ export const fleetVesselData: FleetVessel[] = [
   {
     vessel_id: 8,
     name: 'MV Coral Queen',
-    position: { lat: 1.35, long: 103.65, direction: 225, timestamp: minutesAgo(1) },
+    position: { lat: 1.22, long: 103.65, direction: 225, timestamp: minutesAgo(1) },
     position_status: 'port',
     online: minutesAgo(1),
     me1: minutesAgo(1),
@@ -138,7 +138,7 @@ export const fleetVesselData: FleetVessel[] = [
   {
     vessel_id: 10,
     name: 'MV Pacific Dawn',
-    position: { lat: 1.55, long: 103.40, direction: 90, timestamp: minutesAgo(4) },
+    position: { lat: 1.18, long: 103.50, direction: 90, timestamp: minutesAgo(4) },
     position_status: 'at sea',
     online: minutesAgo(3),
     me1: minutesAgo(4),
