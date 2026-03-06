@@ -1,5 +1,5 @@
 // Dummy fleet vessel position data for the Leaflet map
-// Positions are scattered around Singapore and Southeast Asian waters
+// Positions are spread across major world oceans
 
 export interface FleetVessel {
   vessel_id: number;
@@ -29,9 +29,14 @@ const minutesAgo = (m: number) => Math.floor(Date.now() / 1000) - m * 60;
 export const fleetVesselData: FleetVessel[] = [
   {
     vessel_id: 1,
-    name: 'MV Nusantara',
-    position: { lat: 1.22, long: 103.85, direction: 45, timestamp: minutesAgo(2) },
-    position_status: 'port',
+    name: 'Ocean Voyager',
+    position: {
+      lat: 42.5,
+      long: -30.0,
+      direction: 45,
+      timestamp: minutesAgo(2),
+    },
+    position_status: 'at sea',
     online: minutesAgo(1),
     me1: minutesAgo(2),
     me2: minutesAgo(3),
@@ -41,8 +46,13 @@ export const fleetVesselData: FleetVessel[] = [
   },
   {
     vessel_id: 2,
-    name: 'MV Seri Ayu',
-    position: { lat: 1.25, long: 104.30, direction: 120, timestamp: minutesAgo(3) },
+    name: 'Sea Explorer',
+    position: {
+      lat: 36.0,
+      long: 20.0,
+      direction: 120,
+      timestamp: minutesAgo(3),
+    },
     position_status: 'at sea',
     online: minutesAgo(2),
     me1: minutesAgo(4),
@@ -53,8 +63,13 @@ export const fleetVesselData: FleetVessel[] = [
   },
   {
     vessel_id: 3,
-    name: 'MV Rajah Brooke',
-    position: { lat: 1.00, long: 103.50, direction: 270, timestamp: minutesAgo(30) },
+    name: 'Wave Rider',
+    position: {
+      lat: -18.0,
+      long: -155.0,
+      direction: 270,
+      timestamp: minutesAgo(30),
+    },
     position_status: 'at sea',
     online: minutesAgo(25),
     me1: minutesAgo(28),
@@ -65,8 +80,13 @@ export const fleetVesselData: FleetVessel[] = [
   },
   {
     vessel_id: 4,
-    name: 'MV Langkawi Star',
-    position: { lat: 1.15, long: 103.95, direction: 0, timestamp: minutesAgo(90) },
+    name: 'Storm Chaser',
+    position: {
+      lat: 35.0,
+      long: 170.0,
+      direction: 0,
+      timestamp: minutesAgo(90),
+    },
     position_status: 'at sea',
     online: minutesAgo(80),
     me1: minutesAgo(85),
@@ -77,8 +97,13 @@ export const fleetVesselData: FleetVessel[] = [
   },
   {
     vessel_id: 5,
-    name: 'MV Mutiara',
-    position: { lat: 0.80, long: 103.85, direction: 180, timestamp: minutesAgo(60) },
+    name: 'Blue Horizon',
+    position: {
+      lat: 18.0,
+      long: -75.0,
+      direction: 180,
+      timestamp: minutesAgo(60),
+    },
     position_status: 'port',
     online: minutesAgo(55),
     me1: minutesAgo(60),
@@ -89,8 +114,13 @@ export const fleetVesselData: FleetVessel[] = [
   },
   {
     vessel_id: 6,
-    name: 'MV Tanjung Perak',
-    position: { lat: 1.25, long: 103.20, direction: 310, timestamp: minutesAgo(250) },
+    name: 'Coral Navigator',
+    position: {
+      lat: 14.0,
+      long: 115.0,
+      direction: 310,
+      timestamp: minutesAgo(250),
+    },
     position_status: 'at sea',
     online: minutesAgo(240),
     me1: minutesAgo(250),
@@ -101,8 +131,13 @@ export const fleetVesselData: FleetVessel[] = [
   },
   {
     vessel_id: 7,
-    name: 'MV Borneo Spirit',
-    position: { lat: 1.25, long: 104.40, direction: 135, timestamp: minutesAgo(400) },
+    name: 'Aurora Spirit',
+    position: {
+      lat: 62.0,
+      long: 5.0,
+      direction: 135,
+      timestamp: minutesAgo(400),
+    },
     position_status: 'at sea',
     online: minutesAgo(390),
     me1: minutesAgo(400),
@@ -113,8 +148,13 @@ export const fleetVesselData: FleetVessel[] = [
   },
   {
     vessel_id: 8,
-    name: 'MV Coral Queen',
-    position: { lat: 1.22, long: 103.65, direction: 225, timestamp: minutesAgo(1) },
+    name: 'Tide Breaker',
+    position: {
+      lat: 15.0,
+      long: 62.0,
+      direction: 225,
+      timestamp: minutesAgo(1),
+    },
     position_status: 'port',
     online: minutesAgo(1),
     me1: minutesAgo(1),
@@ -125,8 +165,13 @@ export const fleetVesselData: FleetVessel[] = [
   },
   {
     vessel_id: 9,
-    name: 'MV Selat Malacca',
-    position: { lat: 1.15, long: 104.05, direction: 60, timestamp: minutesAgo(150) },
+    name: 'Harbor Guardian',
+    position: {
+      lat: -8.0,
+      long: -120.0,
+      direction: 60,
+      timestamp: minutesAgo(150),
+    },
     position_status: 'at sea',
     online: minutesAgo(140),
     me1: minutesAgo(148),
@@ -137,8 +182,13 @@ export const fleetVesselData: FleetVessel[] = [
   },
   {
     vessel_id: 10,
-    name: 'MV Pacific Dawn',
-    position: { lat: 1.18, long: 103.50, direction: 90, timestamp: minutesAgo(4) },
+    name: 'Sea Sentinel',
+    position: {
+      lat: -30.0,
+      long: -15.0,
+      direction: 90,
+      timestamp: minutesAgo(4),
+    },
     position_status: 'at sea',
     online: minutesAgo(3),
     me1: minutesAgo(4),

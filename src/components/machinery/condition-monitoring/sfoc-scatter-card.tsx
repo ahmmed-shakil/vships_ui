@@ -14,6 +14,20 @@ import {
 } from 'recharts';
 
 /* ------------------------------------------------------------------ */
+/* Helper: convert x (minutes) to a HH:MM timestamp string            */
+/* Base time is 00:00 — so 60 min → 01:00, 120 min → 02:00, etc.     */
+/* ------------------------------------------------------------------ */
+
+function minutesToTimestamp(minutes: number): string {
+  const negative = minutes < 0;
+  const totalMin = Math.abs(Math.round(minutes));
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  return negative ? `-${time}` : time;
+}
+
+/* ------------------------------------------------------------------ */
 /* Custom tooltip – shows mode name, time & SFOC on hover             */
 /* ------------------------------------------------------------------ */
 
@@ -33,7 +47,7 @@ function SfocTooltip({ active, payload }: any) {
       <p className="mb-1 font-semibold" style={{ color }}>
         {series?.mode ?? 'Unknown'}
       </p>
-      <p>Time: {point?.x} min</p>
+      <p>Time: {minutesToTimestamp(point?.x ?? 0)}</p>
       <p>SFOC: {point?.y} g/kWh</p>
     </div>
   );
@@ -84,9 +98,10 @@ export default function SfocScatterCard({ className }: { className?: string }) {
                 <XAxis
                   type="number"
                   dataKey="x"
-                  name="Time (min)"
+                  name="Time"
                   tick={{ fontSize: 9 }}
                   domain={['dataMin', 'dataMax']}
+                  tickFormatter={minutesToTimestamp}
                 />
                 <YAxis
                   type="number"
@@ -118,7 +133,7 @@ export default function SfocScatterCard({ className }: { className?: string }) {
           {/* X-axis label */}
           <div className="mt-1 flex items-center justify-center">
             <span className="text-[10px] font-medium text-muted-foreground">
-              Time (minutes)
+              Time
             </span>
           </div>
         </div>

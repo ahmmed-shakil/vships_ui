@@ -261,14 +261,6 @@ const machineryData: (Omit<MachineryCardProps, 'alarms'> & {
     metrics: defaultMetrics,
   },
   {
-    id: 4,
-    title: 'Winch',
-    engineValue: 'winch',
-    healthScore: 83,
-    status: 'running',
-    metrics: defaultMetrics,
-  },
-  {
     id: 5,
     title: 'Gen Set 1',
     engineValue: 'ae1',
@@ -287,14 +279,6 @@ const machineryData: (Omit<MachineryCardProps, 'alarms'> & {
   {
     id: 7,
     title: 'Gen Set 3',
-    healthScore: 98,
-    status: 'off',
-    metrics: defaultMetrics,
-  },
-  {
-    id: 8,
-    title: 'Crane',
-    engineValue: 'crane',
     healthScore: 98,
     status: 'off',
     metrics: defaultMetrics,
@@ -324,9 +308,6 @@ export default function MachineryOverviewPage() {
   const engines = cardsWithAlarms.filter((item) => item.title.startsWith('ME'));
   const gensetCards = cardsWithAlarms.filter((item) =>
     item.title.startsWith('Gen Set')
-  );
-  const rest = cardsWithAlarms.filter(
-    (item) => !item.title.startsWith('ME') && !item.title.startsWith('Gen Set')
   );
 
   const handleCardClick = (item: (typeof cardsWithAlarms)[number]) => {
@@ -361,13 +342,6 @@ export default function MachineryOverviewPage() {
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {gensetCards.map(renderCard)}
       </div>
-
-      {/* Row 3: Rest */}
-      {rest.length > 0 && (
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {rest.map(renderCard)}
-        </div>
-      )}
     </Box>
   );
 }
