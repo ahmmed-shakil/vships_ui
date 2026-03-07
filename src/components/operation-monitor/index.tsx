@@ -11,11 +11,11 @@ import {
   type EngineMonitorData,
 } from '@/data/nura/engine-data';
 import { getChartData } from '@/data/nura/operation-monitor-charts-data';
-import { shipData, type Ship } from '@/data/nura/ships';
+import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
+import { useAtomValue } from 'jotai';
 import dynamic from 'next/dynamic';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Box } from 'rizzui/box';
-import { Select } from 'rizzui/select';
 import ConsumptionVsSpeedChart from './consumption-vs-speed-chart';
 import EngineConsumptionChart from './engine-consumption-chart';
 
@@ -138,7 +138,8 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
       <div className="mt-3 rounded-lg shadow-2xl bg-transparent p-3 space-y-1.5 max-w-[300px] mx-auto">
         <FlowMeterRow label="FM in" value={engine.flowMeter.fm_in} unit="kg/h" />
         <FlowMeterRow label="FM Cons" value={engine.flowMeter.fm_cons} unit="kg/h" />
-        <FlowMeterRow label="FM out" value={engine.flowMeter.fm_out} unit="kg/h" />
+        {/* <FlowMeterRow label="FM out" value={engine.flowMeter.fm_out} unit="kg/h" /> */}
+        <FlowMeterRow label="FM out" value={engine.flowMeter.fm_in - engine.flowMeter.fm_cons} unit="kg/h" />
       </div>
     </WidgetCard>
   );
@@ -147,7 +148,7 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
 // ─── Operation Monitor Layout ────────────────────────────────────────────────
 
 const OperationMonitorLayout = () => {
-  const [vessel, setVessel] = useState<Ship>(shipData[0]);
+  const vessel = useAtomValue(selectedShipAtom);
 
   // Engine data for the selected vessel
   const engines = vesselEngineData[vessel.id] ?? [];
@@ -164,16 +165,6 @@ const OperationMonitorLayout = () => {
 
   return (
     <>
-      <div className="mb-4 w-64 flex items-center gap-3 @lg:mb-0 @lg:w-fit">
-        <Select
-          options={shipData}
-          value={vessel}
-          onChange={(value: Ship) => setVessel(value)}
-          placeholder="Select Vessel"
-          className="w-full @lg:w-64"
-          dropdownClassName="!z-10"
-        />
-      </div>
       <Box className="@container/pd">
         {/* Row 1 — Engine gauges + Map */}
         <Box className="grid grid-cols-10 gap-4 @container/pd lg:gap-8">

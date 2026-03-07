@@ -54,7 +54,8 @@ export default function ConditionMonitoringLayout() {
         <PerfomaxCard
           title={selectedEngine.label}
           className="flex flex-col"
-          bodyClassName="p-5 border-t border-muted/50"
+          bodyClassName="px-5 border-t border-muted/50 py-2"
+          headerClassName="items-start"
           action={
             <div className="flex flex-col items-end gap-2">
               <div className="invisible">

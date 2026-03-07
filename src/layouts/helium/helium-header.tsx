@@ -5,9 +5,9 @@ import HamburgerButton from '@/layouts/hamburger-button';
 import NotificationDropdown from '@/layouts/notification-dropdown';
 import ProfileMenu from '@/layouts/profile-menu';
 import cn from '@/utils/class-names';
+import logoImg from '@public/desktop-logo.png';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import logoImg from '@public/desktop-logo.png';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { PiBellSimpleRingingFill } from 'react-icons/pi';
@@ -27,6 +27,16 @@ const MachineryOverviewHeaderSelectors = dynamic(
 
 const AlarmOverviewHeaderSelectors = dynamic(
   () => import('@/components/machinery/alarm-overview/header-selectors'),
+  { ssr: false }
+);
+
+const OperationMonitoringHeaderSelectors = dynamic(
+  () => import('@/components/operation-monitor/header-selectors'),
+  { ssr: false }
+);
+
+const AlarmMonitoringHeaderSelectors = dynamic(
+  () => import('@/components/alarm-monitor/header-selectors'),
   { ssr: false }
 );
 
@@ -64,6 +74,8 @@ export default function Header() {
     '/machinery/machinery-overview'
   );
   const isAlarmOverview = pathname.startsWith('/machinery/alarm-overview');
+  const isOperationMonitoring = pathname.startsWith('/operation-monitoring');
+  const isAlarmMonitoring = pathname.startsWith('/alarm-monitoring');
 
   return (
     <header
@@ -74,7 +86,7 @@ export default function Header() {
       <div
         className={cn(
           'flex items-center',
-          isConditionMonitoring || isMachineryOverview || isAlarmOverview
+          isConditionMonitoring || isMachineryOverview || isAlarmOverview || isOperationMonitoring || isAlarmMonitoring
             ? 'w-auto shrink-0'
             : 'w-full max-w-2xl'
         )}
@@ -109,6 +121,18 @@ export default function Header() {
       {isAlarmOverview && (
         <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
           <AlarmOverviewHeaderSelectors />
+        </div>
+      )}
+
+      {isOperationMonitoring && (
+        <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
+          <OperationMonitoringHeaderSelectors />
+        </div>
+      )}
+
+      {isAlarmMonitoring && (
+        <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
+          <AlarmMonitoringHeaderSelectors />
         </div>
       )}
 

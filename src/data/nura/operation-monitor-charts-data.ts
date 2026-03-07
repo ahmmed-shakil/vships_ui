@@ -116,12 +116,25 @@ function generateConsumptionVsSpeed(
   const data: ConsumptionSpeedPoint[] = [];
   const engineKeys = ['me1', 'me2', 'me3', 'me4'].slice(0, engineCount);
   const baseCons = getEngineFuelCons(vesselId, engineKeys);
-  const speedValues = seededValues(vesselId * 7777, HOURS.length, 8, 18);
   const variations = seededValues(vesselId * 600, HOURS.length, 0.8, 1.2);
+  const noise = seededValues(vesselId * 8888, HOURS.length, -0.8, 0.8);
+
+  // Realistic speed constraints (knots)
+  const MIN_SPEED = 2;
+  const MAX_SPEED = 20;
+
+  // Total base consumption across all engines (for normalising)
+  const totalBaseCons = engineKeys.reduce(
+    (sum, key) => sum + (baseCons[key] ?? 0),
+    0
+  );
 
   HOURS.forEach((time, i) => {
-    const point: ConsumptionSpeedPoint = { time, speed: speedValues[i] };
     const isLast = i === HOURS.length - 1;
+
+    // Build engine consumption values first
+    const point: ConsumptionSpeedPoint = { time, speed: 0 };
+    let totalCons = 0;
 
     engineKeys.forEach((key) => {
       const base = baseCons[key];
@@ -133,7 +146,18 @@ function generateConsumptionVsSpeed(
         const offset = key === 'me2' ? 0.02 : key === 'me4' ? -0.05 : 0;
         point[key] = Number((base * (variations[i] + offset)).toFixed(1));
       }
+      totalCons += Number(point[key]);
     });
+
+    // Derive speed from total consumption ratio + noise
+    // speed ≈ MIN + (MAX - MIN) × (totalCons / maxPossibleCons) + noise
+    const maxPossibleCons = totalBaseCons * 1.2 || 1; // avoid division by zero
+    const ratio = Math.min(totalCons / maxPossibleCons, 1);
+    const rawSpeed = MIN_SPEED + (MAX_SPEED - MIN_SPEED) * ratio + noise[i];
+    point.speed = Number(
+      Math.max(MIN_SPEED, Math.min(MAX_SPEED, rawSpeed)).toFixed(1)
+    );
+
     data.push(point);
   });
 

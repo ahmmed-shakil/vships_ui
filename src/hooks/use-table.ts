@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
 import isString from 'lodash/isString';
+import { useEffect, useMemo, useState } from 'react';
 
 interface AnyObject {
   [key: string]: any;
@@ -11,6 +11,13 @@ export function useTable<T extends AnyObject>(
   initialFilterState?: Partial<Record<string, any>>
 ) {
   const [data, setData] = useState(initialData);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Sync internal data when the parent passes new data (e.g. filtered by engine)
+  useEffect(() => {
+    setData(initialData);
+    setCurrentPage(1);
+  }, [initialData]);
 
   /*
    * Dummy loading state.
@@ -82,7 +89,6 @@ export function useTable<T extends AnyObject>(
   /*
    * Handle pagination
    */
-  const [currentPage, setCurrentPage] = useState(1);
   function paginatedData(data: T[] = sortedData) {
     const start = (currentPage - 1) * countPerPage;
     const end = start + countPerPage;

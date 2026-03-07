@@ -9,11 +9,14 @@ import {
   vesselGensetData,
   type EngineMonitorData,
 } from '@/data/nura/engine-data';
-import { engineData, shipData, type Ship } from '@/data/nura/ships';
+import {
+  selectedEngineAtom,
+  selectedShipAtom,
+} from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
+import { useAtomValue } from 'jotai';
 import dynamic from 'next/dynamic';
-import { useMemo, useState } from 'react';
-import { Select } from 'rizzui/select';
+import { useMemo } from 'react';
 import { Text } from 'rizzui/typography';
 
 import SpeedMeter from '../speed-meter/speed-meter';
@@ -159,8 +162,8 @@ function GensetGroup({
 // ─── Layout ──────────────────────────────────────────────────────────────────
 
 export const AlarmMonitorLayout = () => {
-  const [selectedShip, setSelectedShip] = useState<Ship>(shipData[0]);
-  const [selectedEngine, setSelectedEngine] = useState(engineData[0]);
+  const selectedShip = useAtomValue(selectedShipAtom);
+  const selectedEngine = useAtomValue(selectedEngineAtom);
 
   // Get alarm data for the selected vessel
   const alarms = useMemo(
@@ -179,22 +182,6 @@ export const AlarmMonitorLayout = () => {
 
   return (
     <>
-      {/* ship selects */}
-      <div className="flex gap-4">
-        <Select
-          className={'max-w-72'}
-          options={shipData}
-          value={selectedShip}
-          onChange={(value: Ship) => setSelectedShip(value)}
-        />
-        <Select
-          className={'max-w-72'}
-          options={engineData}
-          value={selectedEngine}
-          onChange={setSelectedEngine}
-        />
-      </div>
-
       {/* main grid */}
       <div className="mt-4 grid grid-cols-4 shadow-lg">
         <div className="col-span-3 mt-2">
