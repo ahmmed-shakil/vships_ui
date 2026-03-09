@@ -14,7 +14,7 @@ import {
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
-import { useAtomValue } from 'jotai';
+import { useAtom } from 'jotai';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import { Text } from 'rizzui/typography';
@@ -64,6 +64,7 @@ function EngineGroup({
   className,
   className2,
   className3,
+  onClick
 }: {
   engine: EngineMonitorData | undefined;
   size?: 'sm' | 'default';
@@ -71,6 +72,7 @@ function EngineGroup({
   className?: string;
   className2?: string;
   className3?: string;
+  onClick?: () => void;
 }) {
   if (!engine) {
     return (
@@ -85,7 +87,10 @@ function EngineGroup({
   const gkwh = computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
 
   return (
-    <div className={cn('flex flex-col', className)}>
+    <div
+      className={cn('flex flex-col', className, onClick && 'cursor-pointer group')}
+      onClick={onClick}
+    >
       <div
         className={
           layout === 'horizontal' ? 'grid grid-cols-2' : 'flex flex-col gap-2'
@@ -144,14 +149,16 @@ function GensetGroup({
   engine,
   label,
   className,
+  onClick
 }: {
   engine: EngineMonitorData | undefined;
   label: string;
   className?: string;
+  onClick?: () => void;
 }) {
   return (
-    <div className={className}>
-      <h6 className="col-span-full mt-auto text-center text-sm font-semibold">
+    <div className={cn(className, onClick && 'cursor-pointer group')} onClick={onClick}>
+      <h6 className={cn("col-span-full mt-auto text-center text-sm font-semibold", onClick && "group-hover:text-primary transition-colors")}>
         {label}
       </h6>
       <EngineGroup engine={engine} size="sm" layout="horizontal" />
@@ -162,8 +169,8 @@ function GensetGroup({
 // ─── Layout ──────────────────────────────────────────────────────────────────
 
 export const AlarmMonitorLayout = () => {
-  const selectedShip = useAtomValue(selectedShipAtom);
-  const selectedEngine = useAtomValue(selectedEngineAtom);
+  const [selectedShip] = useAtom(selectedShipAtom);
+  const [selectedEngine, setSelectedEngine] = useAtom(selectedEngineAtom);
 
   // Get alarm data for the selected vessel
   const alarms = useMemo(
@@ -190,25 +197,47 @@ export const AlarmMonitorLayout = () => {
             <div className="grid grid-cols-12">
               {/* Labels */}
               <div className="col-span-full flex justify-around uppercase">
-                <h6 className="font-semibold">ME Port</h6>
-                <h6 className="font-semibold">ME STBD</h6>
+                <h6
+                  className="font-semibold cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => setSelectedEngine({ label: 'ME Port', value: 'me1' })}
+                >
+                  ME Port
+                </h6>
+                <h6
+                  className="font-semibold cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => setSelectedEngine({ label: 'ME Stbd', value: 'me2' })}
+                >
+                  ME STBD
+                </h6>
               </div>
 
               {/* Row 1: ME PORT (RPM + Fuel) | ME STBD (RPM + Fuel) */}
-              <EngineGroup engine={mePort} className="col-span-6" />
-              <EngineGroup engine={meStbd} className="col-span-6" />
+              <EngineGroup
+                engine={mePort}
+                className="col-span-6"
+                onClick={() => setSelectedEngine({ label: 'ME Port', value: 'me1' })}
+              />
+              <EngineGroup
+                engine={meStbd}
+                className="col-span-6"
+                onClick={() => setSelectedEngine({ label: 'ME Stbd', value: 'me2' })}
+              />
 
               {/* Row 2: Genset 1 | ME CENTER | Genset 2 */}
               <GensetGroup
                 engine={genset1}
                 label="Genset 1"
                 className="-z-10 col-span-4 my-auto"
+                onClick={() => setSelectedEngine({ label: 'AE1', value: 'ae1' })}
               />
               <div className="relative col-span-4 m-0 -mt-10 p-0">
                 {/* Half-height border lines */}
                 <div className="absolute bottom-1/4 left-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
                 <div className="absolute bottom-1/4 right-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
-                <h6 className="text-center text-sm font-semibold uppercase">
+                <h6
+                  className="text-center text-sm font-semibold uppercase cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => setSelectedEngine({ label: 'ME Center', value: 'me3' })}
+                >
                   ME Center
                 </h6>
                 <EngineGroup
@@ -216,12 +245,14 @@ export const AlarmMonitorLayout = () => {
                   layout="vertical"
                   className2="-mt-20"
                   className3="-mt-10"
+                  onClick={() => setSelectedEngine({ label: 'ME Center', value: 'me3' })}
                 />
               </div>
               <GensetGroup
                 engine={genset2}
                 label="Genset 2"
                 className="-z-10 col-span-4 my-auto"
+                onClick={() => setSelectedEngine({ label: 'AE2', value: 'ae2' })}
               />
             </div>
           ) : (

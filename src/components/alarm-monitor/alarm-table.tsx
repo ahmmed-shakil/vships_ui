@@ -1,15 +1,20 @@
 'use client';
 
 import BasicTableWidget from '@/components/controlled-table/basic-table-widget';
+import { HeaderCell } from '@/components/legacy-table';
 import { type AlarmEntry, getAlarmUnit, getSeverityLabel } from '@/data/nura/alarm-data';
 import cn from '@/utils/class-names';
 import { Badge, Text } from 'rizzui';
-
 // ─── Column definitions (rc-table format for BasicTableWidget) ───────────────
 
-export const getAlarmColumns = () => [
+export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
     {
-        title: <Text as="span" fontWeight="semibold" className="block">Date</Text>,
+        title: (
+            <HeaderCell
+                title="Date"
+                sortable={false}
+            />
+        ),
         dataIndex: 'timestamp',
         key: 'date',
         width: 110,
@@ -22,7 +27,12 @@ export const getAlarmColumns = () => [
         ),
     },
     {
-        title: <Text as="span" fontWeight="semibold" className="block">Time</Text>,
+        title: (
+            <HeaderCell
+                title="Time"
+                sortable={false}
+            />
+        ),
         dataIndex: 'timestamp',
         key: 'time',
         width: 80,
@@ -35,7 +45,12 @@ export const getAlarmColumns = () => [
         ),
     },
     {
-        title: <Text as="span" fontWeight="semibold" className="block">Alarm Text</Text>,
+        title: (
+            <HeaderCell
+                title="Alarm Text"
+                sortable={false}
+            />
+        ),
         dataIndex: 'alarm_text',
         key: 'alarm_text',
         width: 220,
@@ -44,7 +59,16 @@ export const getAlarmColumns = () => [
         ),
     },
     {
-        title: <Text as="span" fontWeight="semibold" className="block">Engine</Text>,
+        title: (
+            <HeaderCell
+                title="Engine"
+                sortable
+                ascending={
+                    sortConfig?.direction === 'asc' && sortConfig?.key === 'engine'
+                }
+            />
+        ),
+        onHeaderCell: () => onHeaderCellClick('engine'),
         dataIndex: 'engine',
         key: 'engine',
         width: 100,
@@ -55,7 +79,12 @@ export const getAlarmColumns = () => [
         ),
     },
     {
-        title: <Text as="span" fontWeight="semibold" className="block">Value</Text>,
+        title: (
+            <HeaderCell
+                title="Value"
+                sortable={false}
+            />
+        ),
         dataIndex: 'value',
         key: 'value',
         width: 80,
@@ -64,7 +93,12 @@ export const getAlarmColumns = () => [
         ),
     },
     {
-        title: <Text as="span" fontWeight="semibold" className="block">Range</Text>,
+        title: (
+            <HeaderCell
+                title="Range"
+                sortable={false}
+            />
+        ),
         dataIndex: 'threshold_min',
         key: 'range',
         width: 120,
@@ -80,7 +114,12 @@ export const getAlarmColumns = () => [
         },
     },
     {
-        title: <Text as="span" fontWeight="semibold" className="block">Unit</Text>,
+        title: (
+            <HeaderCell
+                title="Unit"
+                sortable={false}
+            />
+        ),
         dataIndex: 'alarm_text',
         key: 'unit',
         width: 60,
@@ -89,7 +128,16 @@ export const getAlarmColumns = () => [
         ),
     },
     {
-        title: <Text as="span" fontWeight="semibold" className="block">Severity</Text>,
+        title: (
+            <HeaderCell
+                title="Severity"
+                sortable
+                ascending={
+                    sortConfig?.direction === 'asc' && sortConfig?.key === 'severity'
+                }
+            />
+        ),
+        onHeaderCell: () => onHeaderCellClick('severity'),
         dataIndex: 'severity',
         key: 'severity',
         width: 90,
@@ -105,7 +153,16 @@ export const getAlarmColumns = () => [
         ),
     },
     {
-        title: <Text as="span" fontWeight="semibold" className="block">Status</Text>,
+        title: (
+            <HeaderCell
+                title="Status"
+                sortable
+                ascending={
+                    sortConfig?.direction === 'asc' && sortConfig?.key === 'status'
+                }
+            />
+        ),
+        onHeaderCell: () => onHeaderCellClick('status'),
         dataIndex: 'status',
         key: 'status',
         width: 100,
@@ -139,12 +196,12 @@ export default function AlarmTable({
             title={title}
             data={data}
             getColumns={getAlarmColumns}
-            pageSize={10}
-            enablePagination
+            pageSize={1000} // Increase max so everything shows when scrolling
+            enablePagination={false}
             enableSearch
             searchPlaceholder="Search alarms..."
             variant="modern"
-            scroll={{ x: 1100 }}
+            scroll={{ x: 1100, y: '75vh' }}
             className={cn(
                 'pb-0 lg:pb-0 [&_.rc-table-row:last-child_td]:border-b-0',
                 className

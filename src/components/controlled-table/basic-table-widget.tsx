@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
-import { Input } from 'rizzui';
-import cn from '@/utils/class-names';
 import WidgetCard from '@/components/cards/widget-card';
-import { PiMagnifyingGlassBold } from 'react-icons/pi';
-import { useTable } from '@/hooks/use-table';
 import { useColumn } from '@/hooks/use-column';
+import { useTable } from '@/hooks/use-table';
+import cn from '@/utils/class-names';
+import React from 'react';
+import { PiMagnifyingGlassBold } from 'react-icons/pi';
+import { Input } from 'rizzui';
 import ControlledTable from './index';
 
 type ColumnTypes = {
@@ -42,7 +42,7 @@ type BasicTableWidgetProps = {
   noGutter?: boolean;
   scroll?: {
     x?: number;
-    y?: number;
+    y?: number | string;
   };
   sticky?: boolean;
 };

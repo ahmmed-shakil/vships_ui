@@ -1,11 +1,17 @@
 'use client';
 
+import { engineValueToAlarmEngine, vesselAlarmData } from '@/data/nura/alarm-data';
 import { emissionZones } from '@/data/nura/emission-zones';
 import type { FleetVessel } from '@/data/nura/fleet-data';
+import { engineData, shipData } from '@/data/nura/ships'; // engineData now imported from ships.ts
+import { selectedEngineAtom, selectedShipAtom } from '@/store/condition-monitoring-atoms';
 import { formatDistanceToNowStrict } from 'date-fns';
+import { useSetAtom } from 'jotai';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { PiArrowRight, PiBellSimpleRingingFill, PiEngine, PiLightningFill, PiNavigationArrow, PiWifiHigh } from 'react-icons/pi';
 import {
   MapContainer,
   Marker,
@@ -47,7 +53,7 @@ function toPoints(vessels: FleetVessel[]): VesselPoint[] {
     timestamp: v.position.timestamp * 1000,
     direction: v.position.direction,
     position_status: v.position_status,
-    vessel_id: v.vessel_id,
+    vessel_id: v.vessel_id, // Fixed v.id back to v.vessel_id as per FleetVessel
     online: v.online * 1000,
     me1: v.me1 * 1000,
     me2: v.me2 * 1000,
@@ -61,9 +67,9 @@ function colorByRecency(timestampMs: number): string {
   const diff = Date.now() - timestampMs;
   const FIVE_MIN = 5 * 60 * 1000;
   const THREE_HR = 3 * 60 * 60 * 1000;
-  if (diff < FIVE_MIN) return '#28a745';
-  if (diff < THREE_HR) return '#ffc107';
-  return '#dc3545';
+  if (diff < FIVE_MIN) return '#4ade80';
+  if (diff < THREE_HR) return '#facc15';
+  return '#f87171';
 }
 
 // ─── Vessel marker icon (divIcon) ────────────────────────────────────────────
@@ -82,9 +88,8 @@ function createVesselIcon(
     html: `
       <div style="display:flex;flex-direction:column;align-items:center;">
         <div style="position:relative;">
-          ${
-            shouldPulse
-              ? `<div style="
+          ${shouldPulse
+        ? `<div style="
                   position:absolute;top:50%;left:50%;
                   transform:translate(-50%,-50%);
                   width:30px;height:30px;
@@ -92,8 +97,8 @@ function createVesselIcon(
                   border-radius:50%;opacity:0;
                   animation:vesselPulse 2s ease-out infinite;
                 "></div>`
-              : ''
-          }
+        : ''
+      }
           <div style="
             position:relative;width:20px;height:20px;
             transform:rotate(${direction}deg);
@@ -147,6 +152,30 @@ function injectStyles() {
       background: transparent !important;
       border: none !important;
     }
+    
+    /* ─── Leaflet Popup Customizations ─── */
+    .vessel-custom-popup .leaflet-popup-content-wrapper {
+      background: #1A1C23;
+      color: #fff;
+      border-radius: 12px;
+      padding: 4px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .vessel-custom-popup .leaflet-popup-tip {
+      background: #1A1C23;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-top: none;
+      border-left: none;
+    }
+    .vessel-custom-popup .leaflet-popup-close-button {
+      color: #aaa !important;
+      padding: 8px 12px 0 0 !important;
+    }
+    .vessel-custom-popup .leaflet-popup-close-button:hover {
+      color: #fff !important;
+    }
+
     /* Weather toggle panel */
     .weather-control-panel {
       position: absolute;
@@ -232,6 +261,24 @@ export default function VesselMap({
 }: VesselMapProps) {
   useEffect(() => injectStyles(), []);
 
+  const router = useRouter();
+  const setShip = useSetAtom(selectedShipAtom);
+  const setEngine = useSetAtom(selectedEngineAtom);
+
+  const handleConditionMonitoringClick = (v: VesselPoint) => {
+    const ship = shipData.find(s => s.id === v.vessel_id);
+    if (ship) setShip(ship);
+    router.push('machinery/condition-monitoring');
+  };
+
+  const handleEngineClick = (v: VesselPoint, engineValue: string) => {
+    const ship = shipData.find((s) => s.id === v.vessel_id);
+    const engineOpt = engineData.find((e) => e.value === engineValue); // Fixed type error by ensuring engineData is correctly typed
+    if (ship) setShip(ship);
+    if (engineOpt) setEngine(engineOpt);
+    router.push('/alarm-monitoring');
+  };
+
   const [showEmissions, setShowEmissions] = useState(true);
   const [activeWeather, setActiveWeather] = useState<Set<WeatherLayerId>>(
     new Set()
@@ -290,80 +337,141 @@ export default function VesselMap({
           ))}
 
         {/* ── Vessel markers ── */}
-        {vessels.map((v, idx) => (
-          <Marker
-            key={idx}
-            position={v.position}
-            icon={createVesselIcon(v.name, v.direction, v.timestamp)}
-            eventHandlers={{
-              mouseover: (e) => e.target.openPopup(),
-            }}
-          >
-            <Popup>
-              <div style={{ minWidth: 200 }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    marginBottom: 6,
-                  }}
-                >
-                  <strong style={{ fontSize: 14 }}>{v.name}</strong>
-                  <span
-                    style={{
-                      background: colorByRecency(v.timestamp),
-                      color: '#fff',
-                      borderRadius: 8,
-                      padding: '2px 8px',
-                      fontSize: 11,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {v.position_status}
-                  </span>
-                </div>
+        {vessels.map((v, idx) => {
+          const shipMeta = shipData.find(s => s.id === v.vessel_id);
+          const totalAlarms = vesselAlarmData[v.vessel_id]?.filter(a => a.status === 'active').length || 0;
+          const criticalAlarms = vesselAlarmData[v.vessel_id]?.filter(a => a.status === 'active' && a.severity === 1).length || 0;
 
-                <div style={{ fontSize: 12, color: '#555', marginBottom: 4 }}>
-                  Position: {new Date(v.timestamp).toLocaleString('en-US')}
-                  <br />
-                  Last seen: {formatDistanceToNowStrict(
-                    new Date(v.timestamp)
-                  )}{' '}
-                  ago
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: 6,
-                    marginTop: 8,
-                    justifyContent: 'center',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <div style={{ textAlign: 'center', fontSize: 10 }}>
-                    <StatusDot timestampMs={v.online} />
-                    <div>WiFi</div>
-                  </div>
-                  <div style={{ textAlign: 'center', fontSize: 10 }}>
-                    <StatusDot timestampMs={v.timestamp} />
-                    <div>GPS</div>
-                  </div>
-                  {(['me1', 'me2', 'me3', 'ae1', 'ae2'] as const).map((key) => (
-                    <div
-                      key={key}
-                      style={{ textAlign: 'center', fontSize: 10 }}
-                    >
-                      <StatusDot timestampMs={v[key]} />
-                      <div>{key.toUpperCase()}</div>
+          return (
+            <Marker
+              key={idx}
+              position={v.position}
+              icon={createVesselIcon(v.name, v.direction, v.timestamp)}
+              eventHandlers={{
+                mouseover: (e) => e.target.openPopup(),
+              }}
+            >
+              <Popup className="vessel-custom-popup">
+                <div className="flex flex-col text-gray-100 min-w-[280px]">
+                  {/* Header Row */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <strong className="text-lg font-semibold tracking-wide text-white">{v.name}</strong>
+                      <span className="bg-yellow-600/20 text-yellow-500 border border-yellow-600/50 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
+                        {v.position_status}
+                      </span>
                     </div>
-                  ))}
+                    {totalAlarms > 0 && (
+                      <span className="flex items-center gap-1 bg-red-950/40 text-red-500 border border-red-900/50 rounded-full px-2 py-0.5 text-[11px] font-medium">
+                        <PiBellSimpleRingingFill className="w-3 h-3" />
+                        {totalAlarms} alarms
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Position info */}
+                  <div className="flex flex-col gap-1 text-xs text-gray-200 mb-4 border-b border-gray-700/50 pb-4">
+                    <div className="flex items-center gap-2 justify-between">
+                      <span className="text-muted-foreground">Position</span>
+                      <span className="font-mono text-muted-foreground">{v.position[0].toFixed(4)}° N, {v.position[1].toFixed(4)}° E</span>
+                    </div>
+                    <div className="flex items-center gap-2 justify-between">
+                      <span className="text-muted-foreground">Last data received</span>
+                      <span className="font-semibold text-muted-foreground">{formatDistanceToNowStrict(new Date(v.timestamp))} ago</span>
+                    </div>
+                  </div>
+
+                  {/* System Status header & legend */}
+                  <div className="flex flex-col mb-3">
+                    <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase mb-2">System Status</span>
+                    <div className="flex items-center gap-3 text-[9px] text-muted-foreground">
+                      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400"></span> {'< 5 min / Good'}</span>
+                      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> {'5–30 min / Warn'}</span>
+                      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-400"></span> {'> 30 min / Alert'}</span>
+                    </div>
+                  </div>
+
+                  {/* Icon Grid */}
+                  <div className="flex flex-wrap gap-4 mb-5">
+                    {/* Internet */}
+                    <div className="flex flex-col items-center gap-1.5 w-[42px]">
+                      <div className="relative w-10 h-10 rounded-full flex items-center justify-center bg-gray-800/60 border" style={{ borderColor: colorByRecency(v.online), boxShadow: `0 0 10px ${colorByRecency(v.online)}50 inset` }}>
+                        <PiWifiHigh className="w-5 h-5 drop-shadow-md" style={{ color: colorByRecency(v.online) }} />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">Internet</span>
+                    </div>
+
+                    {/* GPS */}
+                    <div className="flex flex-col items-center gap-1.5 w-[42px]">
+                      <div className="relative w-10 h-10 rounded-full flex items-center justify-center bg-gray-800/60 border" style={{ borderColor: colorByRecency(v.timestamp), boxShadow: `0 0 10px ${colorByRecency(v.timestamp)}50 inset` }}>
+                        <PiNavigationArrow className="w-5 h-5 drop-shadow-md" style={{ color: colorByRecency(v.timestamp) }} />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">GPS</span>
+                    </div>
+
+                    <div className="w-[1px] h-12 bg-gray-700/50 mx-1"></div>
+
+                    {/* Engines */}
+                    {([
+                      { key: 'me1', label: 'ME1', objKey: 'me1', icon: PiEngine },
+                      { key: 'me2', label: 'ME2', objKey: 'me2', icon: PiEngine },
+                      { key: 'me3', label: 'ME3', objKey: 'me3', icon: PiEngine },
+                      { key: 'ae1', label: 'AE1', objKey: 'ae1', icon: PiLightningFill },
+                      { key: 'ae2', label: 'AE2', objKey: 'ae2', icon: PiLightningFill },
+                    ] as const).map(({ key, label, objKey, icon: Icon }) => {
+                      // Find engine alarms
+                      const eqEngineId = key;
+                      const eqAlarmEngine = engineValueToAlarmEngine[eqEngineId];
+
+                      let engineAlarms = 0;
+                      if (eqAlarmEngine && vesselAlarmData[v.vessel_id]) {
+                        engineAlarms = vesselAlarmData[v.vessel_id].filter(a => a.status === 'active' && a.engine === eqAlarmEngine).length;
+                      }
+                      const engineTimeColor = colorByRecency((v as any)[objKey]);
+                      const hasCritical = vesselAlarmData[v.vessel_id]?.some(a => a.status === 'active' && a.engine === eqAlarmEngine && a.severity === 1);
+                      let finalColor = engineTimeColor;
+                      if (hasCritical && finalColor === '#4ade80') finalColor = '#facc15'; // Warn if critical alarms exist but data is fresh
+
+                      if ((v as any)[objKey] === 0) return null; // No engine mapping (e.g. ship without AE2 or ME3)
+
+                      return (
+                        <div key={key} className="flex flex-col items-center gap-1.5 w-[42px] cursor-pointer group" onClick={() => handleEngineClick(v, eqEngineId)}>
+                          <div className="relative w-10 h-10 rounded-full flex items-center justify-center bg-gray-800/60 border group-hover:bg-gray-700/60 transition-colors" style={{ borderColor: finalColor, boxShadow: `0 0 10px ${finalColor}50 inset` }}>
+                            <Icon className="w-5 h-5 drop-shadow-md" style={{ color: finalColor }} />
+                            {engineAlarms > 0 && (
+                              <div className="absolute -top-1.5 -right-1.5 bg-red-400 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-[#1e1e1e]">
+                                {engineAlarms > 9 ? '9+' : engineAlarms}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-muted-foreground group-hover:text-white transition-colors">{label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Critical alarms banner */}
+                  {criticalAlarms > 0 && (
+                    <div className="flex items-center justify-center gap-2 w-full bg-red-950/30 text-red-500 border border-red-900/50 rounded-lg py-2.5 mb-3 text-[11px] font-medium">
+                      <PiBellSimpleRingingFill className="w-3.5 h-3.5" />
+                      {criticalAlarms} critical alarm{criticalAlarms !== 1 ? 's' : ''} in the last 5 hours
+                    </div>
+                  )}
+
+                  {/* Action button */}
+                  <button
+                    onClick={() => handleConditionMonitoringClick(v)}
+                    className="w-full bg-blue-900/40 hover:bg-blue-800/50 text-blue-400 font-semibold py-2.5 rounded-lg border border-blue-800/50 flex items-center justify-between px-4 transition-colors text-[13px]"
+                  >
+                    View Condition Monitoring
+                    <PiArrowRight className="w-4 h-4" />
+                  </button>
+
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
 
       {/* ── Control panel overlay ── */}
