@@ -1,10 +1,10 @@
 import { routes } from '@/config/routes';
 import {
-  PiBellSimpleRingingDuotone,
-  PiChartLineUpDuotone,
-  PiGearDuotone,
-  PiHammerDuotone,
-  PiShoppingCartDuotone,
+    PiBellSimpleRingingDuotone,
+    PiChartLineUpDuotone,
+    PiGearDuotone,
+    PiHammerDuotone,
+    PiShoppingCartDuotone,
 } from 'react-icons/pi';
 
 export const menuItems = [
@@ -19,8 +19,8 @@ export const menuItems = [
     icon: PiShoppingCartDuotone,
   },
   {
-    name: 'Operation Monitoring',
-    href: routes.fleet.operationMonitoring,
+    name: 'Real Time Data',
+    href: routes.fleet.realTimeData,
     icon: PiChartLineUpDuotone,
   },
   {

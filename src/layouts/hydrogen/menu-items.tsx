@@ -20,8 +20,8 @@ export const menuItems = [
     icon: <PiShoppingCartDuotone />,
   },
   {
-    name: 'Operation Monitoring',
-    href: routes.fleet.operationMonitoring,
+    name: 'Real Time Data',
+    href: routes.fleet.realTimeData,
     icon: <PiChartLineUpDuotone />,
   },
   {

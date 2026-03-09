@@ -14,7 +14,7 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export interface OperationMonitorMapProps {
+export interface RealTimeDataMapProps {
     /** Vessel name shown in popup */
     name?: string;
     /** Latitude */
@@ -61,7 +61,7 @@ function createArrowIcon(direction: number, timestampMs: number) {
     const shouldPulse = diff < 3 * 60 * 60 * 1000;
 
     return L.divIcon({
-        className: 'op-monitor-marker',
+        className: 'real-time-data-marker',
         iconSize: [20, 20],
         iconAnchor: [10, 10],
         popupAnchor: [0, -10],
@@ -74,7 +74,7 @@ function createArrowIcon(direction: number, timestampMs: number) {
                 width:30px;height:30px;
                 background-color:${color};
                 border-radius:50%;opacity:0;
-                animation:opMapPulse 2s ease-out infinite;
+                animation:rtDataPulse 2s ease-out infinite;
               "></div>`
                 : ''
             }
@@ -102,11 +102,11 @@ function injectStyles() {
     stylesInjected = true;
     const style = document.createElement('style');
     style.textContent = `
-    @keyframes opMapPulse {
+    @keyframes rtDataPulse {
       0%   { transform: translate(-50%,-50%) scale(0.5); opacity: 0.8; }
       100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0;   }
     }
-    .op-monitor-marker {
+    .real-time-data-marker {
       background: transparent !important;
       border: none !important;
     }
@@ -116,14 +116,14 @@ function injectStyles() {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function OperationMonitorMap({
+export default function RealTimeDataMap({
     name = 'Demo Vessel',
     lat,
     long,
     direction = 0,
     timestamp,
     minHeight = 400,
-}: OperationMonitorMapProps) {
+}: RealTimeDataMapProps) {
     useEffect(() => injectStyles(), []);
 
     const mapRef = useRef<L.Map | null>(null);
@@ -133,7 +133,7 @@ export default function OperationMonitorMap({
     const height = typeof minHeight === 'number' ? `${minHeight}px` : minHeight;
 
     return (
-        <div id="operation-monitor-map" style={{ height: '100%' }}>
+        <div id="real-time-data-map" style={{ height: '100%' }}>
             <MapContainer
                 center={position}
                 zoom={7}

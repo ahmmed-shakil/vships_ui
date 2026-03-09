@@ -46,8 +46,8 @@ export const berylliumMenuItems: MenuItemsType[] = [
         icon: <PiShoppingCart />,
       },
       {
-        name: 'Operation Monitoring',
-        href: routes.fleet.operationMonitoring,
+        name: 'Real Time Data',
+        href: routes.fleet.realTimeData,
         icon: <PiChartLineUp />,
       },
       {

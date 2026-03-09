@@ -2,7 +2,7 @@ export const routes = {
   // Fleet & Operations
   fleet: {
     overview: '/fleet-overview',
-    operationMonitoring: '/operation-monitoring',
+    realTimeData: '/real-time-data',
     alarmMonitoring: '/alarm-monitoring',
     dailyOverview: '/daily-overview',
     operationOverview: '/operation-overview',

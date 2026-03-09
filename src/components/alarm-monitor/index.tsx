@@ -24,8 +24,8 @@ import AlarmTable from './alarm-table';
 import EngineDetailView from './engine-detail-view';
 import MachineryScoreTable from './machinery-score-table';
 
-const OperationMonitorMap = dynamic(
-  () => import('@/components/operation-monitor/operation-monitor-map'),
+const RealTimeDataMap = dynamic(
+  () => import('@/components/real-time-data/real-time-data-map'),
   { ssr: false }
 );
 
@@ -265,7 +265,7 @@ export const AlarmMonitorLayout = () => {
         </div>
 
         {/* Map */}
-        <OperationMonitorMap
+        <RealTimeDataMap
           name={selectedShip.label}
           lat={selectedShip.position.lat}
           long={selectedShip.position.long}

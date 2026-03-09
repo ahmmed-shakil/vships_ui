@@ -1,12 +1,12 @@
 import { routes } from '@/config/routes';
 import { atom } from 'jotai';
 import {
-  PiBellSimpleRinging,
-  PiBrowser,
-  PiChartLineUp,
-  PiGear,
-  PiHammer,
-  PiShoppingCart,
+    PiBellSimpleRinging,
+    PiBrowser,
+    PiChartLineUp,
+    PiGear,
+    PiHammer,
+    PiShoppingCart,
 } from 'react-icons/pi';
 
 export interface SubMenuItemType {
@@ -46,8 +46,8 @@ export const carbonMenuItems: MenuItemsType[] = [
         icon: PiShoppingCart,
       },
       {
-        name: 'Operation Monitoring',
-        href: routes.fleet.operationMonitoring,
+        name: 'Real Time Data',
+        href: routes.fleet.realTimeData,
         icon: PiChartLineUp,
       },
       {

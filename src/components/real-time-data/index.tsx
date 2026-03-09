@@ -19,8 +19,8 @@ import { Box } from 'rizzui/box';
 import ConsumptionVsSpeedChart from './consumption-vs-speed-chart';
 import EngineConsumptionChart from './engine-consumption-chart';
 
-const OperationMonitorMap = dynamic(
-  () => import('@/components/operation-monitor/operation-monitor-map'),
+const RealTimeDataMap = dynamic(
+  () => import('@/components/real-time-data/real-time-data-map'),
   { ssr: false }
 );
 
@@ -145,9 +145,9 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
   );
 }
 
-// ─── Operation Monitor Layout ────────────────────────────────────────────────
+// ─── Real Time Data Layout ──────────────────────────────────────────────────
 
-const OperationMonitorLayout = () => {
+const RealTimeDataLayout = () => {
   const vessel = useAtomValue(selectedShipAtom);
 
   // Engine data for the selected vessel
@@ -181,7 +181,7 @@ const OperationMonitorLayout = () => {
 
           {/* Right column — 30% */}
           <Box className="col-span-10 lg:col-span-3">
-            <OperationMonitorMap
+            <RealTimeDataMap
               name={vessel.label}
               lat={vessel.position.lat}
               long={vessel.position.long}
@@ -212,4 +212,4 @@ const OperationMonitorLayout = () => {
   );
 };
 
-export default OperationMonitorLayout;
+export default RealTimeDataLayout;
