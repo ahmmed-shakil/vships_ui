@@ -1,5 +1,6 @@
 'use client';
 
+import { useSocketData } from '@/app/shared/hooks/useSocket';
 import { vesselAlarmData } from '@/data/nura/alarm-data';
 import {
   computeGKWH,
@@ -18,6 +19,52 @@ import { useAtom } from 'jotai';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import { Text } from 'rizzui/typography';
+
+// ─── Helper: overlay live socket data onto an engine ─────────────────────────
+
+function applyLiveData(
+  engine: EngineMonitorData | undefined,
+  latestME: Record<string, any>,
+  latestAE: Record<string, any>
+): EngineMonitorData | undefined {
+  if (!engine) return undefined;
+  const socketKey = engine.id.toUpperCase(); // "me1" → "ME1"
+  const live = latestME[socketKey] ?? latestAE[socketKey];
+  if (!live) return engine;
+
+  const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
+  const liveLoad = live.engine_load ?? engine.gauge.engine_load;
+  const liveFuelCons = live.fuel_cons ?? engine.gauge.fuel_cons;
+  const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
+  const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
+
+  return {
+    ...engine,
+    gauge: {
+      engine_rpm: liveRpm,
+      engine_load: liveLoad,
+      fuel_cons: liveFuelCons,
+    },
+    totals: {
+      running_hours: liveRunHrs,
+      total_fuel: liveTotalFuel,
+    },
+    detail: engine.detail
+      ? {
+          ...engine.detail,
+          lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+          lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+          coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+          coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+          batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+          exhgas_temp_left:
+            live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+          exhgas_temp_right:
+            live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+        }
+      : undefined,
+  };
+}
 
 import SpeedMeter from '../speed-meter/speed-meter';
 import AlarmTable from './alarm-table';
@@ -64,7 +111,7 @@ function EngineGroup({
   className,
   className2,
   className3,
-  onClick
+  onClick,
 }: {
   engine: EngineMonitorData | undefined;
   size?: 'sm' | 'default';
@@ -88,7 +135,11 @@ function EngineGroup({
 
   return (
     <div
-      className={cn('flex flex-col', className, onClick && 'cursor-pointer group')}
+      className={cn(
+        'flex flex-col',
+        className,
+        onClick && 'group cursor-pointer'
+      )}
       onClick={onClick}
     >
       <div
@@ -149,7 +200,7 @@ function GensetGroup({
   engine,
   label,
   className,
-  onClick
+  onClick,
 }: {
   engine: EngineMonitorData | undefined;
   label: string;
@@ -157,8 +208,16 @@ function GensetGroup({
   onClick?: () => void;
 }) {
   return (
-    <div className={cn(className, onClick && 'cursor-pointer group')} onClick={onClick}>
-      <h6 className={cn("col-span-full mt-auto text-center text-sm font-semibold", onClick && "group-hover:text-primary transition-colors")}>
+    <div
+      className={cn(className, onClick && 'group cursor-pointer')}
+      onClick={onClick}
+    >
+      <h6
+        className={cn(
+          'col-span-full mt-auto text-center text-sm font-semibold',
+          onClick && 'transition-colors group-hover:text-primary'
+        )}
+      >
         {label}
       </h6>
       <EngineGroup engine={engine} size="sm" layout="horizontal" />
@@ -171,6 +230,7 @@ function GensetGroup({
 export const AlarmMonitorLayout = () => {
   const [selectedShip] = useAtom(selectedShipAtom);
   const [selectedEngine, setSelectedEngine] = useAtom(selectedEngineAtom);
+  const { latestME, latestAE } = useSocketData();
 
   // Get alarm data for the selected vessel
   const alarms = useMemo(
@@ -178,14 +238,26 @@ export const AlarmMonitorLayout = () => {
     [selectedShip.id]
   );
 
-  // Lookup engine data for the selected vessel
+  // Lookup engine data for the selected vessel, overlaid with live socket data
   const vesselId = selectedShip.id;
-  const mePort = findEngine(vesselId, 'me1');
-  const meStbd = findEngine(vesselId, 'me2');
-  const meCenter = findEngine(vesselId, 'me3');
+  const mePort = applyLiveData(findEngine(vesselId, 'me1'), latestME, latestAE);
+  const meStbd = applyLiveData(findEngine(vesselId, 'me2'), latestME, latestAE);
+  const meCenter = applyLiveData(
+    findEngine(vesselId, 'me3'),
+    latestME,
+    latestAE
+  );
   const gensets = vesselGensetData[vesselId] ?? [];
-  const genset1 = gensets.find((e) => e.id === 'ae1');
-  const genset2 = gensets.find((e) => e.id === 'ae2');
+  const genset1 = applyLiveData(
+    gensets.find((e) => e.id === 'ae1'),
+    latestME,
+    latestAE
+  );
+  const genset2 = applyLiveData(
+    gensets.find((e) => e.id === 'ae2'),
+    latestME,
+    latestAE
+  );
 
   return (
     <>
@@ -198,14 +270,18 @@ export const AlarmMonitorLayout = () => {
               {/* Labels */}
               <div className="col-span-full flex justify-around uppercase">
                 <h6
-                  className="font-semibold cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => setSelectedEngine({ label: 'ME Port', value: 'me1' })}
+                  className="cursor-pointer font-semibold transition-colors hover:text-primary"
+                  onClick={() =>
+                    setSelectedEngine({ label: 'ME Port', value: 'me1' })
+                  }
                 >
                   ME Port
                 </h6>
                 <h6
-                  className="font-semibold cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => setSelectedEngine({ label: 'ME Stbd', value: 'me2' })}
+                  className="cursor-pointer font-semibold transition-colors hover:text-primary"
+                  onClick={() =>
+                    setSelectedEngine({ label: 'ME Stbd', value: 'me2' })
+                  }
                 >
                   ME STBD
                 </h6>
@@ -215,28 +291,36 @@ export const AlarmMonitorLayout = () => {
               <EngineGroup
                 engine={mePort}
                 className="col-span-6"
-                onClick={() => setSelectedEngine({ label: 'ME Port', value: 'me1' })}
+                onClick={() =>
+                  setSelectedEngine({ label: 'ME Port', value: 'me1' })
+                }
               />
               <EngineGroup
                 engine={meStbd}
                 className="col-span-6"
-                onClick={() => setSelectedEngine({ label: 'ME Stbd', value: 'me2' })}
+                onClick={() =>
+                  setSelectedEngine({ label: 'ME Stbd', value: 'me2' })
+                }
               />
 
               {/* Row 2: Genset 1 | ME CENTER | Genset 2 */}
               <GensetGroup
                 engine={genset1}
                 label="Genset 1"
-                className="-z-10 col-span-4 my-auto"
-                onClick={() => setSelectedEngine({ label: 'AE1', value: 'ae1' })}
+                className="z-0 col-span-4 my-auto"
+                onClick={() =>
+                  setSelectedEngine({ label: 'AE1', value: 'ae1' })
+                }
               />
               <div className="relative col-span-4 m-0 -mt-10 p-0">
                 {/* Half-height border lines */}
                 <div className="absolute bottom-1/4 left-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
                 <div className="absolute bottom-1/4 right-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
                 <h6
-                  className="text-center text-sm font-semibold uppercase cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => setSelectedEngine({ label: 'ME Center', value: 'me3' })}
+                  className="cursor-pointer text-center text-sm font-semibold uppercase transition-colors hover:text-primary"
+                  onClick={() =>
+                    setSelectedEngine({ label: 'ME Center', value: 'me3' })
+                  }
                 >
                   ME Center
                 </h6>
@@ -245,14 +329,18 @@ export const AlarmMonitorLayout = () => {
                   layout="vertical"
                   className2="-mt-20"
                   className3="-mt-10"
-                  onClick={() => setSelectedEngine({ label: 'ME Center', value: 'me3' })}
+                  onClick={() =>
+                    setSelectedEngine({ label: 'ME Center', value: 'me3' })
+                  }
                 />
               </div>
               <GensetGroup
                 engine={genset2}
                 label="Genset 2"
-                className="-z-10 col-span-4 my-auto"
-                onClick={() => setSelectedEngine({ label: 'AE2', value: 'ae2' })}
+                className="z-0 col-span-4 my-auto"
+                onClick={() =>
+                  setSelectedEngine({ label: 'AE2', value: 'ae2' })
+                }
               />
             </div>
           ) : (
@@ -260,6 +348,8 @@ export const AlarmMonitorLayout = () => {
             <EngineDetailView
               vesselId={vesselId}
               engineId={selectedEngine.value}
+              latestME={latestME}
+              latestAE={latestAE}
             />
           )}
         </div>

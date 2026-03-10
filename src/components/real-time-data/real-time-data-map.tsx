@@ -4,71 +4,86 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef } from 'react';
-import {
-    MapContainer,
-    Marker,
-    Popup,
-    TileLayer,
-    useMap,
-} from 'react-leaflet';
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface RealTimeDataMapProps {
-    /** Vessel name shown in popup */
-    name?: string;
-    /** Latitude */
-    lat: number;
-    /** Longitude */
-    long: number;
-    /** Vessel heading in degrees */
-    direction?: number;
-    /** Position timestamp in **seconds** (unix) */
-    timestamp: number;
-    /** CSS height value */
-    minHeight?: number | string;
+  /** Vessel name shown in popup */
+  name?: string;
+  /** Latitude */
+  lat: number;
+  /** Longitude */
+  long: number;
+  /** Vessel heading in degrees */
+  direction?: number;
+  /** Position timestamp in **seconds** (unix) */
+  timestamp: number;
+  /** CSS height value */
+  minHeight?: number | string;
 }
 
 // ─── MapUpdater ──────────────────────────────────────────────────────────────
 
-function MapUpdater({ position, lastSeen }: { position: [number, number]; lastSeen: number }) {
-    const map = useMap();
-    useEffect(() => {
+function MapUpdater({
+  position,
+  lastSeen,
+}: {
+  position: [number, number];
+  lastSeen: number;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    try {
+      map.invalidateSize();
+    } catch {
+      // map container not ready yet
+    }
+    const timer = setTimeout(() => {
+      try {
         map.invalidateSize();
-        const timer = setTimeout(() => map.invalidateSize(), 400);
-        if (position[0] && position[1]) {
-            map.setView(position, map.getZoom());
-        }
-        return () => clearTimeout(timer);
-    }, [map, position, lastSeen]);
-    return null;
+      } catch {
+        // map container not ready yet
+      }
+    }, 400);
+    if (position[0] && position[1]) {
+      try {
+        map.setView(position, map.getZoom());
+      } catch {
+        // map not fully initialized yet
+      }
+    }
+    return () => clearTimeout(timer);
+  }, [map, position, lastSeen]);
+  return null;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function colorByRecency(timestampMs: number): string {
-    const diff = Date.now() - timestampMs;
-    const FIVE_MIN = 5 * 60 * 1000;
-    const THREE_HR = 3 * 60 * 60 * 1000;
-    if (diff < FIVE_MIN) return '#005daa'; // blue (recent)
-    if (diff < THREE_HR) return '#FFC107'; // yellow
-    return '#F44336'; // red
+  const diff = Date.now() - timestampMs;
+  const FIVE_MIN = 5 * 60 * 1000;
+  const THREE_HR = 3 * 60 * 60 * 1000;
+  if (diff < FIVE_MIN) return '#005daa'; // blue (recent)
+  if (diff < THREE_HR) return '#FFC107'; // yellow
+  return '#F44336'; // red
 }
 
 function createArrowIcon(direction: number, timestampMs: number) {
-    const color = colorByRecency(timestampMs);
-    const diff = Date.now() - timestampMs;
-    const shouldPulse = diff < 3 * 60 * 60 * 1000;
+  const color = colorByRecency(timestampMs);
+  const diff = Date.now() - timestampMs;
+  const shouldPulse = diff < 3 * 60 * 60 * 1000;
 
-    return L.divIcon({
-        className: 'real-time-data-marker',
-        iconSize: [20, 20],
-        iconAnchor: [10, 10],
-        popupAnchor: [0, -10],
-        html: `
+  return L.divIcon({
+    className: 'real-time-data-marker',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10],
+    html: `
       <div style="position:relative;">
-        ${shouldPulse
-                ? `<div style="
+        ${
+          shouldPulse
+            ? `<div style="
                 position:absolute;top:50%;left:50%;
                 transform:translate(-50%,-50%);
                 width:30px;height:30px;
@@ -76,8 +91,8 @@ function createArrowIcon(direction: number, timestampMs: number) {
                 border-radius:50%;opacity:0;
                 animation:rtDataPulse 2s ease-out infinite;
               "></div>`
-                : ''
-            }
+            : ''
+        }
         <div style="
           position:relative;width:20px;height:20px;
           transform:rotate(${direction}deg);
@@ -91,17 +106,17 @@ function createArrowIcon(direction: number, timestampMs: number) {
         </div>
       </div>
     `,
-    });
+  });
 }
 
 // ─── Inject global styles once ───────────────────────────────────────────────
 
 let stylesInjected = false;
 function injectStyles() {
-    if (stylesInjected || typeof document === 'undefined') return;
-    stylesInjected = true;
-    const style = document.createElement('style');
-    style.textContent = `
+  if (stylesInjected || typeof document === 'undefined') return;
+  stylesInjected = true;
+  const style = document.createElement('style');
+  style.textContent = `
     @keyframes rtDataPulse {
       0%   { transform: translate(-50%,-50%) scale(0.5); opacity: 0.8; }
       100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0;   }
@@ -111,58 +126,64 @@ function injectStyles() {
       border: none !important;
     }
   `;
-    document.head.appendChild(style);
+  document.head.appendChild(style);
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function RealTimeDataMap({
-    name = 'Demo Vessel',
-    lat,
-    long,
-    direction = 0,
-    timestamp,
-    minHeight = 400,
+  name = 'Demo Vessel',
+  lat,
+  long,
+  direction = 0,
+  timestamp,
+  minHeight = 400,
 }: RealTimeDataMapProps) {
-    useEffect(() => injectStyles(), []);
+  useEffect(() => injectStyles(), []);
 
-    const mapRef = useRef<L.Map | null>(null);
-    const position: [number, number] = [lat, long];
-    const lastSeenMs = timestamp * 1000;
+  const mapRef = useRef<L.Map | null>(null);
+  const position: [number, number] = [lat, long];
+  const lastSeenMs = timestamp * 1000;
 
-    const height = typeof minHeight === 'number' ? `${minHeight}px` : minHeight;
+  const height = typeof minHeight === 'number' ? `${minHeight}px` : minHeight;
 
-    return (
-        <div id="real-time-data-map" style={{ height: '100%' }}>
-            <MapContainer
-                center={position}
-                zoom={7}
-                scrollWheelZoom
-                zoomControl
-                ref={mapRef}
-                style={{
-                    minHeight: height,
-                    height: '100%',
-                    borderRadius: '0.75rem',
-                }}
-            >
-                <MapUpdater position={position} lastSeen={lastSeenMs} />
+  return (
+    <div id="real-time-data-map" style={{ height: '100%' }}>
+      <MapContainer
+        center={position}
+        zoom={7}
+        scrollWheelZoom
+        zoomControl
+        ref={mapRef}
+        style={{
+          minHeight: height,
+          height: '100%',
+          borderRadius: '0.75rem',
+        }}
+      >
+        <MapUpdater position={position} lastSeen={lastSeenMs} />
 
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
-                <Marker position={position} icon={createArrowIcon(direction, lastSeenMs)}>
-                    <Popup>
-                        <strong>{name}</strong>
-                        <br />
-                        Timestamp: {new Date(lastSeenMs).toLocaleString('en-US')}
-                        <br />
-                        Last seen: {formatDistanceToNowStrict(new Date(lastSeenMs), { addSuffix: true })}
-                    </Popup>
-                </Marker>
-            </MapContainer>
-        </div>
-    );
+        <Marker
+          position={position}
+          icon={createArrowIcon(direction, lastSeenMs)}
+        >
+          <Popup>
+            <strong>{name}</strong>
+            <br />
+            Timestamp: {new Date(lastSeenMs).toLocaleString('en-US')}
+            <br />
+            Last seen:{' '}
+            {formatDistanceToNowStrict(new Date(lastSeenMs), {
+              addSuffix: true,
+            })}
+          </Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
 }
