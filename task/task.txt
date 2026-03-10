@@ -1,0 +1,50 @@
+## task 1
+
+page: `/alarm-monitoring`
+
+`/home/ah-munna/Desktop/CDL/perfomax/nura_client/src/components/alarm-monitor/alarm-table.tsx`
+on the Alarms — [vessel name] table:
+
+task:
+- Add sorting buttons for parameters (Engines, severity, status), add sorting of the alarms for the selected parameter (when you are on the page of one engine, the alarms below should be displayed for that one engine)
+- Make the alarms as a scrollable table or as a single set of data
+
+---
+
+## task 2
+
+page: `/alarm-monitoring`
+`/home/ah-munna/Desktop/CDL/perfomax/nura_client/src/components/alarm-monitor/index.tsx`
+task:
+Add hyperlinks to the names of the asset (go in the same page from all engines to a specific asset)
+
+---
+
+## task 3
+
+page: `/fleet-overview`
+`/home/ah-munna/Desktop/CDL/perfomax/nura_client/src/components/vessel-map/vessel-map.tsx`
+task:
+Change "last seen" to the "Last data received"
+Change "Position" from date/time to coordinates
+Change WiFi to Internet
+New design (see attachment: /home/ah-munna/Desktop/CDL/perfomax/nura_client/task/task_3.png)
+Add hyperlinks to the engine names (same as previous task, but goes from this page to alarm monitoring page while the engine selected), leading to alarms monitoring 
+
+logic of the indicators: 
+internet - online /  not online - there should be an icon
+
+color scheme for real-time data - green - last data received less than 5 min ago,
+yellow 5 min to 30 min,  red over 30min 
+ 
+for condition monitoring:
+green - no critical alarms for the last 5 hour, engine health over 70%
+yellow - one out of is valid engine health above 50% below 70%, no critical alarms last 5h / Eng health above 70% but critical alarm last 5h
+red color - risks! low engine health, or critical alarms, or trends showing something bad
+Add amount of notifications/alarms
+
+---
+
+## task 4
+
+rename the condition monitoring route to "Real Time Data"

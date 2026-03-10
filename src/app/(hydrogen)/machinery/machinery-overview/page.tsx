@@ -7,7 +7,7 @@ import StatusGauge from '@/components/machinery-overview/status-gauge';
 import { routes } from '@/config/routes';
 import { getActiveAlarmCounts } from '@/data/nura/alarm-data';
 import { vesselGensetData } from '@/data/nura/engine-data';
-import { engineData, Ship, shipData } from '@/data/nura/ships';
+import { engineData } from '@/data/nura/ships';
 import {
   selectedEngineAtom,
   selectedShipAtom,
@@ -182,108 +182,115 @@ const consumptionData = [
   { v: 56 },
 ];
 
-const defaultMetrics = [
-  {
-    label: 'RPM',
-    value: '74',
-    unit: 'mm/s',
-    showSparkline: true,
-    sparklineData: rpmData,
-    sparklineColor: '#3872FA',
-  },
-  {
-    label: 'Exhaust Temp',
-    value: '435',
-    unit: '°C',
-    showSparkline: true,
-    sparklineData: exhaustTempData,
-    sparklineColor: '#FF6B6B',
-  },
-  {
-    label: 'Oil pressure',
-    value: '--',
-    unit: 'bar',
-    showSparkline: true,
-    sparklineData: oilPressureData,
-    sparklineColor: '#4ECDC4',
-  },
-  {
-    label: 'Oil temp',
-    value: '--',
-    unit: 'bar',
-    showSparkline: true,
-    sparklineData: oilTempData,
-    sparklineColor: '#45B7D1',
-  },
-  {
-    label: 'Coolant temp',
-    value: '--',
-    unit: 'bar',
-    showSparkline: true,
-    sparklineData: coolantTempData,
-    sparklineColor: '#96CEB4',
-  },
-  {
-    label: 'Consumption',
-    value: 'xx',
-    unit: 'l',
-    showSparkline: true,
-    sparklineData: consumptionData,
-    sparklineColor: '#FFEAA7',
-  },
-];
+const getMetrics = (
+  rpmVal: string | number, rpmUnit: string,
+  exTempVal: string | number,
+  oilPressVal: string | number, oilPressUnit: string,
+  oilTempVal: string | number,
+  coolTempVal: string | number,
+  consVal: string | number, consUnit: string
+) => [
+    {
+      label: 'RPM',
+      value: String(rpmVal),
+      unit: rpmUnit,
+      showSparkline: rpmVal !== '--',
+      sparklineData: rpmData,
+      sparklineColor: '#3872FA',
+    },
+    {
+      label: 'Exhaust Temp',
+      value: String(exTempVal),
+      unit: exTempVal !== '--' ? '°C' : '',
+      showSparkline: exTempVal !== '--',
+      sparklineData: exhaustTempData,
+      sparklineColor: '#FF6B6B',
+    },
+    {
+      label: 'Oil pressure',
+      value: String(oilPressVal),
+      unit: oilPressVal !== '--' ? oilPressUnit : '',
+      showSparkline: oilPressVal !== '--',
+      sparklineData: oilPressureData,
+      sparklineColor: '#4ECDC4',
+    },
+    {
+      label: 'Oil temp',
+      value: String(oilTempVal),
+      unit: oilTempVal !== '--' ? '°C' : '',
+      showSparkline: oilTempVal !== '--',
+      sparklineData: oilTempData,
+      sparklineColor: '#45B7D1',
+    },
+    {
+      label: 'Coolant temp',
+      value: String(coolTempVal),
+      unit: coolTempVal !== '--' ? '°C' : '',
+      showSparkline: coolTempVal !== '--',
+      sparklineData: coolantTempData,
+      sparklineColor: '#96CEB4',
+    },
+    {
+      label: 'Consumption',
+      value: String(consVal),
+      unit: consVal !== '--' ? consUnit : '',
+      showSparkline: consVal !== '--',
+      sparklineData: consumptionData,
+      sparklineColor: '#FFEAA7',
+    },
+  ];
 
 const machineryData: (Omit<MachineryCardProps, 'alarms'> & {
   engineValue?: string;
 })[] = [
-  {
-    id: 1,
-    title: 'ME Port',
-    engineValue: 'me1',
-    healthScore: 80,
-    status: 'running',
-    metrics: defaultMetrics,
-  },
-  {
-    id: 2,
-    title: 'ME Stbd',
-    engineValue: 'me2',
-    healthScore: 98,
-    status: 'running',
-    metrics: defaultMetrics,
-  },
-  {
-    id: 3,
-    title: 'ME Center',
-    engineValue: 'me3',
-    healthScore: 55,
-    status: 'standby',
-    metrics: defaultMetrics,
-  },
-  {
-    id: 5,
-    title: 'Gen Set 1',
-    engineValue: 'ae1',
-    healthScore: 80,
-    status: 'running',
-    metrics: defaultMetrics,
-  },
-  {
-    id: 6,
-    title: 'Gen Set 2',
-    engineValue: 'ae2',
-    healthScore: 80,
-    status: 'running',
-    metrics: defaultMetrics,
-  },
-  {
-    id: 7,
-    title: 'Gen Set 3',
-    healthScore: 98,
-    status: 'off',
-    metrics: defaultMetrics,
-  },
-];
+    {
+      id: 1,
+      title: 'ME Port',
+      engineValue: 'me1',
+      healthScore: 80,
+      status: 'running',
+      metrics: getMetrics('1270', 'rpm', '356', '465', 'kPa', '76', '84', '11.23', 'kg/h'),
+    },
+    {
+      id: 2,
+      title: 'ME Stbd',
+      engineValue: 'me2',
+      healthScore: 98,
+      status: 'running',
+      metrics: getMetrics('1264', 'rpm', '45', '479', 'kPa', '78', '87', '8.98', 'kg/h'),
+    },
+    {
+      id: 3,
+      title: 'ME Center',
+      engineValue: 'me3',
+      healthScore: 55,
+      status: 'standby',
+      metrics: getMetrics('0', 'rpm', '370', '469', 'kPa', '79', '82', '0', 'kg/h'),
+    },
+    {
+      id: 5,
+      title: 'Gen Set 1',
+      engineValue: 'ae1',
+      healthScore: 80,
+      status: 'running',
+      metrics: getMetrics('0', 'rpm', '--', '--', '', '--', '--', '--', ''),
+    },
+    {
+      id: 6,
+      title: 'Gen Set 2',
+      engineValue: 'ae2',
+      healthScore: 80,
+      status: 'running',
+      metrics: getMetrics('1413', 'rpm', '--', '--', '', '--', '--', '--', ''),
+    },
+    {
+      id: 7,
+      title: 'Gen Set 3',
+      healthScore: 98,
+      status: 'off',
+      metrics: getMetrics('0', 'rpm', '--', '--', '', '--', '--', '--', ''),
+    },
+  ];
 
 export default function MachineryOverviewPage() {
   const [selectedShip] = useAtom(selectedShipAtom);
