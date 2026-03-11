@@ -58,7 +58,7 @@ export default function ParameterScatterChart({
     <PerfomaxCard
       className={className}
       title="Scatter"
-      titleClassName="text-lg font-bold"
+      // titleClassName="text-lg font-bold"
       action={
         <div className="flex items-center gap-8 pt-1 text-xs whitespace-nowrap">
           <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
