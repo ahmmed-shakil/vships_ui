@@ -50,7 +50,7 @@ export interface EngineMonitorData {
 
 export const ENGINE_RATED_KW = 1033;
 export const RPM_GAUGE_MAX = 2400;
-export const FUEL_GAUGE_MAX = 350;
+export const FUEL_GAUGE_MAX = 280;
 
 // ─── Helper: derive display values ──────────────────────────────────────────
 
