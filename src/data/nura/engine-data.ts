@@ -77,15 +77,15 @@ export const vesselEngineData: Record<number, EngineMonitorData[]> = {
     {
       id: 'me1',
       label: 'ME PORT',
-      flowMeter: { fm_in: 33.5, fm_cons: 26.8, fm_out: 6.7 },
-      gauge: { engine_rpm: 1167.5, engine_load: 11.52, fuel_cons: 33.5 },
+      flowMeter: { fm_in: 35.05, fm_cons: 28.35, fm_out: 6.7 },
+      gauge: { engine_rpm: 1167.5, engine_load: 11.52, fuel_cons: 28.35 },
       totals: { total_fuel: 66.46, running_hours: 5077.1 },
     },
     {
       id: 'me2',
       label: 'ME STBD',
-      flowMeter: { fm_in: 35.0, fm_cons: 28.0, fm_out: 7.0 },
-      gauge: { engine_rpm: 1178.2, engine_load: 12.1, fuel_cons: 35.0 },
+      flowMeter: { fm_in: 36.99, fm_cons: 29.99, fm_out: 7.0 },
+      gauge: { engine_rpm: 1178.2, engine_load: 12.1, fuel_cons: 29.99 },
       totals: { total_fuel: 68.2, running_hours: 7699.65 },
     },
     {

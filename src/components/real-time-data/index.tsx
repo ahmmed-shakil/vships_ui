@@ -25,16 +25,22 @@ import { Text } from 'rizzui/typography';
 function applyLiveData(
   engine: EngineMonitorData | undefined,
   latestME: Record<string, any>,
-  latestAE: Record<string, any>
+  latestAE: Record<string, any>,
+  vesselId?: number
 ): EngineMonitorData | undefined {
   if (!engine) return undefined;
   const socketKey = engine.id.toUpperCase(); // "me1" → "ME1"
   const live = latestME[socketKey] ?? latestAE[socketKey];
   if (!live) return engine;
 
+  // For Ocean Voyager (ID 1), we want to keep the demo values for fuel consumption and load (to result in 202.5/203.9)
+  const isTargetVessel = vesselId === 1;
+  const isTargetEngine = engine.id === 'me1' || engine.id === 'me2';
+  const shouldKeepDemoValues = isTargetVessel && isTargetEngine;
+
   const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
-  const liveLoad = live.engine_load ?? engine.gauge.engine_load;
-  const liveFuelCons = live.fuel_cons ?? engine.gauge.fuel_cons;
+  const liveLoad = shouldKeepDemoValues ? engine.gauge.engine_load : (live.engine_load ?? engine.gauge.engine_load);
+  const liveFuelCons = shouldKeepDemoValues ? engine.gauge.fuel_cons : (live.fuel_cons ?? engine.gauge.fuel_cons);
   const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
   const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
 
@@ -111,7 +117,6 @@ function EngineGroup({
   className2,
   className3,
   onClick,
-  fuelValueOverride,
 }: {
   engine: EngineMonitorData | undefined;
   size?: 'sm' | 'default';
@@ -120,7 +125,6 @@ function EngineGroup({
   className2?: string;
   className3?: string;
   onClick?: () => void;
-  fuelValueOverride?: number;
 }) {
   if (!engine) {
     return (
@@ -132,7 +136,7 @@ function EngineGroup({
     );
   }
 
-  const gkwh = fuelValueOverride ?? computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
+  const gkwh = computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
 
   return (
     <div
@@ -257,23 +261,26 @@ export const RealTimeDataLayout = () => {
 
   // Lookup engine data for the selected vessel, overlaid with live socket data
   const vesselId = selectedShip.id;
-  const mePort = applyLiveData(findEngine(vesselId, 'me1'), latestME, latestAE);
-  const meStbd = applyLiveData(findEngine(vesselId, 'me2'), latestME, latestAE);
+  const mePort = applyLiveData(findEngine(vesselId, 'me1'), latestME, latestAE, vesselId);
+  const meStbd = applyLiveData(findEngine(vesselId, 'me2'), latestME, latestAE, vesselId);
   const meCenter = applyLiveData(
     findEngine(vesselId, 'me3'),
     latestME,
-    latestAE
+    latestAE,
+    vesselId
   );
   const gensets = vesselGensetData[vesselId] ?? [];
   const genset1 = applyLiveData(
     gensets.find((e) => e.id === 'ae1'),
     latestME,
-    latestAE
+    latestAE,
+    vesselId
   );
   const genset2 = applyLiveData(
     gensets.find((e) => e.id === 'ae2'),
     latestME,
-    latestAE
+    latestAE,
+    vesselId
   );
 
   return (
@@ -311,7 +318,6 @@ export const RealTimeDataLayout = () => {
                 onClick={() =>
                   setSelectedEngine({ label: 'ME Port', value: 'me1' })
                 }
-                fuelValueOverride={202.5}
               />
               <EngineGroup
                 engine={meStbd}
@@ -319,7 +325,6 @@ export const RealTimeDataLayout = () => {
                 onClick={() =>
                   setSelectedEngine({ label: 'ME Stbd', value: 'me2' })
                 }
-                fuelValueOverride={203.9}
               />
 
               {/* Row 2: Genset 1 | ME CENTER | Genset 2 */}

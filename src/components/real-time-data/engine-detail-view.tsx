@@ -56,12 +56,19 @@ export default function EngineDetailView({
     const socketKey = engine.id.toUpperCase();
     const live = latestME[socketKey] ?? latestAE[socketKey];
     if (live) {
+      const shouldKeepDemoValues =
+        vesselId === 1 && (engine.id === 'me1' || engine.id === 'me2');
+
       engine = {
         ...engine,
         gauge: {
           engine_rpm: live.engine_rpm ?? engine.gauge.engine_rpm,
-          engine_load: live.engine_load ?? engine.gauge.engine_load,
-          fuel_cons: live.fuel_cons ?? engine.gauge.fuel_cons,
+          engine_load: shouldKeepDemoValues
+            ? engine.gauge.engine_load
+            : (live.engine_load ?? engine.gauge.engine_load),
+          fuel_cons: shouldKeepDemoValues
+            ? engine.gauge.fuel_cons
+            : (live.fuel_cons ?? engine.gauge.fuel_cons),
         },
         detail: engine.detail
           ? {

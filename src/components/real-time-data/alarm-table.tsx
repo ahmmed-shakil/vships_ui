@@ -70,9 +70,13 @@ export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
         title: (
             <HeaderCell
                 title="Engine"
-                sortable={false}
+                sortable
+                ascending={
+                    sortConfig?.direction === 'asc' && sortConfig?.key === 'engine'
+                }
             />
         ),
+        onHeaderCell: () => onHeaderCellClick('engine'),
         dataIndex: 'engine',
         key: 'engine',
         width: 100,

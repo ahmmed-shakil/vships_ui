@@ -122,6 +122,7 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
           title={engine.label}
           value={gkwh}
           max={FUEL_GAUGE_MAX}
+
           min={140}
           centerLabel={`${gkwh}`}
           unit="g/Kwh"
@@ -361,14 +362,16 @@ const OperationOverviewLayout = () => {
   // Engine data for the selected vessel, overlaid with live socket values
   const baseEngines = vesselEngineData[vessel.id] ?? [];
   const engines = baseEngines.map((engine) => {
-    // Map static id "me1" → socket engineId "ME1"
     const socketKey = engine.id.toUpperCase(); // "me1" → "ME1"
     const live = latestME[socketKey];
     if (!live) return engine;
 
+    // For Ocean Voyager (ID 1), we want to keep the demo values for fuel consumption and load
+    const shouldKeepDemoValues = vessel.id === 1 && (engine.id === 'me1' || engine.id === 'me2');
+
     const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
-    const liveLoad = live.engine_load ?? engine.gauge.engine_load;
-    const liveFuelCons = live.fuel_cons ?? engine.gauge.fuel_cons;
+    const liveLoad = shouldKeepDemoValues ? engine.gauge.engine_load : (live.engine_load ?? engine.gauge.engine_load);
+    const liveFuelCons = shouldKeepDemoValues ? engine.gauge.fuel_cons : (live.fuel_cons ?? engine.gauge.fuel_cons);
 
     // FM Cons = fuel_cons × 0.8, FM In = FM Cons + FM Out
     const fmCons = liveFuelCons * 0.8;

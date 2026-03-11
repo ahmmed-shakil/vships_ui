@@ -1,67 +1,70 @@
-import TruckSolidIcon from '@/components/icons/truck-solid';
-import BrushSolidIcon from '@/components/icons/brush-solid';
-import CubeSolidIcon from '@/components/icons/cube-solid';
-import FileStackIcon from '@/components/icons/file-stack';
-import CloudTaskIcon from '@/components/icons/cloud-task';
-import ShoppingBagSolidIcon from '@/components/icons/shopping-bag-solid';
-import BulbSolidIcon from '@/components/icons/bulb-solid';
-import ParcelMapIcon from '@/components/icons/parcel-map';
+import { 
+  PiEngine, 
+  PiBellSimpleRingingFill, 
+  PiWarningFill, 
+  PiCheckCircleFill, 
+  PiInfoFill, 
+  PiAnchorFill,
+  PiLightningFill,
+  PiWaveformFill
+} from 'react-icons/pi';
 
 export const notificationsData = [
   {
     id: 1,
-    name: 'Invitation for crafting engaging designs',
-    icon: BrushSolidIcon,
+    name: 'High exhaust gas temperature on Ocean Voyager - ME PORT',
+    icon: PiWarningFill,
     unRead: true,
-    sendTime: '2023-06-01T09:35:31.820Z',
+    sendTime: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 mins ago
   },
   {
     id: 2,
-    name: 'Isomorphic dashboard redesign',
-    icon: CubeSolidIcon,
+    name: 'Critical Alert: Low lube oil pressure on Sea Explorer - AE1',
+    icon: PiBellSimpleRingingFill,
     unRead: true,
-    sendTime: '2023-05-30T09:35:31.820Z',
+    sendTime: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 mins ago
   },
   {
     id: 3,
-    name: '3 New Incoming Project Files:',
-    icon: FileStackIcon,
+    name: 'Maintenance completed for ME STBD on Atlantic Star',
+    icon: PiCheckCircleFill,
     unRead: false,
-    sendTime: '2023-06-01T09:35:31.820Z',
+    sendTime: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
   },
   {
     id: 4,
-    name: 'Swornak purchased isomorphic',
-    icon: ShoppingBagSolidIcon,
+    name: 'Vessel Ocean Voyager entered Singapore Port area',
+    icon: PiAnchorFill,
     unRead: false,
-    sendTime: '2023-05-21T09:35:31.820Z',
+    sendTime: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
   },
   {
     id: 5,
-    name: 'Task #45890 merged with #45890 in “Ads Pro Admin Dashboard project:',
-    icon: CloudTaskIcon,
+    name: 'ME CENTER fuel consumption efficiency improved by 5%',
+    icon: PiLightningFill,
     unRead: true,
-    sendTime: '2023-06-01T09:35:31.820Z',
+    sendTime: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(), // 12 hours ago
   },
   {
     id: 6,
-    name: '3 new application design concepts added',
-    icon: BulbSolidIcon,
+    name: 'New engine vibration report available for Arctic Sun',
+    icon: PiWaveformFill,
     unRead: true,
-    sendTime: '2023-05-15T09:35:31.820Z',
+    sendTime: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
   },
   {
     id: 7,
-    name: 'Your order has been placed',
-    icon: ParcelMapIcon,
+    name: 'System Update: Windy map weather layers now active',
+    icon: PiInfoFill,
     unRead: false,
-    sendTime: '2023-05-16T09:35:31.820Z',
+    sendTime: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString(), // 1.5 days ago
   },
   {
     id: 8,
-    name: 'Order has been shipped to #123221',
-    icon: TruckSolidIcon,
+    name: 'Scheduled maintenance for ME STBD on Ocean Voyager starting in 2 days',
+    icon: PiEngine,
     unRead: false,
-    sendTime: '2023-05-01T09:35:31.820Z',
+    sendTime: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
   },
 ];
+

@@ -67,13 +67,13 @@ function NotificationsList({
           ))}
         </div>
       </div>
-      <Link
+      {/* <Link
         href={'#'}
         onClick={() => setIsOpen(false)}
         className="-me-6 block px-6 pb-0.5 pt-3 text-center hover:underline"
       >
         View All Activity
-      </Link>
+      </Link> */}
     </div>
   );
 }
