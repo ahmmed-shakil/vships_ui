@@ -1532,3 +1532,14 @@ div[style='z-index: 1000001;'],
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   @apply rounded-md bg-gray-400/70;
 }
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(105%); }
+  100% { transform: translateX(-105%); }
+}
+
+.animate-marquee-scroll {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee-scroll 25s linear infinite;
+}

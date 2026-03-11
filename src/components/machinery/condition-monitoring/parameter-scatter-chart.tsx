@@ -57,47 +57,48 @@ export default function ParameterScatterChart({
   return (
     <PerfomaxCard
       className={className}
-      title={
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold">Scatter</span>
+      title="Scatter"
+      titleClassName="text-lg font-bold"
+      action={
+        <div className="flex items-center gap-8 pt-1 text-xs whitespace-nowrap">
+          <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
+            <span
+              className="inline-block h-2.5 w-4 rounded-sm"
+              style={{ backgroundColor: '#22C55E' }}
+            />
+            <span className="text-foreground">{opt1.label}</span>
+          </span>
+          <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
+            <span
+              className="inline-block h-2.5 w-2.5 rotate-45 rounded-sm"
+              style={{ backgroundColor: '#A855F7' }}
+            />
+            <span className="text-foreground">{opt2.label}</span>
+          </span>
+        </div>
+      }
+      headerFooter={
+        <div className="flex items-center gap-2 px-3 pb-3 pt-1">
           <Select
             options={opt1Options}
             value={opt1}
             onChange={setOpt1}
-            className="w-32 min-w-0 shrink"
-            selectClassName="h-8 text-xs font-semibold"
+            className="w-44 min-w-0 shrink"
+            selectClassName="h-9 text-xs font-semibold"
             dropdownClassName="text-sm"
           />
-          <span className="">vs</span>
+          <span className="text-sm font-bold text-muted-foreground">vs</span>
           <Select
             options={opt2Options}
             value={opt2}
             onChange={setOpt2}
-            className="w-32 min-w-0 shrink"
-            selectClassName="h-8 text-xs font-semibold"
+            className="w-44 min-w-0 shrink"
+            selectClassName="h-9 text-xs font-semibold"
             dropdownClassName="text-sm"
           />
         </div>
       }
-      action={
-        <div className="flex items-center gap-3 pt-2 text-xs">
-          <span className="flex items-center gap-1">
-            <span
-              className="inline-block h-2 w-4 rounded-sm"
-              style={{ backgroundColor: '#22C55E' }}
-            />
-            {opt1.label}
-          </span>
-          <span className="flex items-center gap-1">
-            <span
-              className="inline-block h-2 w-2 rotate-45 rounded-sm"
-              style={{ backgroundColor: '#A855F7' }}
-            />
-            {opt2.label}
-          </span>
-        </div>
-      }
-      bodyClassName="px-3 pb-4 mt-4"
+      bodyClassName="px-3 pb-4"
     >
       {/* Chart with axis labels */}
       <div className="mt-4 flex h-full">

@@ -36,7 +36,7 @@ const RealTimeDataHeaderSelectors = dynamic(
 );
 
 const AlarmMonitoringHeaderSelectors = dynamic(
-  () => import('@/components/real-time-data/header-selectors'),
+  () => import('@/components/operation-overview/header-selectors'),
   { ssr: false }
 );
 

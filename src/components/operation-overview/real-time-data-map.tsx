@@ -151,7 +151,7 @@ export default function RealTimeDataMap({
     <div id="real-time-data-map" style={{ height: '100%' }}>
       <MapContainer
         center={position}
-        zoom={7}
+        zoom={5}
         scrollWheelZoom
         zoomControl
         ref={mapRef}

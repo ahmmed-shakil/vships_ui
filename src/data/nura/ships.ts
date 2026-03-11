@@ -148,8 +148,6 @@ export const engineData = [
   { label: 'ME Port', value: 'me1' },
   { label: 'ME Stbd', value: 'me2' },
   { label: 'ME Center', value: 'me3' },
-  { label: 'AE1', value: 'ae1' },
-  { label: 'AE2', value: 'ae2' },
-  { label: 'Crane', value: 'crane' },
-  { label: 'Winch', value: 'winch' },
+  { label: 'Genset 1', value: 'ae1' },
+  { label: 'Genset 2', value: 'ae2' },
 ];

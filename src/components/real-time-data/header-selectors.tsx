@@ -23,14 +23,14 @@ export default function AlarmMonitoringHeaderSelectors() {
                 dropdownClassName="text-gray-900"
                 placeholder="Select Vessel"
             />
-            {/* <Select
+            <Select
                 options={engineData}
                 value={selectedEngine}
                 onChange={setSelectedEngine}
                 className="w-36"
                 selectClassName="h-9 text-sm"
                 dropdownClassName="text-gray-900"
-            /> */}
+            />
         </div>
     );
 }
