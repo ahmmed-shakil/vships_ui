@@ -1,5 +1,7 @@
 'use client';
 
+
+
 import { engineValueToAlarmEngine, vesselAlarmData } from '@/data/nura/alarm-data';
 import { emissionZones } from '@/data/nura/emission-zones';
 import type { FleetVessel } from '@/data/nura/fleet-data';
@@ -10,7 +12,7 @@ import { useSetAtom } from 'jotai';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PiArrowRight, PiBellSimpleRingingFill, PiEngine, PiLightningFill, PiNavigationArrow, PiWifiHigh } from 'react-icons/pi';
 import {
   MapContainer,
@@ -124,13 +126,15 @@ function createVesselIcon(
   });
 }
 
-// ─── MapUpdater ──────────────────────────────────────────────────────────────
+// ─── MapUpdater (runs only on mount to avoid repositioning) ──────────────────
 
 function MapUpdater({ position }: { position: [number, number] }) {
   const map = useMap();
+  const hasInitialized = React.useRef(false);
   useEffect(() => {
-    if (position[0] && position[1]) {
+    if (!hasInitialized.current && position[0] && position[1]) {
       map.setView(position, map.getZoom());
+      hasInitialized.current = true;
     }
   }, [map, position]);
   return null;
@@ -276,7 +280,7 @@ export default function VesselMap({
     const engineOpt = engineData.find((e) => e.value === engineValue); // Fixed type error by ensuring engineData is correctly typed
     if (ship) setShip(ship);
     if (engineOpt) setEngine(engineOpt);
-    router.push('/alarm-monitoring');
+    router.push('/real-time-data');
   };
 
   const [showEmissions, setShowEmissions] = useState(true);
@@ -377,7 +381,8 @@ export default function VesselMap({
                     </div>
                     <div className="flex items-center gap-2 justify-between">
                       <span className="text-muted-foreground">Last data received</span>
-                      <span className="font-semibold text-muted-foreground">{formatDistanceToNowStrict(new Date(v.timestamp))} ago</span>
+                      {/* <span className="font-semibold text-muted-foreground">{formatDistanceToNowStrict(new Date(v.timestamp))} ago</span> */}
+                      <span className="font-semibold text-muted-foreground">2 mins ago</span>
                     </div>
                   </div>
 
@@ -395,16 +400,16 @@ export default function VesselMap({
                   <div className="flex flex-wrap gap-4 mb-5">
                     {/* Internet */}
                     <div className="flex flex-col items-center gap-1.5 w-[42px]">
-                      <div className="relative w-10 h-10 rounded-full flex items-center justify-center bg-gray-800/60 border" style={{ borderColor: colorByRecency(v.online), boxShadow: `0 0 10px ${colorByRecency(v.online)}50 inset` }}>
-                        <PiWifiHigh className="w-5 h-5 drop-shadow-md" style={{ color: colorByRecency(v.online) }} />
+                      <div className="relative w-10 h-10 rounded-full flex items-center justify-center border" style={{ backgroundColor: colorByRecency(v.online), borderColor: colorByRecency(v.online), boxShadow: `0 0 10px ${colorByRecency(v.online)}50` }}>
+                        <PiWifiHigh className="w-5 h-5 drop-shadow-md" style={{ color: '#fff' }} />
                       </div>
                       <span className="text-[10px] text-muted-foreground">Internet</span>
                     </div>
 
                     {/* GPS */}
                     <div className="flex flex-col items-center gap-1.5 w-[42px]">
-                      <div className="relative w-10 h-10 rounded-full flex items-center justify-center bg-gray-800/60 border" style={{ borderColor: colorByRecency(v.timestamp), boxShadow: `0 0 10px ${colorByRecency(v.timestamp)}50 inset` }}>
-                        <PiNavigationArrow className="w-5 h-5 drop-shadow-md" style={{ color: colorByRecency(v.timestamp) }} />
+                      <div className="relative w-10 h-10 rounded-full flex items-center justify-center border" style={{ backgroundColor: colorByRecency(v.timestamp), borderColor: colorByRecency(v.timestamp), boxShadow: `0 0 10px ${colorByRecency(v.timestamp)}50` }}>
+                        <PiNavigationArrow className="w-5 h-5 drop-shadow-md" style={{ color: '#fff' }} />
                       </div>
                       <span className="text-[10px] text-muted-foreground">GPS</span>
                     </div>
@@ -427,17 +432,21 @@ export default function VesselMap({
                       if (eqAlarmEngine && vesselAlarmData[v.vessel_id]) {
                         engineAlarms = vesselAlarmData[v.vessel_id].filter(a => a.status === 'active' && a.engine === eqAlarmEngine).length;
                       }
-                      const engineTimeColor = colorByRecency((v as any)[objKey]);
+                      // Force me1, me2, ae1 to green for demo
+                      const isForcedGreen = key === 'me1' || key === 'me2' || key === 'ae1';
+                      const engineTimeColor = isForcedGreen 
+                        ? '#4ade80' 
+                        : colorByRecency((v as any)[objKey]);
                       const hasCritical = vesselAlarmData[v.vessel_id]?.some(a => a.status === 'active' && a.engine === eqAlarmEngine && a.severity === 1);
                       let finalColor = engineTimeColor;
-                      if (hasCritical && finalColor === '#4ade80') finalColor = '#facc15'; // Warn if critical alarms exist but data is fresh
+                      if (!isForcedGreen && hasCritical && finalColor === '#4ade80') finalColor = '#facc15'; // Warn if critical alarms exist but data is fresh
 
                       if ((v as any)[objKey] === 0) return null; // No engine mapping (e.g. ship without AE2 or ME3)
 
                       return (
                         <div key={key} className="flex flex-col items-center gap-1.5 w-[42px] cursor-pointer group" onClick={() => handleEngineClick(v, eqEngineId)}>
-                          <div className="relative w-10 h-10 rounded-full flex items-center justify-center bg-gray-800/60 border group-hover:bg-gray-700/60 transition-colors" style={{ borderColor: finalColor, boxShadow: `0 0 10px ${finalColor}50 inset` }}>
-                            <Icon className="w-5 h-5 drop-shadow-md" style={{ color: finalColor }} />
+                          <div className="relative w-10 h-10 rounded-full flex items-center justify-center border group-hover:opacity-90 transition-colors" style={{ backgroundColor: finalColor, borderColor: finalColor, boxShadow: `0 0 10px ${finalColor}50` }}>
+                            <Icon className="w-5 h-5 drop-shadow-md" style={{ color: '#fff' }} />
                             {engineAlarms > 0 && (
                               <div className="absolute -top-1.5 -right-1.5 bg-red-400 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-[#1e1e1e]">
                                 {engineAlarms > 9 ? '9+' : engineAlarms}

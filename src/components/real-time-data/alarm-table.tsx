@@ -12,9 +12,13 @@ export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
         title: (
             <HeaderCell
                 title="Date"
-                sortable={false}
+                sortable
+                ascending={
+                    sortConfig?.direction === 'asc' && sortConfig?.key === 'date'
+                }
             />
         ),
+        onHeaderCell: () => onHeaderCellClick('date'),
         dataIndex: 'timestamp',
         key: 'date',
         width: 110,
@@ -30,9 +34,13 @@ export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
         title: (
             <HeaderCell
                 title="Time"
-                sortable={false}
+                sortable
+                ascending={
+                    sortConfig?.direction === 'asc' && sortConfig?.key === 'time'
+                }
             />
         ),
+        onHeaderCell: () => onHeaderCellClick('time'),
         dataIndex: 'timestamp',
         key: 'time',
         width: 80,
@@ -62,13 +70,9 @@ export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
         title: (
             <HeaderCell
                 title="Engine"
-                sortable
-                ascending={
-                    sortConfig?.direction === 'asc' && sortConfig?.key === 'engine'
-                }
+                sortable={false}
             />
         ),
-        onHeaderCell: () => onHeaderCellClick('engine'),
         dataIndex: 'engine',
         key: 'engine',
         width: 100,
@@ -82,9 +86,13 @@ export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
         title: (
             <HeaderCell
                 title="Value"
-                sortable={false}
+                sortable
+                ascending={
+                    sortConfig?.direction === 'asc' && sortConfig?.key === 'value'
+                }
             />
         ),
+        onHeaderCell: () => onHeaderCellClick('value'),
         dataIndex: 'value',
         key: 'value',
         width: 80,
@@ -201,7 +209,7 @@ export default function AlarmTable({
             enableSearch
             searchPlaceholder="Search alarms..."
             variant="modern"
-            scroll={{ x: 1100, y: '75vh' }}
+            scroll={{ x: 1100, y: '50vh' }}
             className={cn(
                 'pb-0 lg:pb-0 [&_.rc-table-row:last-child_td]:border-b-0',
                 className

@@ -1,10 +1,9 @@
 'use client';
 
-import AlarmTable from '@/components/alarm-monitor/alarm-table';
+import AlarmTable from '@/components/real-time-data/alarm-table';
 import {
   engineValueToAlarmEngine,
-  vesselAlarmData,
-  type AlarmEntry,
+  vesselAlarmData
 } from '@/data/nura/alarm-data';
 import {
   selectedEngineAtom,
@@ -12,9 +11,9 @@ import {
 } from '@/store/condition-monitoring-atoms';
 import { useAtomValue } from 'jotai';
 import { useMemo } from 'react';
-import { Box } from 'rizzui/box';
-import { Text } from 'rizzui';
 import { PiWarningFill } from 'react-icons/pi';
+import { Text } from 'rizzui';
+import { Box } from 'rizzui/box';
 
 // Severity color config matching machinery-overview cards
 const severityConfig = {

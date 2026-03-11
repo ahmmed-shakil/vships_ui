@@ -1,60 +1,83 @@
 'use client';
 
-import WidgetCard from '@/components/cards/widget-card';
-import SpeedMeter from '@/components/speed-meter/speed-meter';
+import { useSocketData } from '@/app/shared/hooks/useSocket';
+import { engineValueToAlarmEngine, vesselAlarmData } from '@/data/nura/alarm-data';
 import {
   computeGKWH,
-  computeKW,
+  findEngine,
   FUEL_GAUGE_MAX,
   RPM_GAUGE_MAX,
-  vesselEngineData,
   vesselGensetData,
   type EngineMonitorData,
 } from '@/data/nura/engine-data';
-import { getChartData } from '@/data/nura/operation-monitor-charts-data';
-import { useSocketData } from '@/app/shared/hooks/useSocket';
-import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
-import { useAtomValue } from 'jotai';
+import {
+  selectedEngineAtom,
+  selectedShipAtom,
+} from '@/store/condition-monitoring-atoms';
+import cn from '@/utils/class-names';
+import { useAtom } from 'jotai';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
-import { Box } from 'rizzui/box';
-import ConsumptionVsSpeedChart from './consumption-vs-speed-chart';
-import EngineConsumptionChart from './engine-consumption-chart';
+import { Text } from 'rizzui/typography';
+
+// ─── Helper: overlay live socket data onto an engine ─────────────────────────
+
+function applyLiveData(
+  engine: EngineMonitorData | undefined,
+  latestME: Record<string, any>,
+  latestAE: Record<string, any>
+): EngineMonitorData | undefined {
+  if (!engine) return undefined;
+  const socketKey = engine.id.toUpperCase(); // "me1" → "ME1"
+  const live = latestME[socketKey] ?? latestAE[socketKey];
+  if (!live) return engine;
+
+  const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
+  const liveLoad = live.engine_load ?? engine.gauge.engine_load;
+  const liveFuelCons = live.fuel_cons ?? engine.gauge.fuel_cons;
+  const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
+  const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
+
+  return {
+    ...engine,
+    gauge: {
+      engine_rpm: liveRpm,
+      engine_load: liveLoad,
+      fuel_cons: liveFuelCons,
+    },
+    totals: {
+      running_hours: liveRunHrs,
+      total_fuel: liveTotalFuel,
+    },
+    detail: engine.detail
+      ? {
+        ...engine.detail,
+        lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+        lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+        coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+        coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+        batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+        exhgas_temp_left:
+          live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+        exhgas_temp_right:
+          live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+      }
+      : undefined,
+  };
+}
+
+import SpeedMeter from '../speed-meter/speed-meter';
+import AlarmTable from './alarm-table';
+import EngineDetailView from './engine-detail-view';
 
 const RealTimeDataMap = dynamic(
-  () => import('@/components/real-time-data/real-time-data-map'),
+  () => import('@/components/operation-overview/real-time-data-map'),
   { ssr: false }
 );
 
-// ─── Flow-meter row component ────────────────────────────────────────────────
+// ─── Stat badge (Total Fuel / Run Hrs) ───────────────────────────────────────
 
-function FlowMeterRow({
-  label,
-  value,
-  unit,
-}: {
-  label: string;
-  value: number;
-  unit: string;
-}) {
-  return (
-    <div className="flex items-center justify-between py-0.5">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-lg font-bold tracking-tight text-foreground">
-          {value.toFixed(2)}
-        </span>
-        <span className="w-8 text-right text-xs font-medium text-muted-foreground">
-          {unit}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Stat badge component ────────────────────────────────────────────────────
-
-function StatBadge({
+function StatRow({
   label,
   value,
   unit,
@@ -64,91 +87,94 @@ function StatBadge({
   unit: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-start">
-      <span className="mb-1 text-xs font-semibold">{label}</span>
+    <div className="flex flex-col items-center">
+      <span className="text-xs font-semibold text-muted-foreground">
+        {label}
+      </span>
       <div className="flex items-center gap-1">
-        <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
+        <span className="inline-block rounded bg-primary/10 px-2 py-0.5 font-mono text-xs font-semibold text-primary">
           {value}
         </span>
-        <span className="text-xs">{unit}</span>
+        <span className="text-[10px] text-muted-foreground">{unit}</span>
       </div>
     </div>
   );
 }
 
-// ─── Engine Monitor Card ─────────────────────────────────────────────────────
+// ─── Engine group: 2 meters + stats (or "No data") ──────────────────────────
 
-function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
-  const kw = computeKW(engine.gauge.engine_load);
+function EngineGroup({
+  engine,
+  size = 'default',
+  layout = 'horizontal',
+  className,
+  className2,
+  className3,
+  onClick,
+}: {
+  engine: EngineMonitorData | undefined;
+  size?: 'sm' | 'default';
+  layout?: 'horizontal' | 'vertical';
+  className?: string;
+  className2?: string;
+  className3?: string;
+  onClick?: () => void;
+}) {
+  if (!engine) {
+    return (
+      <div className={className}>
+        <div className="flex h-full min-h-[120px] items-center justify-center">
+          <Text className="text-sm italic text-muted-foreground">No data</Text>
+        </div>
+      </div>
+    );
+  }
+
   const gkwh = computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
 
   return (
-    <WidgetCard
-      title={engine.label}
-      className="lg:p-2"
-      titleClassName="font-inter text-center"
-      headerClassName="justify-center"
+    <div
+      className={cn(
+        'flex flex-col',
+        className,
+        onClick && 'group cursor-pointer'
+      )}
+      onClick={onClick}
     >
-      {/* RPM Gauge */}
-      <div className="">
+      <div
+        className={
+          layout === 'horizontal' ? 'grid grid-cols-2' : 'flex flex-col gap-2'
+        }
+      >
+        {/* RPM meter */}
         <SpeedMeter
           bare
-          title={engine.label}
+          size={size}
           value={engine.gauge.engine_rpm}
           max={RPM_GAUGE_MAX}
-          centerLabel={`${engine.gauge.engine_rpm.toFixed(1)}`}
-          gaugeHeight={220}
+          centerLabel={`${engine.gauge.engine_rpm.toFixed(0)}`}
+          className="border-0"
         />
-        <div className="-mt-20 flex items-center justify-center gap-6">
-          <div className="text-center">
-            <span className="text-xs text-muted-foreground">
-              {engine.label}
-            </span>
-          </div>
-        </div>
-        <div className="mt-1 flex items-center justify-center gap-4">
-          <span className="text-xs text-muted-foreground">RPM</span>
-        </div>
-        <div className="mt-1 flex items-center justify-center">
-          <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
-            {kw}
-          </span>
-          <span className="ml-2 text-xs text-muted-foreground">kw</span>
-        </div>
-      </div>
-
-      {/* Fuel Gauge */}
-      <div className="mt-4">
+        {/* Fuel meter */}
         <SpeedMeter
           bare
-          title={engine.label}
+          size={size}
           value={gkwh}
           max={FUEL_GAUGE_MAX}
           centerLabel={`${gkwh}`}
           fillColor="#00858D"
-          gaugeHeight={220}
+          className={cn('border-0', className2)}
         />
-        <div className="-mt-20 flex items-center justify-center gap-6">
-          <div className="text-center">
-            <span className="text-xs text-muted-foreground">
-              {engine.label}
-            </span>
-          </div>
-        </div>
-        <div className="mt-1 flex items-center justify-center gap-4">
-          <span className="text-xs text-muted-foreground">g/Kwh</span>
-        </div>
-        <div className="mt-1 flex items-center justify-center">
-          <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
-            {engine.gauge.fuel_cons.toFixed(1)}
-          </span>
-          <span className="ml-2 text-xs text-muted-foreground">L/H</span>
-        </div>
       </div>
-
-      {/* Totals */}
-      <div className="mt-6 flex justify-center gap-6">
-        <StatBadge
+      {/* Stats */}
+      <div
+        className={cn(
+          'flex justify-center gap-4',
+          layout === 'horizontal' ? '-mt-6' : 'mt-2',
+          className3
+        )}
+      >
+        <StatRow
           label="Total Fuel"
           value={engine.totals.total_fuel.toFixed(2)}
           unit={
@@ -157,397 +183,210 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
             </>
           }
         />
-        <StatBadge
+        <StatRow
           label="Run Hrs"
           value={engine.totals.running_hours.toFixed(2)}
           unit="H"
         />
       </div>
-
-      {/* FM data */}
-      <div className="mx-auto mt-3 max-w-[300px] space-y-1.5 rounded-lg bg-transparent p-3 shadow-2xl">
-        <FlowMeterRow
-          label="FM in"
-          value={engine.flowMeter.fm_in}
-          unit="kg/h"
-        />
-        <FlowMeterRow
-          label="FM Cons"
-          value={engine.flowMeter.fm_cons}
-          unit="kg/h"
-        />
-        {/* <FlowMeterRow label="FM out" value={engine.flowMeter.fm_out} unit="kg/h" /> */}
-        <FlowMeterRow
-          label="FM out"
-          value={engine.flowMeter.fm_in - engine.flowMeter.fm_cons}
-          unit="kg/h"
-        />
-      </div>
-    </WidgetCard>
+    </div>
   );
 }
 
-// ─── Live Socket Data Card (temporary) ───────────────────────────────────────
+// ─── Small engine pair (Genset): side-by-side in a 2-col grid ────────────────
 
-function LiveSocketDataRow({
+function GensetGroup({
+  engine,
   label,
-  value,
-  unit,
+  className,
+  onClick,
 }: {
+  engine: EngineMonitorData | undefined;
   label: string;
-  value: number | string | null;
-  unit?: string;
+  className?: string;
+  onClick?: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-muted/30 py-1.5 last:border-b-0">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <div className="flex items-baseline gap-1">
-        <span className="font-mono text-sm font-semibold text-foreground">
-          {value != null
-            ? typeof value === 'number'
-              ? value.toFixed(2)
-              : value
-            : '—'}
-        </span>
-        {unit && (
-          <span className="text-[10px] text-muted-foreground">{unit}</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function LiveEngineCard({ data }: { data: any }) {
-  return (
-    <div className="rounded-lg border border-muted/40 bg-background p-4 shadow-sm">
-      <div className="mb-2 flex items-center justify-between">
-        <h4 className="text-sm font-bold">{data.engineId}</h4>
-        <span className="rounded bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-          {data.type}
-        </span>
-      </div>
-      <div className="space-y-0">
-        <LiveSocketDataRow label="RPM" value={data.engine_rpm} />
-        <LiveSocketDataRow
-          label="Engine Load"
-          value={data.engine_load}
-          unit="%"
-        />
-        <LiveSocketDataRow
-          label="Fuel Cons"
-          value={data.fuel_cons}
-          unit="L/h"
-        />
-        <LiveSocketDataRow
-          label="Coolant Temp"
-          value={data.coolant_temp}
-          unit="°C"
-        />
-        <LiveSocketDataRow
-          label="Coolant Press"
-          value={data.coolant_press}
-          unit="bar"
-        />
-        <LiveSocketDataRow
-          label="Lube Oil Temp"
-          value={data.lubeoil_temp}
-          unit="°C"
-        />
-        <LiveSocketDataRow
-          label="Lube Oil Press"
-          value={data.lubeoil_press}
-          unit="bar"
-        />
-        <LiveSocketDataRow
-          label="Exh Temp Mean"
-          value={data.exh_temp_mean}
-          unit="°C"
-        />
-        <LiveSocketDataRow
-          label="Fuel Press"
-          value={data.fuel_press}
-          unit="bar"
-        />
-        <LiveSocketDataRow
-          label="Boost Air Press"
-          value={data.boostair_press}
-          unit="bar"
-        />
-        <LiveSocketDataRow
-          label="Intake Air Temp"
-          value={data.intakeair_temp}
-          unit="°C"
-        />
-        <LiveSocketDataRow
-          label="Run Hrs"
-          value={data.run_hrs_counter}
-          unit="h"
-        />
-        <LiveSocketDataRow label="Batt Volt" value={data.Batt_volt} unit="V" />
-        {data.timestamp && (
-          <LiveSocketDataRow label="Timestamp" value={data.timestamp} />
-        )}
-        <LiveSocketDataRow
-          label="Last Received"
-          value={
-            data._receivedAt
-              ? new Date(data._receivedAt).toLocaleTimeString()
-              : '—'
-          }
-        />
-      </div>
-    </div>
-  );
-}
-
-function LiveSocketCard({
-  latestME,
-  latestAE,
-  meCount,
-  aeCount,
-  connected,
-}: {
-  latestME: Record<string, any>;
-  latestAE: Record<string, any>;
-  meCount: number;
-  aeCount: number;
-  connected: boolean;
-}) {
-  const meEntries = Object.values(latestME);
-  const aeEntries = Object.values(latestAE);
-  const hasData = meEntries.length > 0 || aeEntries.length > 0;
-
-  return (
-    <WidgetCard
-      title={
-        <div className="flex items-center gap-2">
-          <span>Live Socket Data</span>
-          <span
-            className={`inline-block h-2.5 w-2.5 rounded-full ${
-              connected ? 'bg-green-500' : 'bg-red-500'
-            }`}
-          />
-          <span className="text-xs font-normal text-muted-foreground">
-            {hasData
-              ? `${meCount} ME / ${aeCount} AE events`
-              : 'Connecting to socket.perfomax.tech…'}
-          </span>
-        </div>
-      }
-      className="mb-6"
+    <div
+      className={cn(className, onClick && 'group cursor-pointer')}
+      onClick={onClick}
     >
-      {!hasData && (
-        <p className="py-4 text-center text-sm text-muted-foreground">
-          Waiting for data…
-        </p>
-      )}
-      {hasData && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {meEntries.map((d) => (
-            <LiveEngineCard key={d.engineId} data={d} />
-          ))}
-          {aeEntries.map((d) => (
-            <LiveEngineCard key={d.engineId} data={d} />
-          ))}
-        </div>
-      )}
-    </WidgetCard>
+      <h6
+        className={cn(
+          'col-span-full mt-auto text-center text-sm font-semibold',
+          onClick && 'transition-colors group-hover:text-primary'
+        )}
+      >
+        {label}
+      </h6>
+      <EngineGroup engine={engine} size="sm" layout="horizontal" />
+    </div>
   );
 }
 
-// ─── Real Time Data Layout ──────────────────────────────────────────────────
+// ─── Layout ──────────────────────────────────────────────────────────────────
 
-const RealTimeDataLayout = () => {
-  const vessel = useAtomValue(selectedShipAtom);
-  const { latestME, latestAE, meTotalCount, aeTotalCount, connected } =
-    useSocketData();
+export const RealTimeDataLayout = () => {
+  const [selectedShip] = useAtom(selectedShipAtom);
+  const [selectedEngine, setSelectedEngine] = useAtom(selectedEngineAtom);
+  const { latestME, latestAE } = useSocketData();
 
-  // Engine data for the selected vessel, overlaid with live socket values
-  const baseEngines = vesselEngineData[vessel.id] ?? [];
-  const engines = baseEngines.map((engine) => {
-    // Map static id "me1" → socket engineId "ME1"
-    const socketKey = engine.id.toUpperCase(); // "me1" → "ME1"
-    const live = latestME[socketKey];
-    if (!live) return engine;
+  // Get alarm data for the selected vessel and filter by engine
+  const alarms = useMemo(() => {
+    const rawAlarms = vesselAlarmData[selectedShip.id] ?? [];
+    let filtered = rawAlarms;
 
-    const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
-    const liveLoad = live.engine_load ?? engine.gauge.engine_load;
-    const liveFuelCons = live.fuel_cons ?? engine.gauge.fuel_cons;
-
-    // FM Cons = fuel_cons × 0.8, FM In = FM Cons + FM Out
-    const fmCons = liveFuelCons * 0.8;
-    const fmOut = engine.flowMeter.fm_out;
-    const fmIn = fmCons + fmOut;
-
-    return {
-      ...engine,
-      gauge: {
-        engine_rpm: liveRpm,
-        engine_load: liveLoad,
-        fuel_cons: liveFuelCons,
-      },
-      flowMeter: {
-        fm_in: fmIn,
-        fm_cons: fmCons,
-        fm_out: fmOut,
-      },
-    };
-  });
-
-  // Chart data for the selected vessel (memoized to avoid re-generating on every render)
-  const chartData = useMemo(() => getChartData(vessel.id), [vessel.id]);
-
-  // Consumption vs Speed: scale chart data close to socket ME values, last row = exact socket value
-  const consumptionVsSpeedData = useMemo(() => {
-    const baseData = chartData.consumptionVsSpeed;
-    if (Object.keys(latestME).length === 0) return baseData;
-
-    const engineKeys = baseEngines.map((e) => e.id);
-    const socketFuelCons: Record<string, number> = {};
-    engineKeys.forEach((key) => {
-      const live = latestME[key.toUpperCase()];
-      if (live?.fuel_cons != null) socketFuelCons[key] = live.fuel_cons;
-    });
-
-    if (Object.keys(socketFuelCons).length === 0) return baseData;
-
-    return baseData.map((point, i) => {
-      const isLast = i === baseData.length - 1;
-      const newPoint = { ...point };
-      Object.keys(socketFuelCons).forEach((key) => {
-        const socketVal = socketFuelCons[key];
-        const lastStaticVal = Number(baseData[baseData.length - 1][key]) || 1;
-        const ratio = socketVal / lastStaticVal;
-        if (isLast) {
-          newPoint[key] = Number(socketVal.toFixed(1));
-        } else {
-          newPoint[key] = Number(
-            ((Number(point[key]) || 0) * ratio).toFixed(1)
-          );
-        }
-      });
-      return newPoint;
-    });
-  }, [chartData.consumptionVsSpeed, latestME, baseEngines]);
-
-  // Genset consumption chart data generated from socket AE values
-  const gensetCount = vesselGensetData[vessel.id]?.length ?? 2;
-  const gensetChartData = useMemo(() => {
-    const HOURS = [
-      '08:00',
-      '09:00',
-      '10:00',
-      '11:00',
-      '12:00',
-      '13:00',
-      '14:00',
-      '15:00',
-      '16:00',
-      '17:00',
-      '18:00',
-      '19:00',
-    ];
-    const gensetKeys = ['ae1', 'ae2'].slice(0, gensetCount);
-    const aeFuelCons: Record<string, number> = {};
-    gensetKeys.forEach((key) => {
-      const live = latestAE[key.toUpperCase()];
-      aeFuelCons[key] = live?.fuel_cons ?? 0;
-    });
-
-    let s = vessel.id * 700;
-    const variations: number[] = [];
-    for (let i = 0; i < HOURS.length; i++) {
-      s = (s * 16807 + 12345) % 2147483647;
-      variations.push(0.85 + (s / 2147483647) * 0.3);
+    if (selectedEngine.value !== 'all') {
+      const alarmEngineName = engineValueToAlarmEngine[selectedEngine.value];
+      if (alarmEngineName) {
+        filtered = rawAlarms.filter((a) => a.engine === alarmEngineName);
+      }
     }
 
-    return HOURS.map((time, i) => {
-      const point: { time: string; [engine: string]: number | string } = {
-        time,
-      };
-      const isLast = i === HOURS.length - 1;
-      gensetKeys.forEach((key) => {
-        const base = aeFuelCons[key];
-        if (base === 0) {
-          point[key] = 0;
-        } else if (isLast) {
-          point[key] = Number(base.toFixed(1));
-        } else {
-          const offset = key === 'ae2' ? 0.02 : 0;
-          point[key] = Number((base * (variations[i] + offset)).toFixed(1));
-        }
-      });
-      return point;
-    });
-  }, [vessel.id, latestAE, gensetCount]);
+    // Add date/time proxy fields so the generic table sorter can sort them
+    return filtered.map((a) => ({
+      ...a,
+      date: a.timestamp,
+      time: a.timestamp,
+    }));
+  }, [selectedShip.id, selectedEngine.value]);
 
-  // Grid columns based on engine count
-  const gridCols =
-    engines.length > 3
-      ? 'lg:grid-cols-4'
-      : engines.length === 3
-        ? 'lg:grid-cols-3'
-        : 'lg:grid-cols-2';
+  // Lookup engine data for the selected vessel, overlaid with live socket data
+  const vesselId = selectedShip.id;
+  const mePort = applyLiveData(findEngine(vesselId, 'me1'), latestME, latestAE);
+  const meStbd = applyLiveData(findEngine(vesselId, 'me2'), latestME, latestAE);
+  const meCenter = applyLiveData(
+    findEngine(vesselId, 'me3'),
+    latestME,
+    latestAE
+  );
+  const gensets = vesselGensetData[vesselId] ?? [];
+  const genset1 = applyLiveData(
+    gensets.find((e) => e.id === 'ae1'),
+    latestME,
+    latestAE
+  );
+  const genset2 = applyLiveData(
+    gensets.find((e) => e.id === 'ae2'),
+    latestME,
+    latestAE
+  );
 
   return (
     <>
-      {/* Temporary: Live socket data card */}
-      {/* <LiveSocketCard
-        latestME={latestME}
-        latestAE={latestAE}
-        meCount={meTotalCount}
-        aeCount={aeTotalCount}
-        connected={connected}
-      /> */}
-
-      <Box className="@container/pd">
-        {/* Row 1 — Engine gauges + Map */}
-        <Box className="grid grid-cols-10 gap-4 @container/pd lg:gap-8">
-          {/* Left column — 70% */}
-          <Box className="col-span-10 lg:col-span-7">
-            <Box className={`grid grid-cols-1 gap-4 ${gridCols}`}>
-              {engines.map((engine) => (
-                <Box
-                  key={engine.id}
-                  className="col-span-3 shadow-lg sm:col-span-1"
+      {/* main grid */}
+      <div className="mt-4 grid grid-cols-4 shadow-lg">
+        <div className="col-span-3 mt-2">
+          {selectedEngine.value === 'all' ? (
+            /* ── All Engine: 10-meter layout (DO NOT MODIFY LAYOUT) ── */
+            <div className="grid grid-cols-12">
+              {/* Labels */}
+              <div className="col-span-full flex justify-around uppercase">
+                <h6
+                  className="cursor-pointer font-semibold transition-colors hover:text-primary"
+                  onClick={() =>
+                    setSelectedEngine({ label: 'ME Port', value: 'me1' })
+                  }
                 >
-                  <EngineMonitorCard engine={engine} />
-                </Box>
-              ))}
-            </Box>
-          </Box>
+                  ME Port
+                </h6>
+                <h6
+                  className="cursor-pointer font-semibold transition-colors hover:text-primary"
+                  onClick={() =>
+                    setSelectedEngine({ label: 'ME Stbd', value: 'me2' })
+                  }
+                >
+                  ME STBD
+                </h6>
+              </div>
 
-          {/* Right column — 30% */}
-          <Box className="col-span-10 lg:col-span-3">
-            <RealTimeDataMap
-              name={vessel.label}
-              lat={vessel.position.lat}
-              long={vessel.position.long}
-              direction={vessel.position.direction}
-              timestamp={vessel.position.timestamp}
-              minHeight={600}
+              {/* Row 1: ME PORT (RPM + Fuel) | ME STBD (RPM + Fuel) */}
+              <EngineGroup
+                engine={mePort}
+                className="col-span-6"
+                onClick={() =>
+                  setSelectedEngine({ label: 'ME Port', value: 'me1' })
+                }
+              />
+              <EngineGroup
+                engine={meStbd}
+                className="col-span-6"
+                onClick={() =>
+                  setSelectedEngine({ label: 'ME Stbd', value: 'me2' })
+                }
+              />
+
+              {/* Row 2: Genset 1 | ME CENTER | Genset 2 */}
+              <GensetGroup
+                engine={genset1}
+                label="Genset 1"
+                className="z-0 col-span-4 my-auto"
+                onClick={() =>
+                  setSelectedEngine({ label: 'AE1', value: 'ae1' })
+                }
+              />
+              <div className="relative col-span-4 m-0 -mt-10 p-0">
+                {/* Half-height border lines */}
+                <div className="absolute bottom-1/4 left-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
+                <div className="absolute bottom-1/4 right-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
+                <h6
+                  className="cursor-pointer text-center text-sm font-semibold uppercase transition-colors hover:text-primary"
+                  onClick={() =>
+                    setSelectedEngine({ label: 'ME Center', value: 'me3' })
+                  }
+                >
+                  ME Center
+                </h6>
+                <EngineGroup
+                  engine={meCenter}
+                  layout="vertical"
+                  className2="-mt-20"
+                  className3="-mt-10"
+                  onClick={() =>
+                    setSelectedEngine({ label: 'ME Center', value: 'me3' })
+                  }
+                />
+              </div>
+              <GensetGroup
+                engine={genset2}
+                label="Genset 2"
+                className="z-0 col-span-4 my-auto"
+                onClick={() =>
+                  setSelectedEngine({ label: 'AE2', value: 'ae2' })
+                }
+              />
+            </div>
+          ) : (
+            /* ── Individual Engine: lube oil / coolant view ── */
+            <EngineDetailView
+              vesselId={vesselId}
+              engineId={selectedEngine.value}
+              latestME={latestME}
+              latestAE={latestAE}
             />
-          </Box>
-        </Box>
+          )}
+        </div>
 
-        {/* Row 3 — Consumption vs Speed */}
-        <Box className="mt-6 grid grid-cols-1 gap-6 @container/pd lg:mt-8 3xl:gap-8">
-          <ConsumptionVsSpeedChart
-            data={consumptionVsSpeedData}
-            engineCount={engines.length}
-          />
-        </Box>
+        {/* Map */}
+        <RealTimeDataMap
+          name={selectedShip.label}
+          lat={selectedShip.position.lat}
+          long={selectedShip.position.long}
+          direction={selectedShip.position.direction}
+          timestamp={selectedShip.position.timestamp}
+          minHeight={500}
+        />
+      </div>
 
-        {/* Row 2 — Genset Consumptions */}
-        <Box className="mt-6 grid grid-cols-1 gap-6 @container/pd lg:mt-8 3xl:gap-8">
-          <EngineConsumptionChart
-            data={gensetChartData}
-            engineCount={gensetCount}
-          />
-        </Box>
-      </Box>
+      {/* Alarm table + Machinery score */}
+      <div className="mt-4 grid grid-cols-4 gap-4">
+        <AlarmTable
+          data={alarms}
+          title={`Alarms — ${selectedShip.label}`}
+          className="col-span-full"
+        />
+        {/* <MachineryScoreTable vesselId={vesselId} className="col-span-1" /> */}
+      </div>
     </>
   );
 };
-
-export default RealTimeDataLayout;

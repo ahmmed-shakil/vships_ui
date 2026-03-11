@@ -64,7 +64,7 @@ export default function ParameterScatterChart({
             options={opt1Options}
             value={opt1}
             onChange={setOpt1}
-            className="w-24 min-w-0 shrink"
+            className="w-32 min-w-0 shrink"
             selectClassName="h-8 text-xs font-semibold"
             dropdownClassName="text-sm"
           />
@@ -73,7 +73,7 @@ export default function ParameterScatterChart({
             options={opt2Options}
             value={opt2}
             onChange={setOpt2}
-            className="w-24 min-w-0 shrink"
+            className="w-32 min-w-0 shrink"
             selectClassName="h-8 text-xs font-semibold"
             dropdownClassName="text-sm"
           />
@@ -86,14 +86,14 @@ export default function ParameterScatterChart({
               className="inline-block h-2 w-4 rounded-sm"
               style={{ backgroundColor: '#22C55E' }}
             />
-            Fuel Cons
+            {opt1.label}
           </span>
           <span className="flex items-center gap-1">
             <span
               className="inline-block h-2 w-2 rotate-45 rounded-sm"
               style={{ backgroundColor: '#A855F7' }}
             />
-            Engine RPM
+            {opt2.label}
           </span>
         </div>
       }

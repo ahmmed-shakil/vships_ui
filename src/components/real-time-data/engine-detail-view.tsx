@@ -65,17 +65,17 @@ export default function EngineDetailView({
         },
         detail: engine.detail
           ? {
-              ...engine.detail,
-              lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-              lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-              coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-              coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-              batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-              exhgas_temp_left:
-                live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-              exhgas_temp_right:
-                live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-            }
+            ...engine.detail,
+            lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+            lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+            coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+            coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+            batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+            exhgas_temp_left:
+              live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+            exhgas_temp_right:
+              live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+          }
           : undefined,
       };
     }
@@ -126,7 +126,7 @@ export default function EngineDetailView({
           style={{
             width: 280,
             flexShrink: 0,
-            marginRight: -125,
+            marginRight: -130,
             marginTop: 40,
             clipPath: 'polygon(0 0, 75% 0, 55% 100%, 0 100%)',
             overflow: 'hidden',
@@ -135,7 +135,7 @@ export default function EngineDetailView({
         >
           <SpeedMeter
             bare
-            size="sm"
+            size="default"
             value={d.lubeoil_press}
             max={LUBEOIL_PRESS_MAX}
             centerLabel={`${Number(d.lubeoil_press).toFixed(1)}`}
@@ -230,7 +230,7 @@ export default function EngineDetailView({
           style={{
             width: 250,
             flexShrink: 0,
-            marginLeft: -110,
+            marginLeft: -130,
             marginTop: 55,
             clipPath: 'polygon(25% 0, 100% 0, 100% 100%, 45% 100%)',
             overflow: 'hidden',
@@ -239,7 +239,7 @@ export default function EngineDetailView({
         >
           <SpeedMeter
             bare
-            size="sm"
+            size="default"
             reverseFill
             value={d.coolant_temp}
             max={COOLANT_TEMP_MAX}

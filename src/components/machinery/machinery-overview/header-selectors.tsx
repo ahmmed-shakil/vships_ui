@@ -40,7 +40,7 @@ export default function MachineryOverviewHeaderSelectors() {
         options={shipData}
         value={selectedShip}
         onChange={(v: Ship) => setSelectedShip(v)}
-        className="w-36"
+        className="w-44"
         selectClassName="h-9 text-sm"
         dropdownClassName="text-gray-900"
       />

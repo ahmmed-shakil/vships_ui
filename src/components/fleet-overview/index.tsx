@@ -3,7 +3,8 @@
 import { fleetVesselData } from '@/data/nura/fleet-data';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import { Loader, Text } from 'rizzui';
+import { Loader, Text, ActionIcon, Tooltip } from 'rizzui';
+import { PiCloudSunDuotone, PiMapTrifoldDuotone } from 'react-icons/pi';
 
 // Leaflet requires `window` — load it client-only
 const VesselMap = dynamic(
@@ -11,9 +12,16 @@ const VesselMap = dynamic(
     { ssr: false }
 );
 
+const WindyMap = dynamic(
+    () => import('@/components/vessel-map/windy-map'),
+    { ssr: false }
+);
+
 export default function FleetOverviewLayout() {
     // map will update every 10 seconds
     const [showMapUpdating, setShowMapUpdating] = useState(false);
+    const [useWindy, setUseWindy] = useState(true);
+
     useEffect(() => {
         const interval = setInterval(() => {
             setShowMapUpdating(true);
@@ -25,16 +33,41 @@ export default function FleetOverviewLayout() {
     }, []);
 
     return (
-        <>
+        <div className="relative w-full h-full">
             {/* Loading Overlay */}
             {showMapUpdating && <MapLoadingSpinner />}
 
-            {/* Leaflet Vessel Map */}
-            <VesselMap
-                vessels={fleetVesselData}
-                minHeight="calc(100vh - 135px)"
-            />
-        </>
+            {/* Map Toggle Button */}
+            <div className="absolute top-4 right-4 z-[1002]">
+                <Tooltip
+                    content={useWindy ? 'Switch to Standard Map' : 'Switch to Weather Map'}
+                    placement="left"
+                >
+                    <ActionIcon
+                        variant="solid"
+                        size="lg"
+                        className="rounded-full shadow-lg bg-white text-gray-800 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                        onClick={() => setUseWindy(!useWindy)}
+                    >
+                        {useWindy ? <PiMapTrifoldDuotone className="w-5 h-5" /> : <PiCloudSunDuotone className="w-5 h-5" />}
+                    </ActionIcon>
+                </Tooltip>
+            </div>
+
+            {/* Display active map */}
+            {useWindy ? (
+                <WindyMap
+                    vessels={fleetVesselData}
+                    minHeight="calc(100vh - 135px)"
+                    apiKey="sUQv0IPNBIDVR28IXAms7x1Uqn6FL6sk"
+                />
+            ) : (
+                <VesselMap
+                    vessels={fleetVesselData}
+                    minHeight="calc(100vh - 135px)"
+                />
+            )}
+        </div>
     );
 }
 

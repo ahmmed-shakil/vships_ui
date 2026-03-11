@@ -21,7 +21,7 @@ import Link from 'next/link';
 import FormFooter from '@/components/form-footer';
 import UploadZone from '@/ui/file-upload/upload-zone';
 import { useLayout } from '@/layouts/use-layout';
-import { useBerylliumSidebars } from '@/layouts/beryllium/beryllium-utils';
+// import { useBerylliumSidebars } from '@/layouts/beryllium/beryllium-utils';
 import { LAYOUT_OPTIONS } from '@/config/enums';
 const QuillEditor = dynamic(() => import('@/ui/quill-editor'), {
   ssr: false,
@@ -211,7 +211,8 @@ export function ProfileHeader({
   children,
 }: React.PropsWithChildren<{ title: string; description?: string }>) {
   const { layout } = useLayout();
-  const { expandedLeft } = useBerylliumSidebars();
+  // const { expandedLeft } = useBerylliumSidebars();
+  const expandedLeft = false;
 
   return (
     <div

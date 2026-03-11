@@ -27,8 +27,8 @@ export const shipData: Ship[] = [
     id: 1,
     engines: ['ME PORT', 'ME STBD', 'ME CENTER'],
     position: {
-      lat: 42.5,
-      long: -30.0,
+      lat: 25.5,
+      long: -93.0,
       direction: 45,
       timestamp: minutesAgo(2),
     },

@@ -8,7 +8,7 @@ import { PiCaretLeftBold, PiCaretRightBold } from 'react-icons/pi';
 import { usePathname } from 'next/navigation';
 import { useLayout } from '@/layouts/use-layout';
 import { LAYOUT_OPTIONS } from '@/config/enums';
-import { useBerylliumSidebars } from '@/layouts/beryllium/beryllium-utils';
+// import { useBerylliumSidebars } from '@/layouts/beryllium/beryllium-utils';
 
 const menuItems = [
   {
@@ -51,7 +51,8 @@ export default function ProfileSettingsNav() {
     scrollToTheRight,
     scrollToTheLeft,
   } = useScrollableSlider();
-  const { expandedLeft } = useBerylliumSidebars();
+  // const { expandedLeft } = useBerylliumSidebars();
+  const expandedLeft = false;
   return (
     <div
       className={cn(

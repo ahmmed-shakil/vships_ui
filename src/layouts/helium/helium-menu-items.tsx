@@ -19,15 +19,15 @@ export const menuItems = [
     href: routes.fleet.overview,
     icon: <PiShoppingCart />,
   },
+
   {
+    name: 'Operation Overview',
+    href: routes.fleet.operationOverview,
+    icon: <PiBellSimpleRinging />,
+  }, {
     name: 'Real Time Data',
     href: routes.fleet.realTimeData,
     icon: <PiChartLineUp />,
-  },
-  {
-    name: 'Alarm Monitoring',
-    href: routes.fleet.alarmMonitoring,
-    icon: <PiBellSimpleRinging />,
   },
   // Machinery section
   {

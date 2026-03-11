@@ -7,11 +7,12 @@ import cn from '@/utils/class-names';
 import { PiChatCircleText, PiUsers } from 'react-icons/pi';
 import { useLayout } from '@/layouts/use-layout';
 import { LAYOUT_OPTIONS } from '@/config/enums';
-import { useBerylliumSidebars } from '@/layouts/beryllium/beryllium-utils';
+// import { useBerylliumSidebars } from '@/layouts/beryllium/beryllium-utils';
 
 export default function ProfileHeader() {
   const { layout } = useLayout();
-  const { expandedLeft } = useBerylliumSidebars();
+  // const { expandedLeft } = useBerylliumSidebars();
+  const expandedLeft = false;
   const [follow, setFollow] = useState(false);
   return (
     <div

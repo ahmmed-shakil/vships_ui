@@ -1,14 +1,14 @@
 'use client';
 
-import { useIsMounted } from '@/hooks/use-is-mounted';
-import HydrogenLayout from '@/layouts/hydrogen/layout';
-import HeliumLayout from '@/layouts/helium/helium-layout';
-import LithiumLayout from '@/layouts/lithium/lithium-layout';
-import BerylLiumLayout from '@/layouts/beryllium/beryllium-layout';
-import BoronLayout from '@/layouts/boron/boron-layout';
-import CarbonLayout from '@/layouts/carbon/carbon-layout';
-import { useLayout } from '@/layouts/use-layout';
 import { LAYOUT_OPTIONS } from '@/config/enums';
+import { useIsMounted } from '@/hooks/use-is-mounted';
+// import BerylLiumLayout from '@/layouts/beryllium/beryllium-layout';
+// import CarbonLayout from '@/layouts/carbon/carbon-layout';
+import HeliumLayout from '@/layouts/helium/helium-layout';
+import HydrogenLayout from '@/layouts/hydrogen/layout';
+// import LithiumLayout from '@/layouts/lithium/lithium-layout';
+import { useLayout } from '@/layouts/use-layout';
+// import BoronLayout from 'will-be-deleted/boron/boron-layout';
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -30,16 +30,20 @@ function LayoutProvider({ children }: LayoutProps) {
     return <HeliumLayout>{children}</HeliumLayout>;
   }
   if (layout === LAYOUT_OPTIONS.LITHIUM) {
-    return <LithiumLayout>{children}</LithiumLayout>;
+    // return <LithiumLayout>{children}</LithiumLayout>;
+    return <div>lithium removed. check `(hydrogen)/layout.tsx`</div>
   }
   if (layout === LAYOUT_OPTIONS.BERYLLIUM) {
-    return <BerylLiumLayout>{children}</BerylLiumLayout>;
+    // return <BerylLiumLayout>{children}</BerylLiumLayout>;
+    return <div>beryllium removed. check `(hydrogen)/layout.tsx`</div>
   }
   if (layout === LAYOUT_OPTIONS.BORON) {
-    return <BoronLayout>{children}</BoronLayout>;
+    // return <BoronLayout>{children}</BoronLayout>;
+    return <div>boron removed. check `(hydrogen)/layout.tsx`</div>
   }
   if (layout === LAYOUT_OPTIONS.CARBON) {
-    return <CarbonLayout>{children}</CarbonLayout>;
+    // return <CarbonLayout>{children}</CarbonLayout>;
+    return <div>carbon removed. check `(hydrogen)/layout.tsx`</div>
   }
 
   return <HydrogenLayout>{children}</HydrogenLayout>;

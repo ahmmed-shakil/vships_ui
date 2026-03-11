@@ -196,7 +196,7 @@ const getMetrics = (
       unit: rpmUnit,
       showSparkline: rpmVal !== '--',
       sparklineData: rpmData,
-      sparklineColor: '#3872FA',
+      sparklineColor: 'currentColor',
     },
     {
       label: 'Exhaust Temp',
@@ -204,7 +204,7 @@ const getMetrics = (
       unit: exTempVal !== '--' ? '°C' : '',
       showSparkline: exTempVal !== '--',
       sparklineData: exhaustTempData,
-      sparklineColor: '#FF6B6B',
+      sparklineColor: 'currentColor',
     },
     {
       label: 'Oil pressure',
@@ -212,7 +212,7 @@ const getMetrics = (
       unit: oilPressVal !== '--' ? oilPressUnit : '',
       showSparkline: oilPressVal !== '--',
       sparklineData: oilPressureData,
-      sparklineColor: '#4ECDC4',
+      sparklineColor: 'currentColor',
     },
     {
       label: 'Oil temp',
@@ -220,7 +220,7 @@ const getMetrics = (
       unit: oilTempVal !== '--' ? '°C' : '',
       showSparkline: oilTempVal !== '--',
       sparklineData: oilTempData,
-      sparklineColor: '#45B7D1',
+      sparklineColor: 'currentColor',
     },
     {
       label: 'Coolant temp',
@@ -228,7 +228,7 @@ const getMetrics = (
       unit: coolTempVal !== '--' ? '°C' : '',
       showSparkline: coolTempVal !== '--',
       sparklineData: coolantTempData,
-      sparklineColor: '#96CEB4',
+      sparklineColor: 'currentColor',
     },
     {
       label: 'Consumption',
@@ -236,7 +236,7 @@ const getMetrics = (
       unit: consVal !== '--' ? consUnit : '',
       showSparkline: consVal !== '--',
       sparklineData: consumptionData,
-      sparklineColor: '#FFEAA7',
+      sparklineColor: 'currentColor',
     },
   ];
 
@@ -269,26 +269,19 @@ const machineryData: (Omit<MachineryCardProps, 'alarms'> & {
     },
     {
       id: 5,
-      title: 'Gen Set 1',
+      title: 'Genset 1',
       engineValue: 'ae1',
       healthScore: 80,
-      status: 'running',
+      status: 'off',
       metrics: getMetrics('0', 'rpm', '--', '--', '', '--', '--', '--', ''),
     },
     {
       id: 6,
-      title: 'Gen Set 2',
+      title: 'Genset 2',
       engineValue: 'ae2',
       healthScore: 80,
-      status: 'running',
+      status: 'standby',
       metrics: getMetrics('1413', 'rpm', '--', '--', '', '--', '--', '--', ''),
-    },
-    {
-      id: 7,
-      title: 'Gen Set 3',
-      healthScore: 98,
-      status: 'off',
-      metrics: getMetrics('0', 'rpm', '--', '--', '', '--', '--', '--', ''),
     },
   ];
 
@@ -314,7 +307,7 @@ export default function MachineryOverviewPage() {
   // Group cards into rows
   const engines = cardsWithAlarms.filter((item) => item.title.startsWith('ME'));
   const gensetCards = cardsWithAlarms.filter((item) =>
-    item.title.startsWith('Gen Set')
+    item.title.startsWith('Genset')
   );
 
   const handleCardClick = (item: (typeof cardsWithAlarms)[number]) => {

@@ -36,7 +36,7 @@ const RealTimeDataHeaderSelectors = dynamic(
 );
 
 const AlarmMonitoringHeaderSelectors = dynamic(
-  () => import('@/components/alarm-monitor/header-selectors'),
+  () => import('@/components/real-time-data/header-selectors'),
   { ssr: false }
 );
 
@@ -75,7 +75,8 @@ export default function Header() {
   );
   const isAlarmOverview = pathname.startsWith('/machinery/alarm-overview');
   const isRealTimeData = pathname.startsWith('/real-time-data');
-  const isAlarmMonitoring = pathname.startsWith('/alarm-monitoring');
+  // const isAlarmMonitoring = pathname.startsWith('/alarm-monitoring');
+  const isOperationOverview = pathname.startsWith('/operation-overview')
 
   return (
     <header
@@ -86,7 +87,7 @@ export default function Header() {
       <div
         className={cn(
           'flex items-center',
-          isConditionMonitoring || isMachineryOverview || isAlarmOverview || isRealTimeData || isAlarmMonitoring
+          isConditionMonitoring || isMachineryOverview || isAlarmOverview || isRealTimeData || isOperationOverview
             ? 'w-auto shrink-0'
             : 'w-full max-w-2xl'
         )}
@@ -130,7 +131,7 @@ export default function Header() {
         </div>
       )}
 
-      {isAlarmMonitoring && (
+      {isOperationOverview && (
         <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
           <AlarmMonitoringHeaderSelectors />
         </div>

@@ -46,20 +46,25 @@ function seededValues(
   return values;
 }
 
-const HOURS = [
-  '08:00',
-  '09:00',
-  '10:00',
-  '11:00',
-  '12:00',
-  '13:00',
-  '14:00',
-  '15:00',
-  '16:00',
-  '17:00',
-  '18:00',
-  '19:00',
+const ALL_HOURS = [
+  '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
+  '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
+  '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
 ];
+
+/**
+ * Filter hours to only include those ≤ the current Singapore time (UTC+8).
+ * This ensures charts don't show "future" data points during demos.
+ */
+function getFilteredHours(): string[] {
+  const now = new Date();
+  // Get current hour in Singapore timezone (UTC+8)
+  const sgtHour = new Date(
+    now.toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
+  ).getHours();
+  const currentTimeStr = `${String(sgtHour).padStart(2, '0')}:00`;
+  return ALL_HOURS.filter((h) => h <= currentTimeStr);
+}
 
 /** Get the gauge fuel_cons for each engine of a vessel (0 for missing / off engines) */
 function getEngineFuelCons(
@@ -77,18 +82,19 @@ function getEngineFuelCons(
 
 function generateConsumption(
   vesselId: number,
-  engineCount: number
+  engineCount: number,
+  hours: string[]
 ): EngineConsumptionPoint[] {
   const data: EngineConsumptionPoint[] = [];
   const engineKeys = ['me1', 'me2', 'me3', 'me4'].slice(0, engineCount);
   const baseCons = getEngineFuelCons(vesselId, engineKeys);
 
   // Generate variation multipliers (seeded for stability)
-  const variations = seededValues(vesselId * 500, HOURS.length, 0.85, 1.15);
+  const variations = seededValues(vesselId * 500, hours.length, 0.85, 1.15);
 
-  HOURS.forEach((time, i) => {
+  hours.forEach((time, i) => {
     const point: EngineConsumptionPoint = { time };
-    const isLast = i === HOURS.length - 1;
+    const isLast = i === hours.length - 1;
 
     engineKeys.forEach((key) => {
       const base = baseCons[key];
@@ -111,13 +117,14 @@ function generateConsumption(
 
 function generateConsumptionVsSpeed(
   vesselId: number,
-  engineCount: number
+  engineCount: number,
+  hours: string[]
 ): ConsumptionSpeedPoint[] {
   const data: ConsumptionSpeedPoint[] = [];
   const engineKeys = ['me1', 'me2', 'me3', 'me4'].slice(0, engineCount);
   const baseCons = getEngineFuelCons(vesselId, engineKeys);
-  const variations = seededValues(vesselId * 600, HOURS.length, 0.8, 1.2);
-  const noise = seededValues(vesselId * 8888, HOURS.length, -0.8, 0.8);
+  const variations = seededValues(vesselId * 600, hours.length, 0.8, 1.2);
+  const noise = seededValues(vesselId * 8888, hours.length, -0.8, 0.8);
 
   // Realistic speed constraints (knots)
   const MIN_SPEED = 2;
@@ -129,8 +136,8 @@ function generateConsumptionVsSpeed(
     0
   );
 
-  HOURS.forEach((time, i) => {
-    const isLast = i === HOURS.length - 1;
+  hours.forEach((time, i) => {
+    const isLast = i === hours.length - 1;
 
     // Build engine consumption values first
     const point: ConsumptionSpeedPoint = { time, speed: 0 };
@@ -183,8 +190,9 @@ const vesselEngineCounts: Record<number, number> = {
 
 export function getChartData(vesselId: number): VesselChartData {
   const engineCount = vesselEngineCounts[vesselId] ?? 3;
+  const hours = getFilteredHours();
   return {
-    consumption: generateConsumption(vesselId, engineCount),
-    consumptionVsSpeed: generateConsumptionVsSpeed(vesselId, engineCount),
+    consumption: generateConsumption(vesselId, engineCount, hours),
+    consumptionVsSpeed: generateConsumptionVsSpeed(vesselId, engineCount, hours),
   };
 }
