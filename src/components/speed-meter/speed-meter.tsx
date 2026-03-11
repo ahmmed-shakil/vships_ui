@@ -27,6 +27,8 @@ export interface SpeedMeterProps {
 
   /** Text displayed at the very center of the arc (e.g. "100%") */
   centerLabel?: string;
+  /** Optional unit label displayed under the center text (e.g. "RPM" or "g/Kwh") */
+  unit?: string;
 
   /**
    * Multi-segment data. When provided the arc is split into colored segments
@@ -105,25 +107,41 @@ function CenterLabel({
   viewBox,
   label,
   fontSize = '28px',
+  unit,
 }: {
   viewBox?: any;
   label: string;
   fontSize?: string;
+  unit?: string;
 }) {
   const { cx, cy } = viewBox ?? {};
   return (
-    <text
-      x={cx}
-      y={cy}
-      fill="currentColor"
-      className="fill-foreground"
-      textAnchor="middle"
-      dominantBaseline="central"
-    >
-      <tspan alignmentBaseline="middle" fontSize={fontSize} fontWeight={700}>
+    <g>
+      <text
+        x={cx}
+        y={cy - (unit ? 8 : 0)}
+        fill="currentColor"
+        className="fill-foreground font-bold"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={fontSize}
+      >
         {label}
-      </tspan>
-    </text>
+      </text>
+      {unit && (
+        <text
+          x={cx}
+          y={cy + 18}
+          fill="#929292"
+          className="fill-muted-foreground font-semibold"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize="12px"
+        >
+          {unit}
+        </text>
+      )}
+    </g>
   );
 }
 
@@ -211,6 +229,7 @@ function DynamicTickSvg({
       width={svgW}
       height={svgH}
       fill="none"
+      overflow="visible"
       className={`absolute left-1/2 top-1/2 -mt-4 -translate-x-1/2 -translate-y-1/2 ${scaleClass} transform`}
     >
       {/* Minor tick marks */}
@@ -263,6 +282,7 @@ export default function SpeedMeter({
   max = 100,
   min = 0,
   centerLabel,
+  unit,
   segments,
   fillColor = DEFAULT_FILL,
   trackColor = DEFAULT_TRACK,
@@ -286,29 +306,29 @@ export default function SpeedMeter({
     : value !== undefined
       ? reverseFill
         ? [
-            {
-              name: 'remaining',
-              value: Math.max(range - (value - min), 0),
-              color: 'transparent',
-            },
-            {
-              name: 'value',
-              value: Math.min(Math.max(value - min, 0), range),
-              color: fillColor,
-            },
-          ]
+          {
+            name: 'remaining',
+            value: Math.max(range - (value - min), 0),
+            color: 'transparent',
+          },
+          {
+            name: 'value',
+            value: Math.min(Math.max(value - min, 0), range),
+            color: fillColor,
+          },
+        ]
         : [
-            {
-              name: 'value',
-              value: Math.min(Math.max(value - min, 0), range),
-              color: fillColor,
-            },
-            {
-              name: 'remaining',
-              value: Math.max(range - (value - min), 0),
-              color: 'transparent',
-            },
-          ]
+          {
+            name: 'value',
+            value: Math.min(Math.max(value - min, 0), range),
+            color: fillColor,
+          },
+          {
+            name: 'remaining',
+            value: Math.max(range - (value - min), 0),
+            color: 'transparent',
+          },
+        ]
       : [{ name: 'value', value: range, color: fillColor }];
 
   // The track (background) data is always 100 %
@@ -352,6 +372,7 @@ export default function SpeedMeter({
                   <CenterLabel
                     label={displayCenter}
                     fontSize={sizeConfig.centerFontSize}
+                    unit={unit}
                   />
                 }
               />

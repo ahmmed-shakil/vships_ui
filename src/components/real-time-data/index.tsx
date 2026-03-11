@@ -111,6 +111,7 @@ function EngineGroup({
   className2,
   className3,
   onClick,
+  fuelValueOverride,
 }: {
   engine: EngineMonitorData | undefined;
   size?: 'sm' | 'default';
@@ -119,6 +120,7 @@ function EngineGroup({
   className2?: string;
   className3?: string;
   onClick?: () => void;
+  fuelValueOverride?: number;
 }) {
   if (!engine) {
     return (
@@ -130,7 +132,7 @@ function EngineGroup({
     );
   }
 
-  const gkwh = computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
+  const gkwh = fuelValueOverride ?? computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
 
   return (
     <div
@@ -146,13 +148,13 @@ function EngineGroup({
           layout === 'horizontal' ? 'grid grid-cols-2' : 'flex flex-col gap-2'
         }
       >
-        {/* RPM meter */}
         <SpeedMeter
           bare
           size={size}
           value={engine.gauge.engine_rpm}
           max={RPM_GAUGE_MAX}
           centerLabel={`${engine.gauge.engine_rpm.toFixed(0)}`}
+          unit="RPM"
           className="border-0"
         />
         {/* Fuel meter */}
@@ -161,7 +163,9 @@ function EngineGroup({
           size={size}
           value={gkwh}
           max={FUEL_GAUGE_MAX}
+          min={140}
           centerLabel={`${gkwh}`}
+          unit="g/Kwh"
           fillColor="#00858D"
           className={cn('border-0', className2)}
         />
@@ -307,6 +311,7 @@ export const RealTimeDataLayout = () => {
                 onClick={() =>
                   setSelectedEngine({ label: 'ME Port', value: 'me1' })
                 }
+                fuelValueOverride={202.5}
               />
               <EngineGroup
                 engine={meStbd}
@@ -314,6 +319,7 @@ export const RealTimeDataLayout = () => {
                 onClick={() =>
                   setSelectedEngine({ label: 'ME Stbd', value: 'me2' })
                 }
+                fuelValueOverride={203.9}
               />
 
               {/* Row 2: Genset 1 | ME CENTER | Genset 2 */}

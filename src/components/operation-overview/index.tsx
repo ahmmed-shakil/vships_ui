@@ -97,6 +97,7 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
           value={engine.gauge.engine_rpm}
           max={RPM_GAUGE_MAX}
           centerLabel={`${engine.gauge.engine_rpm.toFixed(1)}`}
+          unit="RPM"
           gaugeHeight={220}
         />
         <div className="-mt-20 flex items-center justify-center gap-6">
@@ -105,9 +106,6 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
               {engine.label}
             </span>
           </div>
-        </div>
-        <div className="mt-1 flex items-center justify-center gap-4">
-          <span className="text-xs text-muted-foreground">RPM</span>
         </div>
         <div className="mt-1 flex items-center justify-center">
           <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
@@ -124,7 +122,9 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
           title={engine.label}
           value={gkwh}
           max={FUEL_GAUGE_MAX}
+          min={140}
           centerLabel={`${gkwh}`}
+          unit="g/Kwh"
           fillColor="#00858D"
           gaugeHeight={220}
         />
@@ -134,9 +134,6 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
               {engine.label}
             </span>
           </div>
-        </div>
-        <div className="mt-1 flex items-center justify-center gap-4">
-          <span className="text-xs text-muted-foreground">g/Kwh</span>
         </div>
         <div className="mt-1 flex items-center justify-center">
           <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
@@ -433,9 +430,15 @@ const OperationOverviewLayout = () => {
   const gensetCount = vesselGensetData[vessel.id]?.length ?? 2;
   const gensetChartData = useMemo(() => {
     // Filter hours to current Singapore time (UTC+8) — same logic as operation-monitor-charts-data.ts
+    // const ALL_HOURS = [
+    //   '08:00', '09:00', '10:00', '11:00', '12:00', '13:00',
+    //   '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
+    // ];
     const ALL_HOURS = [
-      '08:00', '09:00', '10:00', '11:00', '12:00', '13:00',
-      '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
+      '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
+      '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
+      '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
+      '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
     ];
     const sgtHour = new Date(
       new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
