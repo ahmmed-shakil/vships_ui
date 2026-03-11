@@ -20,7 +20,7 @@ const WindyMap = dynamic(
 export default function FleetOverviewLayout() {
     // map will update every 10 seconds
     const [showMapUpdating, setShowMapUpdating] = useState(false);
-    const [useWindy, setUseWindy] = useState(true);
+    const [useWindy, setUseWindy] = useState(false);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -38,7 +38,7 @@ export default function FleetOverviewLayout() {
             {showMapUpdating && <MapLoadingSpinner />}
 
             {/* Map Toggle Button */}
-            <div className="absolute top-4 right-4 z-[1002]">
+            {/* <div className="absolute top-36 right-4 z-[1002]">
                 <Tooltip
                     content={useWindy ? 'Switch to Standard Map' : 'Switch to Weather Map'}
                     placement="left"
@@ -52,7 +52,7 @@ export default function FleetOverviewLayout() {
                         {useWindy ? <PiMapTrifoldDuotone className="w-5 h-5" /> : <PiCloudSunDuotone className="w-5 h-5" />}
                     </ActionIcon>
                 </Tooltip>
-            </div>
+            </div> */}
 
             {/* Display active map */}
             {useWindy ? (
