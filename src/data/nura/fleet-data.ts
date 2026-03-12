@@ -55,7 +55,7 @@ export const fleetVesselData: FleetVessel[] = [
       direction: 45,
       timestamp: minutesAgo(2),
     },
-    position_status: 'Drilling',
+    position_status: 'Operation',
     online: minutesAgo(1),
     me1: minutesAgo(2),
     me2: minutesAgo(3),
