@@ -10,49 +10,23 @@ import { Text } from 'rizzui';
 const getColumns = () => [
   {
     title: (
-      <Text as="span" fontWeight="semibold" className="block">
-        Spare
+      <Text as="span" fontWeight="semibold" className="block whitespace-nowrap">
+        COMPONENT/SPARE PART
       </Text>
     ),
     dataIndex: 'spare',
     key: 'spare',
-    width: 200,
+    width: 220,
     render: (spare: string) => <Text className="text-sm">{spare}</Text>,
   },
   {
     title: (
-      <Text as="span" fontWeight="semibold" className="block">
-        Life (hrs)
+      <Text as="span" fontWeight="semibold" className="block whitespace-nowrap">
+        DESIGN LIFE (HRS)
       </Text>
     ),
     dataIndex: 'lifeHrs',
     key: 'lifeHrs',
-    width: 120,
-    render: (v: number) => (
-      <Text className="font-mono text-sm">{v.toLocaleString()}</Text>
-    ),
-  },
-  {
-    title: (
-      <Text as="span" fontWeight="semibold" className="block">
-        Effective Life
-      </Text>
-    ),
-    dataIndex: 'effectiveLife',
-    key: 'effectiveLife',
-    width: 130,
-    render: (v: number) => (
-      <Text className="font-mono text-sm">{v.toLocaleString()}</Text>
-    ),
-  },
-  {
-    title: (
-      <Text as="span" fontWeight="semibold" className="block">
-        Remaining Life
-      </Text>
-    ),
-    dataIndex: 'remainingLife',
-    key: 'remainingLife',
     width: 140,
     render: (v: number) => (
       <Text className="font-mono text-sm">{v.toLocaleString()}</Text>
@@ -60,24 +34,63 @@ const getColumns = () => [
   },
   {
     title: (
-      <Text as="span" fontWeight="semibold" className="block">
-        Confidence
+      <Text as="span" fontWeight="semibold" className="block whitespace-nowrap">
+        ADJUSTED LIFE
       </Text>
     ),
-    dataIndex: 'confidence',
-    key: 'confidence',
+    dataIndex: 'effectiveLife',
+    key: 'effectiveLife',
+    width: 120,
+    render: (v: number) => (
+      <Text className="font-mono text-sm">{v.toLocaleString()}</Text>
+    ),
+  },
+  {
+    title: (
+      <Text as="span" fontWeight="semibold" className="block whitespace-nowrap">
+        HOURS SINCE OH
+      </Text>
+    ),
+    dataIndex: 'hoursSinceOh',
+    key: 'hoursSinceOh',
+    width: 140,
+    render: (v: number) => (
+      <Text className="font-mono text-sm">{v?.toLocaleString() || '-'}</Text>
+    ),
+  },
+  {
+    title: (
+      <Text as="span" fontWeight="semibold" className="block whitespace-nowrap">
+        REMAINING HRS
+      </Text>
+    ),
+    dataIndex: 'remainingLife',
+    key: 'remainingLife',
+    width: 130,
+    render: (v: number) => (
+      <Text className="font-mono text-sm">{v.toLocaleString()}</Text>
+    ),
+  },
+  {
+    title: (
+      <Text as="span" fontWeight="semibold" className="block whitespace-nowrap">
+        CONDITION %
+      </Text>
+    ),
+    dataIndex: 'condition',
+    key: 'condition',
     width: 110,
     render: (v: number) => <Text className="font-mono text-sm">{v}%</Text>,
   },
   {
     title: (
-      <Text as="span" fontWeight="semibold" className="block">
-        PMS Link
+      <Text as="span" fontWeight="semibold" className="block whitespace-nowrap">
+        PMS SCHEDULE
       </Text>
     ),
     dataIndex: 'pmsLink',
     key: 'pmsLink',
-    width: 100,
+    width: 120,
     render: (link: string) => (
       <a
         href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
@@ -92,7 +105,7 @@ const getColumns = () => [
   {
     title: (
       <Text as="span" fontWeight="semibold" className="block">
-        Status
+        STATUS
       </Text>
     ),
     dataIndex: 'status',
@@ -102,21 +115,34 @@ const getColumns = () => [
       const colors: Record<string, string> = {
         critical:
           'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-        warning:
+        urgent:
+          'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+        caution:
           'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
         ok: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
       };
       return (
         <span
           className={cn(
-            'inline-block rounded px-3 py-1 text-xs font-semibold capitalize',
+            'inline-block rounded px-3 py-1 text-xs font-semibold uppercase',
             colors[status] ?? colors.ok
           )}
         >
-          {status === 'ok' ? 'OK' : 'Status'}
+          {status}
         </span>
       );
     },
+  },
+  {
+    title: (
+      <Text as="span" fontWeight="semibold" className="block">
+        REMARKS
+      </Text>
+    ),
+    dataIndex: 'remarks',
+    key: 'remarks',
+    width: 250,
+    render: (remarks: string) => <Text className="text-sm italic text-gray-500">{remarks}</Text>,
   },
 ];
 
