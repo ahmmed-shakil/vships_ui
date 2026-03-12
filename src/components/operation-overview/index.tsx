@@ -100,13 +100,13 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
           unit="RPM"
           gaugeHeight={220}
         />
-        <div className="-mt-20 flex items-center justify-center gap-6">
+        {/* <div className="-mt-20 flex items-center justify-center gap-6">
           <div className="text-center">
             <span className="text-xs text-muted-foreground">
               {engine.label}
             </span>
           </div>
-        </div>
+        </div> */}
         <div className="mt-1 flex items-center justify-center">
           <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
             {kw}
@@ -129,13 +129,13 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
           fillColor="#00858D"
           gaugeHeight={220}
         />
-        <div className="-mt-20 flex items-center justify-center gap-6">
+        {/* <div className="-mt-20 flex items-center justify-center gap-6">
           <div className="text-center">
             <span className="text-xs text-muted-foreground">
               {engine.label}
             </span>
           </div>
-        </div>
+        </div> */}
         <div className="mt-1 flex items-center justify-center">
           <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
             {engine.gauge.fuel_cons.toFixed(1)}

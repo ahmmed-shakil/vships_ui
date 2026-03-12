@@ -7,7 +7,6 @@ import { emissionZones } from '@/data/nura/emission-zones';
 import type { FleetVessel } from '@/data/nura/fleet-data';
 import { engineData, shipData } from '@/data/nura/ships'; // engineData now imported from ships.ts
 import { selectedEngineAtom, selectedShipAtom } from '@/store/condition-monitoring-atoms';
-import { formatDistanceToNowStrict } from 'date-fns';
 import { useSetAtom } from 'jotai';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -304,7 +303,9 @@ export default function VesselMap({
     <div id="vessel-map" style={{ position: 'relative' }}>
       <MapContainer
         center={center}
-        zoom={2}
+        zoom={3}
+        minZoom={3} // Restrict how much the map can be zoomed out
+        maxZoom={18}
         scrollWheelZoom
         zoomControl={false}
         style={{ height: minHeight, width: '100%', borderRadius: '0.75rem' }}
@@ -316,6 +317,7 @@ export default function VesselMap({
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          noWrap={true} // Prevents the map from repeating horizontally
         />
 
         {/* ── Weather overlay tiles ── */}
@@ -326,6 +328,7 @@ export default function VesselMap({
                 key={wl.id}
                 url={`https://tile.openweathermap.org/map/${wl.layer}/{z}/{x}/{y}.png?appid=${OWM_KEY}`}
                 opacity={0.6}
+                noWrap={true}
               />
             )
         )}
@@ -434,8 +437,8 @@ export default function VesselMap({
                       }
                       // Force me1, me2, ae1 to green for demo
                       const isForcedGreen = key === 'me1' || key === 'me2' || key === 'ae1';
-                      const engineTimeColor = isForcedGreen 
-                        ? '#4ade80' 
+                      const engineTimeColor = isForcedGreen
+                        ? '#4ade80'
                         : colorByRecency((v as any)[objKey]);
                       const hasCritical = vesselAlarmData[v.vessel_id]?.some(a => a.status === 'active' && a.engine === eqAlarmEngine && a.severity === 1);
                       let finalColor = engineTimeColor;

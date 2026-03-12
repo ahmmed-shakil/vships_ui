@@ -43,7 +43,7 @@ const AlarmMonitoringHeaderSelectors = dynamic(
 function HeaderMenuRight() {
   return (
     <div className="ms-auto grid shrink-0 grid-cols-2 items-center gap-2 text-gray-700 xs:gap-3 xl:gap-4">
-      <NotificationDropdown>
+      {/* <NotificationDropdown>
         <ActionIcon
           aria-label="Notification"
           variant="text"
@@ -59,7 +59,7 @@ function HeaderMenuRight() {
             className="absolute right-1 top-2.5 -translate-x-1 -translate-y-1/4"
           />
         </ActionIcon>
-      </NotificationDropdown>
+      </NotificationDropdown> */}
       <ProfileMenu />
     </div>
   );
