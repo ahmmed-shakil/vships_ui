@@ -2,8 +2,9 @@
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
-import { coolantPressureData } from '@/data/nura/condition-monitoring-chart-data';
+import { getCoolantPressureChartData } from '@/actions/condition-monitoring-actions';
 import cn from '@/utils/class-names';
+import { useEffect, useState } from 'react';
 import {
   CartesianGrid,
   Line,
@@ -32,43 +33,52 @@ function DateTimeTick({ x, y, payload }: any) {
 
 // Color constants matching the screenshot but optimized for dark theme
 const COLORS = {
-  withinRange: '#3B82F6', // Blue for within limits (0.5 to upper)
+  withinRange: '#3B82F6', // Blue for within limits
   outOfRange: '#EF4444', // Red for outside limits
   grid: 'rgba(75, 85, 99, 0.2)', // Subtle grid
 };
 
-/**
- * Fuel Consumption - ME Port Status
- *
- * Line chart with temperature line that changes color based on thresholds using an SVG gradient.
- * - White: within limits
- * - Red: >= upper limit
- * - Light Blue: <= lower limit
- */
 export default function CoolantPressureChart({
   className,
 }: {
   className?: string;
 }) {
-  // Constants for thresholds as defined in data
-  const upperLimit = 5.0;
-  const lowerLimit = 0.5;
+  const [data, setData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // We set the YAxis domain explicitly
-  const domainMin = 0;
-  const domainMax = 6;
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const result = await getCoolantPressureChartData();
+        setData(result);
+      } catch (err) {
+        console.error('Error fetching chart data', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
-  // Calculate min and max from the actual data to ensure gradient offsets are accurate
-  // relative to the line's bounding box (which is what Recharts uses by default for gradients)
-  const temperatures = coolantPressureData.map((d) => d.temperature);
-  const dataMin = Math.min(...temperatures);
-  const dataMax = Math.max(...temperatures);
+  // Calculate bounds or use defaults
+  const upperLimit = data.length > 0 ? data[0].upperLimit : 60;
+  const lowerLimit = data.length > 0 ? data[0].lowerLimit : 0;
+ 
+  const fuelConsRates = data.map((d) => d.fuelConsRate);
+  const dataMin = fuelConsRates.length ? Math.min(...fuelConsRates) : 0;
+  const dataMax = fuelConsRates.length ? Math.max(...fuelConsRates) : 100;
+ 
+  // Add padding to the domain
+  const domainMin = Math.min(0, dataMin - 5);
+  const domainMax = Math.max(upperLimit + 10, dataMax + 5);
+ 
+  // Gradient offset calculation
+  const rangeSpan = domainMax - domainMin;
+  const lowerOffset = rangeSpan > 0 ? ((lowerLimit - domainMin) / rangeSpan) * 100 : 0;
+  const upperOffset = rangeSpan > 0 ? ((upperLimit - domainMin) / rangeSpan) * 100 : 80;
 
-  // Recharts gradient offsets are relative to the bounding box of the SVG path.
-  // The path's Y extent is [dataMin, dataMax].
-  // Note: linearGradient with y1=1 y2=0 means bottom up.
-  const lowerOffset = ((lowerLimit - dataMin) / (dataMax - dataMin)) * 100;
-  const upperOffset = ((upperLimit - dataMin) / (dataMax - dataMin)) * 100;
+  // Helper to format values to max 2 decimal places without trailing zeros
+  const formatVal = (v: number) => Number(v.toFixed(2)).toString();
 
   return (
     <PerfomaxCard
@@ -94,14 +104,20 @@ export default function CoolantPressureChart({
         </div>
       }
     >
-      <div className="flex h-full min-h-[250px] w-full pb-2 pl-2 pt-2">
+      <div className="flex h-full min-h-[250px] w-full pb-2 pl-2 pt-2 relative">
+        {isLoading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+            <span className="text-sm font-medium text-muted-foreground animate-pulse">Loading CSV Data...</span>
+          </div>
+        )}
+
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span
             className="text-[10px] font-medium text-muted-foreground"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
-            Fuel Consumption
+            Fuel Cons. Rate (L/H)
           </span>
         </div>
 
@@ -109,39 +125,22 @@ export default function CoolantPressureChart({
           <div className="flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={coolantPressureData}
+                data={data}
                 margin={{ top: 10, right: 30, left: -15, bottom: 5 }}
               >
                 <defs>
                   <linearGradient
-                    id="colorTemperature"
+                    id="colorFuelCons"
                     x1="0"
                     y1="1"
                     x2="0"
                     y2="0"
                   >
-                    {/* 0% to lowerOffset% -> Below Lower Limit (Red - out of range) */}
                     <stop offset="0%" stopColor={COLORS.outOfRange} />
-                    <stop
-                      offset={`${lowerOffset}%`}
-                      stopColor={COLORS.outOfRange}
-                    />
-
-                    {/* Sudden change at lower limit to Blue for within range */}
-                    <stop
-                      offset={`${lowerOffset}%`}
-                      stopColor={COLORS.withinRange}
-                    />
-                    <stop
-                      offset={`${upperOffset}%`}
-                      stopColor={COLORS.withinRange}
-                    />
-
-                    {/* Sudden change at upper limit to Red (out of range) */}
-                    <stop
-                      offset={`${upperOffset}%`}
-                      stopColor={COLORS.outOfRange}
-                    />
+                    <stop offset={`${Math.max(0, lowerOffset)}%`} stopColor={COLORS.outOfRange} />
+                    <stop offset={`${Math.max(0, lowerOffset)}%`} stopColor={COLORS.withinRange} />
+                    <stop offset={`${Math.min(100, upperOffset)}%`} stopColor={COLORS.withinRange} />
+                    <stop offset={`${Math.min(100, upperOffset)}%`} stopColor={COLORS.outOfRange} />
                     <stop offset="100%" stopColor={COLORS.outOfRange} />
                   </linearGradient>
                 </defs>
@@ -155,7 +154,7 @@ export default function CoolantPressureChart({
                 <XAxis
                   dataKey="date"
                   tick={<DateTimeTick />}
-                  interval={0}
+                  interval={Math.max(0, Math.floor(data.length / 8))}
                   height={30}
                   axisLine={{ stroke: '#374151' }}
                   tickLine={false}
@@ -164,23 +163,27 @@ export default function CoolantPressureChart({
 
                 <YAxis
                   tick={{ fontSize: 10, fill: '#9FA6B5' }}
-                  domain={[domainMin, domainMax]}
+                  domain={[Math.floor(domainMin), Math.ceil(domainMax)]}
                   tickCount={7}
                   axisLine={false}
                   tickLine={false}
+                  tickFormatter={formatVal}
                 />
 
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip 
+                  content={<CustomTooltip />} 
+                  formatter={(value: any) => [formatVal(Number(value)), 'Fuel Cons Rate']}
+                />
 
                 {/* Red background bands for out-of-range areas */}
                 <ReferenceArea
                   y1={upperLimit}
-                  y2={domainMax}
+                  y2={Math.ceil(domainMax)}
                   fill="#EF4444"
                   fillOpacity={0.15}
                 />
                 <ReferenceArea
-                  y1={domainMin}
+                  y1={Math.floor(domainMin)}
                   y2={lowerLimit}
                   fill="#EF4444"
                   fillOpacity={0.15}
@@ -189,26 +192,26 @@ export default function CoolantPressureChart({
                 {/* Reference Dividers for limits */}
                 <ReferenceArea
                   y1={upperLimit}
-                  y2={upperLimit + 0.02}
+                  y2={upperLimit + (domainMax - domainMin) * 0.005} 
                   className="fill-gray-700 dark:fill-gray-300"
                   fillOpacity={0.8}
                 />
                 <ReferenceArea
                   y1={lowerLimit}
-                  y2={lowerLimit + 0.02}
+                  y2={lowerLimit + (domainMax - domainMin) * 0.005}
                   className="fill-gray-700 dark:fill-gray-300"
                   fillOpacity={0.8}
                 />
 
-                {/* Main Temperature Line */}
+                {/* Main Data Line */}
                 <Line
                   type="monotone"
-                  dataKey="temperature"
-                  name="Temperature"
-                  stroke="url(#colorTemperature)"
+                  dataKey="fuelConsRate"
+                  name="fuelConsRate"
+                  stroke="url(#colorFuelCons)"
                   strokeWidth={3}
                   dot={false}
-                  isAnimationActive={false}
+                  isAnimationActive={true}
                 />
               </LineChart>
             </ResponsiveContainer>
