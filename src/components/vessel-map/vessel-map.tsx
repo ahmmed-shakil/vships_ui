@@ -182,8 +182,8 @@ function injectStyles() {
     /* Weather toggle panel */
     .weather-control-panel {
       position: absolute;
-      bottom: 30px;
-      left: 12px;
+      top: 15px;
+      right: 60px;
       z-index: 1000;
       background: rgba(255,255,255,0.95);
       backdrop-filter: blur(8px);
@@ -497,7 +497,7 @@ export default function VesselMap({
           />
           🌍 Emission Zones
         </label>
-        {weatherLayers.map((wl) => (
+        {/* {weatherLayers.map((wl) => (
           <label key={wl.id}>
             <input
               type="checkbox"
@@ -506,7 +506,7 @@ export default function VesselMap({
             />
             {wl.label}
           </label>
-        ))}
+        ))} */}
       </div>
     </div>
   );

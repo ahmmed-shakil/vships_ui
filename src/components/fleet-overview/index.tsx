@@ -3,7 +3,8 @@
 import { fleetVesselData } from '@/data/nura/fleet-data';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import { Loader, Text } from 'rizzui';
+import { PiCloudSunDuotone, PiMapTrifoldDuotone } from 'react-icons/pi';
+import { ActionIcon, Loader, Text, Tooltip } from 'rizzui';
 
 // Leaflet requires `window` — load it client-only
 const VesselMap = dynamic(
@@ -37,7 +38,7 @@ export default function FleetOverviewLayout() {
             {showMapUpdating && <MapLoadingSpinner />}
 
             {/* Map Toggle Button */}
-            {/* <div className="absolute top-36 right-4 z-[1002]">
+            <div className="absolute top-36 right-4 z-[1002]">
                 <Tooltip
                     content={useWindy ? 'Switch to Standard Map' : 'Switch to Weather Map'}
                     placement="left"
@@ -45,20 +46,21 @@ export default function FleetOverviewLayout() {
                     <ActionIcon
                         variant="solid"
                         size="lg"
-                        className="rounded-full shadow-lg bg-white text-gray-800 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                        className="rounded-full shadow-lg bg-background text-foreground dark:hover:bg-background/50"
                         onClick={() => setUseWindy(!useWindy)}
                     >
                         {useWindy ? <PiMapTrifoldDuotone className="w-5 h-5" /> : <PiCloudSunDuotone className="w-5 h-5" />}
                     </ActionIcon>
                 </Tooltip>
-            </div> */}
+            </div>
 
             {/* Display active map */}
             {useWindy ? (
                 <WindyMap
                     vessels={fleetVesselData}
                     minHeight="calc(100vh - 135px)"
-                    apiKey="DxgZtU5W7x1Yw95RHPIWR4N0iJ0PVYaU"
+                    // apiKey="DxgZtU5W7x1Yw95RHPIWR4N0iJ0PVYaU"
+                    apiKey='Bq4H59NFar1J2dQjOjaDZt5yAgrTmBU3'
                 />
             ) : (
                 <VesselMap
