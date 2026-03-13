@@ -27,14 +27,14 @@ interface WindyMapProps {
 
 const OVERLAY_OPTIONS = [
   { value: 'wind', label: 'Wind', icon: '💨' },
-  { value: 'gust', label: 'Wind Gusts', icon: '🌬️' },
-  { value: 'rain', label: 'Rain', icon: '🌧️' },
+  // { value: 'gust', label: 'Wind Gusts', icon: '🌬️' },
+  // { value: 'rain', label: 'Rain', icon: '🌧️' },
   { value: 'temp', label: 'Temperature', icon: '🌡️' },
   { value: 'pressure', label: 'Pressure', icon: '🔵' },
-  { value: 'clouds', label: 'Clouds', icon: '☁️' },
-  { value: 'waves', label: 'Waves', icon: '🌊' },
-  { value: 'swell', label: 'Swell', icon: '🌊' },
-  { value: 'currents', label: 'Currents', icon: '🔄' },
+  // { value: 'clouds', label: 'Clouds', icon: '☁️' },
+  // { value: 'waves', label: 'Waves', icon: '🌊' },
+  // { value: 'swell', label: 'Swell', icon: '🌊' },
+  // { value: 'currents', label: 'Currents', icon: '🔄' },
 ];
 
 function colorByRecency(timestampSec: number): string {
@@ -73,7 +73,7 @@ export default function WindyMap({ vessels, minHeight = 300, apiKey }: WindyMapP
   const [error, setError] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [selectedOverlay, setSelectedOverlay] = useState('wind');
-  
+
   const [vesselPositions, setVesselPositions] = useState<{ [key: number]: { x: number; y: number } }>({});
   const [activePopup, setActivePopup] = useState<number | null>(null);
 
@@ -176,9 +176,9 @@ export default function WindyMap({ vessels, minHeight = 300, apiKey }: WindyMapP
 
         // Add typical Windy overrides
         if (!document.getElementById('windy-custom-styles')) {
-            const style = document.createElement('style');
-            style.id = 'windy-custom-styles';
-            style.innerHTML = `
+          const style = document.createElement('style');
+          style.id = 'windy-custom-styles';
+          style.innerHTML = `
               #windy #logo-wrapper { opacity: 0; z-index: -9999; }
               #windy #mobile-ovr-select { display: none !important; }
               #windy #bottom { z-index: 600 !important; }
@@ -200,7 +200,7 @@ export default function WindyMap({ vessels, minHeight = 300, apiKey }: WindyMapP
                 z-index: 600 !important;
               }
             `;
-            document.head.appendChild(style);
+          document.head.appendChild(style);
         }
 
         await loadScript('https://unpkg.com/leaflet@1.4.0/dist/leaflet.js');
@@ -227,7 +227,7 @@ export default function WindyMap({ vessels, minHeight = 300, apiKey }: WindyMapP
                 const { map, store } = windyAPI;
                 windyStoreRef.current = store;
                 mapRef.current = map;
-                
+
                 // Set high zindex so standard components match
                 const markerPane = map.getPane('markerPane');
                 if (markerPane) markerPane.style.zIndex = '1000';
@@ -443,8 +443,8 @@ export default function WindyMap({ vessels, minHeight = 300, apiKey }: WindyMapP
                             engineAlarms = vesselAlarmData[vessel.vessel_id].filter(a => a.status === 'active' && a.engine === eqAlarmEngine).length;
                           }
                           const isForcedGreen = key === 'me1' || key === 'me2' || key === 'ae1';
-                          const engineTimeColor = isForcedGreen 
-                            ? '#4ade80' 
+                          const engineTimeColor = isForcedGreen
+                            ? '#4ade80'
                             : colorByRecency((vessel as any)[objKey]);
                           const hasCritical = vesselAlarmData[vessel.vessel_id]?.some(a => a.status === 'active' && a.engine === eqAlarmEngine && a.severity === 1);
                           let finalColor = engineTimeColor;
