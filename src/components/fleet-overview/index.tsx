@@ -59,8 +59,8 @@ export default function FleetOverviewLayout() {
                 <WindyMap
                     vessels={fleetVesselData}
                     minHeight="calc(100vh - 135px)"
-                    apiKey="DxgZtU5W7x1Yw95RHPIWR4N0iJ0PVYaU"
-                // apiKey='Bq4H59NFar1J2dQjOjaDZt5yAgrTmBU3'
+                    // apiKey="DxgZtU5W7x1Yw95RHPIWR4N0iJ0PVYaU"
+                    apiKey='Bq4H59NFar1J2dQjOjaDZt5yAgrTmBU3'
                 />
             ) : (
                 <VesselMap
