@@ -39,6 +39,11 @@ export const menuItems = [
     icon: <PiGear />,
   },
   {
+    name: 'Alarm Overview',
+    href: routes.machinery.alarmOverview,
+    icon: <PiBellSimpleRinging />,
+  },
+  {
     name: 'Condition Monitoring',
     href: routes.machinery.conditionMonitoring,
     icon: <PiHammer />,

@@ -35,7 +35,7 @@ const RealTimeDataHeaderSelectors = dynamic(
   { ssr: false }
 );
 
-const AlarmMonitoringHeaderSelectors = dynamic(
+const OperationOverviewHeaderSelectors = dynamic(
   () => import('@/components/operation-overview/header-selectors'),
   { ssr: false }
 );
@@ -133,7 +133,7 @@ export default function Header() {
 
       {isOperationOverview && (
         <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
-          <AlarmMonitoringHeaderSelectors />
+          <OperationOverviewHeaderSelectors />
         </div>
       )}
 
