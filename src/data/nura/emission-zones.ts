@@ -53,7 +53,7 @@ export const coastlineInnerBoundary: [number, number][] = [
   [47.5, -59.8], [48.5, -58.5], [49.5, -57.0], [50.0, -55.5],
   [51.0, -56.5], [52.0, -55.6], [53.0, -55.8], [54.0, -57.0],
   [55.0, -58.5], [56.0, -60.0], [57.0, -61.5], [58.0, -62.5],
-  [59.0, -64.0], [60.0, -64.0], [60.0, -64.16], [25.956667, -97.146389],
+  [59.0, -64.0], [60.0, -64.0], [60.0, -64.16],
 ];
 
 // ─── Gulf of Mexico / Caribbean ──────────────────────────────────────────────
@@ -359,7 +359,7 @@ export const emissionZones: EmissionZone[] = [
   {
     id: 'neca',
     name: 'NECA — Atlantic & Gulf of Mexico',
-    positions: [necaOuterBoundary, coastlineInnerBoundary],
+    positions: [...necaOuterBoundary, ...coastlineInnerBoundary],
     options: { color: '#B9C50F', fillColor: '#B9C50F', fillOpacity: 0.8, weight: 0 },
   },
   {
