@@ -72,17 +72,17 @@ export default function EngineDetailView({
         },
         detail: engine.detail
           ? {
-            ...engine.detail,
-            lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-            lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-            coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-            coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-            batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-            exhgas_temp_left:
-              live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-            exhgas_temp_right:
-              live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-          }
+              ...engine.detail,
+              lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+              lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+              coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+              coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+              batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+              exhgas_temp_left:
+                live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+              exhgas_temp_right:
+                live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+            }
           : undefined,
       };
     }
@@ -111,7 +111,7 @@ export default function EngineDetailView({
   return (
     <div className="py-4">
       {/* Engine label */}
-      <h6 className="font-semibold">{engine.label}</h6>
+      <h6 className="text-center font-semibold">{engine.label}</h6>
 
       {/* Section labels — centered above the gauge cluster */}
       <div className="mx-auto flex justify-between" style={{ maxWidth: 500 }}>
@@ -146,6 +146,7 @@ export default function EngineDetailView({
             value={d.lubeoil_press}
             max={LUBEOIL_PRESS_MAX}
             centerLabel={`${Number(d.lubeoil_press).toFixed(1)}`}
+            unit="kPa"
             fillColor="#6366F1"
             className="border-0"
           />
@@ -167,6 +168,7 @@ export default function EngineDetailView({
             value={d.lubeoil_temp}
             max={LUBEOIL_TEMP_MAX}
             centerLabel={`${Number(d.lubeoil_temp).toFixed(1)}`}
+            unit="°C"
             fillColor="#8B5CF6"
             className="border-0"
           />
@@ -186,6 +188,7 @@ export default function EngineDetailView({
             value={engine.gauge.engine_rpm}
             max={RPM_GAUGE_MAX}
             centerLabel={`${engine.gauge.engine_rpm.toFixed(0)}`}
+            unit="RPM"
             className="border-0"
           />
           {/* Exhaust gas labels */}
@@ -227,6 +230,7 @@ export default function EngineDetailView({
             value={d.coolant_press}
             max={COOLANT_PRESS_MAX}
             centerLabel={`${Number(d.coolant_press).toFixed(1)}`}
+            unit="kPa"
             fillColor="#06B6D4"
             className="border-0"
           />
@@ -251,6 +255,7 @@ export default function EngineDetailView({
             value={d.coolant_temp}
             max={COOLANT_TEMP_MAX}
             centerLabel={`${Number(d.coolant_temp).toFixed(1)}`}
+            unit="°C"
             fillColor="#0891B2"
             className="border-0"
           />
