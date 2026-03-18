@@ -2,7 +2,6 @@
 
 import HeaderBreadcrumb from '@/app/shared/header-breadcrumb';
 import HamburgerButton from '@/layouts/hamburger-button';
-import NotificationDropdown from '@/layouts/notification-dropdown';
 import ProfileMenu from '@/layouts/profile-menu';
 import cn from '@/utils/class-names';
 import logoImg from '@public/desktop-logo.png';
@@ -10,9 +9,6 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { PiBellSimpleRingingFill } from 'react-icons/pi';
-import { ActionIcon } from 'rizzui/action-icon';
-import { Badge } from 'rizzui/badge';
 import Sidebar from './helium-sidebar';
 
 const ConditionMonitoringHeaderSelectors = dynamic(
@@ -76,7 +72,7 @@ export default function Header() {
   const isAlarmOverview = pathname.startsWith('/machinery/alarm-overview');
   const isRealTimeData = pathname.startsWith('/real-time-data');
   // const isAlarmMonitoring = pathname.startsWith('/alarm-monitoring');
-  const isOperationOverview = pathname.startsWith('/operation-overview')
+  const isOperationOverview = pathname.startsWith('/operation-overview');
 
   return (
     <header
@@ -87,7 +83,11 @@ export default function Header() {
       <div
         className={cn(
           'flex items-center',
-          isConditionMonitoring || isMachineryOverview || isAlarmOverview || isRealTimeData || isOperationOverview
+          isConditionMonitoring ||
+            isMachineryOverview ||
+            isAlarmOverview ||
+            isRealTimeData ||
+            isOperationOverview
             ? 'w-auto shrink-0'
             : 'w-full max-w-2xl'
         )}
