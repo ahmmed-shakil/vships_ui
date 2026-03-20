@@ -80,7 +80,7 @@ export default function SensorLineChart({
 }: SensorLineChartProps) {
   const formatVal = (v: number) => v.toFixed(2);
 
-  // Round numeric values to 2 decimal places for display
+  // Round numeric values to 2 decimal places and convert nulls to 0
   const dataKeys = series.map((s) => s.dataKey);
   const chartData = data.map((point) => {
     const rounded: Record<string, unknown> = { ...point };
@@ -88,6 +88,8 @@ export default function SensorLineChart({
       const v = (point as Record<string, unknown>)[key];
       if (typeof v === 'number') {
         rounded[key] = Math.round(v * 100) / 100;
+      } else if (v === null || v === undefined) {
+        rounded[key] = 0;
       }
     }
     return rounded;
