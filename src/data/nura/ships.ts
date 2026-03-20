@@ -151,3 +151,24 @@ export const engineData = [
   { label: 'Genset 1', value: 'ae1' },
   { label: 'Genset 2', value: 'ae2' },
 ];
+
+// ─── Condition Monitoring specific data (Ocean Pact API) ───────────────────
+export const cmShipData: Ship[] = [
+  {
+    label: 'Parcel Das Paredes',
+    value: 'parcel-das-paredes',
+    id: 1,
+    engines: ['ME PORT', 'ME STBD'],
+    position: {
+      lat: 0,
+      long: 0,
+      direction: 0,
+      timestamp: Math.floor(Date.now() / 1000),
+    },
+  },
+];
+
+export const cmEngineData = [
+  { label: 'ME Port', value: 'me1' },
+  { label: 'ME Stbd', value: 'me2' },
+];

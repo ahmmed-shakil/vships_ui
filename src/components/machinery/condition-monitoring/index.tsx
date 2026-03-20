@@ -2,6 +2,7 @@
 
 import HealthScoreHeader from '@/components/cards/health-score-header';
 import PerfomaxCard from '@/components/cards/perfomax-card';
+import { useSensorData } from '@/hooks/use-sensor-data';
 import {
   selectedEngineAtom,
   selectedShipAtom,
@@ -16,6 +17,7 @@ import DeltaDeviationTrendline from './delta-deviation-trendline';
 import HealthScoreCard from './health-score-card';
 import ParameterScatterChart from './parameter-scatter-chart';
 import ParameterVsPchargeChart from './parameter-vs-pcharge-chart';
+import SensorLineChart, { type SensorSeries } from './sensor-line-chart';
 import SfocScatterCard from './sfoc-scatter-card';
 
 // ─── Reusable Dotted Row Component ───────────────────────────────────────────
@@ -42,10 +44,83 @@ function DottedRow({
   );
 }
 
+// ─── 8 Sensor chart row definitions ──────────────────────────────────────────
+const SENSOR_CHART_ROWS: {
+  title: string;
+  yAxisLabel: string;
+  series: SensorSeries[];
+}[] = [
+  {
+    title: 'Turbocharger RPM',
+    yAxisLabel: 'TC RPM',
+    series: [{ dataKey: 'tc_rpm', label: 'TC RPM' }],
+  },
+  {
+    title: 'Engine RPM',
+    yAxisLabel: 'RPM',
+    series: [{ dataKey: 'rpm', label: 'RPM' }],
+  },
+  {
+    title: 'Fuel Performance Index',
+    yAxisLabel: 'FPI',
+    series: [{ dataKey: 'fpi', label: 'FPI' }],
+  },
+  {
+    title: 'Exhaust Gas Temperatures (Cylinders)',
+    yAxisLabel: 'EG Temp (°C)',
+    series: [
+      { dataKey: 'eg_temp_1', label: 'Cyl 1', color: '#3B82F6' },
+      { dataKey: 'eg_temp_2', label: 'Cyl 2', color: '#EF4444' },
+      { dataKey: 'eg_temp_3', label: 'Cyl 3', color: '#22C55E' },
+      { dataKey: 'eg_temp_4', label: 'Cyl 4', color: '#F59E0B' },
+      { dataKey: 'eg_temp_5', label: 'Cyl 5', color: '#A855F7' },
+      { dataKey: 'eg_temp_6', label: 'Cyl 6', color: '#EC4899' },
+      { dataKey: 'eg_temp_7', label: 'Cyl 7', color: '#06B6D4' },
+      { dataKey: 'eg_temp_8', label: 'Cyl 8', color: '#F97316' },
+      { dataKey: 'eg_temp_mean', label: 'Mean', color: '#FFFFFF' },
+    ],
+  },
+  {
+    title: 'Exhaust Gas Temp (Turbo Out / Manifold)',
+    yAxisLabel: 'Temp (°C)',
+    series: [
+      {
+        dataKey: 'eg_temp_out_turbo',
+        label: 'EG Temp Out Turbo',
+        color: '#A855F7',
+      },
+      { dataKey: 'exh_gas_temp', label: 'Exh Gas Temp', color: '#EC4899' },
+    ],
+  },
+  {
+    title: 'Charge Air Pressure',
+    yAxisLabel: 'Pressure (bar)',
+    series: [{ dataKey: 'chargeair_press', label: 'Charge Air Press' }],
+  },
+  {
+    title: 'HT Cooling Water Temperature',
+    yAxisLabel: 'Temp (°C)',
+    series: [
+      { dataKey: 'ht_cw_temp', label: 'HT CW Temp', color: '#06B6D4' },
+      {
+        dataKey: 'ht_cw_inlet_temp',
+        label: 'HT CW Inlet Temp',
+        color: '#F59E0B',
+      },
+    ],
+  },
+  {
+    title: 'Lube Oil Temperature',
+    yAxisLabel: 'Temp (°C)',
+    series: [{ dataKey: 'lo_temp', label: 'LO Temp' }],
+  },
+];
+
 export default function ConditionMonitoringLayout() {
   // Read global state from atoms (selectors are in the header)
   const selectedShip = useAtomValue(selectedShipAtom);
   const selectedEngine = useAtomValue(selectedEngineAtom);
+  const { data: sensorData, isLoading } = useSensorData();
 
   return (
     <>
@@ -99,11 +174,13 @@ export default function ConditionMonitoringLayout() {
             </div>
           }
           headerFooter={
-            <div className="px-5 pb-1 overflow-hidden relative">
+            <div className="relative overflow-hidden px-5 pb-1">
               <div className="animate-marquee-scroll text-sm font-medium">
-                <span className="text-amber-500 underline decoration-amber-500 mr-1">Check</span>
+                <span className="mr-1 text-amber-500 underline decoration-amber-500">
+                  Check
+                </span>
                 <span className="text-foreground">Exh Gas Manifold Temp</span>
-                <span className="text-amber-500 ml-1">@ 68 %</span>
+                <span className="ml-1 text-amber-500">@ 68 %</span>
                 <span className="text-foreground">, Lube Oil Press </span>
                 <span className="text-amber-500">@ 65%</span>
                 <span className="text-foreground">, Coolant Temp </span>
@@ -145,8 +222,6 @@ export default function ConditionMonitoringLayout() {
         <SfocScatterCard className="flex flex-col" />
       </div>
 
-      {/* ─── Condition Based Analysis Table ─────────────────────────────────── */}
-
       {/* ─── Charts Row 1: Trendline + Scatter ─────────────────────────────── */}
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
@@ -162,11 +237,30 @@ export default function ConditionMonitoringLayout() {
       </div>
 
       {/* ─── Charts Row 2: Coolant + Health Score + Pcharge ─────────────────── */}
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11">
+      {/* <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11">
         <CoolantPressureChart className="col-span-5" />
         <HealthScoreCard className="col-span-3" />
         <ParameterVsPchargeChart className="col-span-3" />
-      </div>
+      </div> */}
+
+      {/* ─── Sensor Chart Rows (8 rows: chart + health score + pcharge) ──── */}
+      {SENSOR_CHART_ROWS.map((row) => (
+        <div
+          key={row.title}
+          className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11"
+        >
+          <SensorLineChart
+            title={row.title}
+            yAxisLabel={row.yAxisLabel}
+            series={row.series}
+            data={sensorData}
+            isLoading={isLoading}
+            className="col-span-5"
+          />
+          <HealthScoreCard className="col-span-3" />
+          <ParameterVsPchargeChart className="col-span-3" />
+        </div>
+      ))}
     </>
   );
 }

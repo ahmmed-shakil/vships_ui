@@ -1,7 +1,7 @@
 'use client';
 
 import DateRangePicker from '@/components/date/date-range';
-import { engineData, shipData, type Ship } from '@/data/nura/ships';
+import { cmEngineData, cmShipData, type Ship } from '@/data/nura/ships';
 import {
   dateRangeAtom,
   selectedEngineAtom,
@@ -10,7 +10,7 @@ import {
 } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
 import { useAtom } from 'jotai';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Select } from 'rizzui/select';
 
 const timeOptions = ['1h', '1d', '7d', '1m', '3m', 'Custom Time'];
@@ -22,25 +22,26 @@ export default function ConditionMonitoringHeaderSelectors() {
   const [dateRange, setDateRange] = useAtom(dateRangeAtom);
   const datePickerRef = useRef<HTMLElement>(null);
 
-  // Remove "All Engine" option for condition monitoring
-  const filteredEngineData = useMemo(
-    () => engineData.filter((e) => e.value !== 'all'),
-    []
-  );
-
-  // If "All Engine" was globally selected, auto-select the first specific engine
+  // If selected engine is not in the CM engine list, auto-select the first
   useEffect(() => {
-    if (selectedEngine?.value === 'all' && filteredEngineData.length > 0) {
-      setSelectedEngine(filteredEngineData[0]);
+    const valid = cmEngineData.some((e) => e.value === selectedEngine?.value);
+    if (!valid && cmEngineData.length > 0) {
+      setSelectedEngine(cmEngineData[0]);
     }
-  }, [selectedEngine, filteredEngineData, setSelectedEngine]);
+  }, [selectedEngine, setSelectedEngine]);
+
+  // Set vessel to the CM vessel on mount
+  useEffect(() => {
+    setSelectedShip(cmShipData[0]);
+  }, [setSelectedShip]);
 
   // Auto-open date picker when "Custom Time" is selected
   useEffect(() => {
     if (selectedTime === 'Custom Time') {
-      // Small delay to ensure the date picker is rendered
       const timer = setTimeout(() => {
-        const datePickerInput = document.querySelector('.react-datepicker__input-container input') as HTMLInputElement;
+        const datePickerInput = document.querySelector(
+          '.react-datepicker__input-container input'
+        ) as HTMLInputElement;
         if (datePickerInput) {
           datePickerInput.focus();
           datePickerInput.click();
@@ -53,16 +54,17 @@ export default function ConditionMonitoringHeaderSelectors() {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Select
-        options={shipData}
+        options={cmShipData}
         value={selectedShip}
         onChange={(v: Ship) => setSelectedShip(v)}
-        className="w-44"
+        className="w-52"
         selectClassName="h-9 text-sm"
         dropdownClassName="text-gray-900"
+        disabled
       />
 
       <Select
-        options={filteredEngineData}
+        options={cmEngineData}
         value={selectedEngine}
         onChange={setSelectedEngine}
         className="w-36"
@@ -71,17 +73,17 @@ export default function ConditionMonitoringHeaderSelectors() {
       />
 
       {/* Time Range Toggle Group */}
-      <div className='flex bg-background space-x-6 border-2 rounded-lg'>
-        <div className="flex rounded border border-muted overflow-hidden shrink-0">
+      <div className="flex space-x-6 rounded-lg border-2 bg-background">
+        <div className="flex shrink-0 overflow-hidden rounded border border-muted">
           {timeOptions.map((opt) => (
             <button
               key={opt}
               onClick={() => setSelectedTime(opt)}
               className={cn(
-                'px-4 py-1.5 border-r-2 border-muted transition-all duration-200',
+                'border-r-2 border-muted px-4 py-1.5 transition-all duration-200',
                 selectedTime === opt
-                  ? 'bg-primary/10 text-primary font-semibold'
-                  : 'text-foreground hover:bg-muted/50 font-medium'
+                  ? 'bg-primary/10 font-semibold text-primary'
+                  : 'font-medium text-foreground hover:bg-muted/50'
               )}
             >
               {opt}
@@ -90,13 +92,13 @@ export default function ConditionMonitoringHeaderSelectors() {
         </div>
 
         {selectedTime === 'Custom Time' && (
-          <div className='block'>
+          <div className="block">
             <div className="w-52 shrink-0">
               <DateRangePicker
                 startDate={dateRange[0]}
                 endDate={dateRange[1]}
                 onChange={setDateRange}
-                className="h-8 border-none bg-background text-sm w-full focus:ring-0"
+                className="h-8 w-full border-none bg-background text-sm focus:ring-0"
                 placeholder="Select custom dates"
               />
             </div>
