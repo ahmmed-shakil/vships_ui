@@ -183,26 +183,94 @@ export default function SensorLineChart({
                 margin={{ top: 10, right: 30, left: -15, bottom: 5 }}
               >
                 <defs>
-                  {hasThresholds && series.map((s, i) => {
-                    const color = s.color ?? LINE_COLORS[i % LINE_COLORS.length];
-                    return (
-                      <linearGradient
-                        key={`grad-${s.dataKey}`}
-                        id={`grad-${s.dataKey}`}
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop offset="0%" stopColor="#EF4444" />
-                        <stop offset={`${topOffset * 100}%`} stopColor="#EF4444" />
-                        <stop offset={`${topOffset * 100}%`} stopColor={color} />
-                        <stop offset={`${bottomOffset * 100}%`} stopColor={color} />
-                        <stop offset={`${bottomOffset * 100}%`} stopColor="#EF4444" />
-                        <stop offset="100%" stopColor="#EF4444" />
-                      </linearGradient>
-                    );
-                  })}
+                  {hasThresholds &&
+                    series.map((s, i) => {
+                      const color =
+                        s.color ?? LINE_COLORS[i % LINE_COLORS.length];
+                      const vals = chartData
+                        .map((d) => d[s.dataKey] as number | undefined)
+                        .filter((v): v is number => v !== undefined);
+
+                      if (vals.length === 0) return null;
+
+                      const lineMin = Math.min(...vals);
+                      const lineMax = Math.max(...vals);
+
+                      // Include thresholds in the range calculation to ensure the gradient
+                      // stretches enough to cover the transition points if the line crosses them.
+                      const effectiveMin = Math.min(lineMin, tMin ?? lineMin);
+                      const effectiveMax = Math.max(lineMax, tMax ?? lineMax);
+                      const lineRange = effectiveMax - effectiveMin || 1;
+
+                      // Calculate offsets relative to the line's own bounding box
+                      // Recharts stretches the gradient from the line's maximum Y to its minimum Y.
+                      const lineTopOffset =
+                        tMax !== undefined
+                          ? Math.max(
+                              0,
+                              Math.min(1, (effectiveMax - tMax) / lineRange)
+                            )
+                          : 0;
+
+                      const lineBottomOffset =
+                        tMin !== undefined
+                          ? Math.max(
+                              0,
+                              Math.min(1, (effectiveMax - tMin) / lineRange)
+                            )
+                          : 1;
+
+                      return (
+                        <linearGradient
+                          key={`grad-${s.dataKey}`}
+                          id={`grad-${s.dataKey}`}
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          {/* Top danger zone: only include if threshold is reached/crossed */}
+                          {tMax !== undefined && lineMax >= tMax && (
+                            <>
+                              <stop offset="0%" stopColor="#EF4444" />
+                              <stop
+                                offset={`${lineTopOffset * 100}%`}
+                                stopColor="#EF4444"
+                              />
+                            </>
+                          )}
+
+                          {/* Safe zone: spans from the top or top threshold to the bottom or bottom threshold */}
+                          <stop
+                            offset={
+                              tMax !== undefined && lineMax >= tMax
+                                ? `${lineTopOffset * 100}%`
+                                : '0%'
+                            }
+                            stopColor={color}
+                          />
+                          <stop
+                            offset={
+                              tMin !== undefined && lineMin <= tMin
+                                ? `${lineBottomOffset * 100}%`
+                                : '100%'
+                            }
+                            stopColor={color}
+                          />
+
+                          {/* Bottom danger zone: only include if threshold is reached/crossed */}
+                          {tMin !== undefined && lineMin <= tMin && (
+                            <>
+                              <stop
+                                offset={`${lineBottomOffset * 100}%`}
+                                stopColor="#EF4444"
+                              />
+                              <stop offset="100%" stopColor="#EF4444" />
+                            </>
+                          )}
+                        </linearGradient>
+                      );
+                    })}
                 </defs>
                 <CartesianGrid
                   vertical={false}
@@ -219,7 +287,9 @@ export default function SensorLineChart({
                   padding={{ left: 10, right: 10 }}
                 />
                 <YAxis
-                  domain={hasThresholds ? [domainMin, domainMax] : ['auto', 'auto']}
+                  domain={
+                    hasThresholds ? [domainMin, domainMax] : ['auto', 'auto']
+                  }
                   tick={{ fontSize: 10, fill: '#9FA6B5' }}
                   axisLine={false}
                   tickLine={false}
@@ -242,23 +312,52 @@ export default function SensorLineChart({
                     strokeOpacity={0}
                   />
                 )}
-                {series.map((s, i) => (
-                  <Line
-                    key={s.dataKey as string}
-                    type="monotone"
-                    dataKey={s.dataKey as string}
-                    name={s.label}
-                    stroke={
-                      hasThresholds
-                        ? `url(#grad-${s.dataKey})`
-                        : (s.color ?? LINE_COLORS[i % LINE_COLORS.length])
+                {series.map((s, i) => {
+                  const vals = chartData
+                    .map((d) => d[s.dataKey] as number | undefined)
+                    .filter((v): v is number => v !== undefined);
+
+                  if (vals.length === 0) return null;
+
+                  const lineMin = Math.min(...vals);
+                  const lineMax = Math.max(...vals);
+                  const color = s.color ?? LINE_COLORS[i % LINE_COLORS.length];
+
+                  // Determine if the line is entirely within one zone to avoid
+                  // the SVG gradient "horizontal line" bug (where the gradient
+                  // colors the thickness of the line instead of its height).
+                  let stroke = `url(#grad-${s.dataKey})`;
+
+                  if (hasThresholds) {
+                    const isFullySafe =
+                      (tMax === undefined || lineMax < tMax) &&
+                      (tMin === undefined || lineMin > tMin);
+                    const isFullyAbove = tMax !== undefined && lineMin >= tMax;
+                    const isFullyBelow = tMin !== undefined && lineMax <= tMin;
+
+                    if (isFullySafe) {
+                      stroke = color;
+                    } else if (isFullyAbove || isFullyBelow) {
+                      stroke = '#EF4444';
                     }
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
-                    isAnimationActive={false}
-                  />
-                ))}
+                  } else {
+                    stroke = color;
+                  }
+
+                  return (
+                    <Line
+                      key={s.dataKey as string}
+                      type="monotone"
+                      dataKey={s.dataKey as string}
+                      name={s.label}
+                      stroke={stroke}
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls
+                      isAnimationActive={false}
+                    />
+                  );
+                })}
               </LineChart>
             </ResponsiveContainer>
           </div>
