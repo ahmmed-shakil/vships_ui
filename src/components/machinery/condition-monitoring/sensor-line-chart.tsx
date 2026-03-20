@@ -12,6 +12,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  ReferenceArea,
 } from 'recharts';
 
 /** Custom X-axis tick — date on top, time below */
@@ -68,6 +69,7 @@ interface SensorLineChartProps {
   data: Record<string, unknown>[];
   isLoading?: boolean;
   className?: string;
+  thresholds?: { min?: number; max?: number };
 }
 
 export default function SensorLineChart({
@@ -77,23 +79,57 @@ export default function SensorLineChart({
   data,
   isLoading,
   className,
+  thresholds,
 }: SensorLineChartProps) {
   const formatVal = (v: number) => v.toFixed(2);
 
   // Round numeric values to 2 decimal places and convert nulls to 0
   const dataKeys = series.map((s) => s.dataKey);
+
+  const hasThresholds = thresholds && (thresholds.min !== undefined || thresholds.max !== undefined);
+  const { min: tMin, max: tMax } = thresholds || {};
+
+  let overallMin = Infinity;
+  let overallMax = -Infinity;
+
   const chartData = data.map((point) => {
     const rounded: Record<string, unknown> = { ...point };
     for (const key of dataKeys) {
       const v = (point as Record<string, unknown>)[key];
       if (typeof v === 'number') {
-        rounded[key] = Math.round(v * 100) / 100;
-      } else if (v === null || v === undefined) {
-        rounded[key] = 0;
+        const val = Math.round(v * 100) / 100;
+        rounded[key] = val;
+        if (val < overallMin) overallMin = val;
+        if (val > overallMax) overallMax = val;
+      } else {
+        // Keep null/undefined as undefined so connectNulls skips them
+        rounded[key] = undefined;
       }
     }
     return rounded;
   });
+
+  if (overallMin === Infinity) overallMin = 0;
+  if (overallMax === -Infinity) overallMax = 100;
+
+  // Ensure thresholds are visible in the Y-axis range
+  if (tMin !== undefined && tMin < overallMin) overallMin = tMin;
+  if (tMax !== undefined && tMax > overallMax) overallMax = tMax;
+
+  // Add 5% padding to the Y axis domain
+  const padding = (overallMax - overallMin) * 0.05 || 5;
+  const domainMin = Math.floor(overallMin - padding);
+  const domainMax = Math.ceil(overallMax + padding);
+  const domainRange = domainMax - domainMin || 1;
+
+  // Gradient offset percentages (top of chart = 0%, bottom = 100%)
+  const topOffset = hasThresholds && tMax !== undefined
+    ? Math.max(0, Math.min(1, (domainMax - tMax) / domainRange))
+    : 0;
+
+  const bottomOffset = hasThresholds && tMin !== undefined
+    ? Math.max(0, Math.min(1, (domainMax - tMin) / domainRange))
+    : 1;
 
   return (
     <PerfomaxCard
@@ -146,6 +182,28 @@ export default function SensorLineChart({
                 data={chartData}
                 margin={{ top: 10, right: 30, left: -15, bottom: 5 }}
               >
+                <defs>
+                  {hasThresholds && series.map((s, i) => {
+                    const color = s.color ?? LINE_COLORS[i % LINE_COLORS.length];
+                    return (
+                      <linearGradient
+                        key={`grad-${s.dataKey}`}
+                        id={`grad-${s.dataKey}`}
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor="#EF4444" />
+                        <stop offset={`${topOffset * 100}%`} stopColor="#EF4444" />
+                        <stop offset={`${topOffset * 100}%`} stopColor={color} />
+                        <stop offset={`${bottomOffset * 100}%`} stopColor={color} />
+                        <stop offset={`${bottomOffset * 100}%`} stopColor="#EF4444" />
+                        <stop offset="100%" stopColor="#EF4444" />
+                      </linearGradient>
+                    );
+                  })}
+                </defs>
                 <CartesianGrid
                   vertical={false}
                   stroke="rgba(75, 85, 99, 0.2)"
@@ -161,19 +219,40 @@ export default function SensorLineChart({
                   padding={{ left: 10, right: 10 }}
                 />
                 <YAxis
+                  domain={hasThresholds ? [domainMin, domainMax] : ['auto', 'auto']}
                   tick={{ fontSize: 10, fill: '#9FA6B5' }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={formatVal}
                 />
                 <Tooltip content={<CustomTooltip />} />
+                {tMax !== undefined && (
+                  <ReferenceArea
+                    y1={tMax}
+                    y2={domainMax}
+                    fill="rgba(239, 68, 68, 0.15)"
+                    strokeOpacity={0}
+                  />
+                )}
+                {tMin !== undefined && (
+                  <ReferenceArea
+                    y1={domainMin}
+                    y2={tMin}
+                    fill="rgba(239, 68, 68, 0.15)"
+                    strokeOpacity={0}
+                  />
+                )}
                 {series.map((s, i) => (
                   <Line
                     key={s.dataKey as string}
                     type="monotone"
                     dataKey={s.dataKey as string}
                     name={s.label}
-                    stroke={s.color ?? LINE_COLORS[i % LINE_COLORS.length]}
+                    stroke={
+                      hasThresholds
+                        ? `url(#grad-${s.dataKey})`
+                        : (s.color ?? LINE_COLORS[i % LINE_COLORS.length])
+                    }
                     strokeWidth={2}
                     dot={false}
                     connectNulls

@@ -49,21 +49,25 @@ const SENSOR_CHART_ROWS: {
   title: string;
   yAxisLabel: string;
   series: SensorSeries[];
+  thresholds?: { min?: number; max?: number };
 }[] = [
   {
     title: 'Turbocharger RPM',
     yAxisLabel: 'TC RPM',
     series: [{ dataKey: 'tc_rpm', label: 'TC RPM' }],
+    thresholds: { min: 25, max: 30 },
   },
   {
     title: 'Engine RPM',
     yAxisLabel: 'RPM',
     series: [{ dataKey: 'rpm', label: 'RPM' }],
+    thresholds: { min: 100, max: 700 },
   },
   {
     title: 'Fuel Performance Index',
     yAxisLabel: 'FPI',
     series: [{ dataKey: 'fpi', label: 'FPI' }],
+    thresholds: { min: 5, max: 40 },
   },
   {
     title: 'Exhaust Gas Temperatures (Cylinders)',
@@ -79,6 +83,7 @@ const SENSOR_CHART_ROWS: {
       { dataKey: 'eg_temp_8', label: 'Cyl 8', color: '#F97316' },
       { dataKey: 'eg_temp_mean', label: 'Mean', color: '#FFFFFF' },
     ],
+    thresholds: { min: 100, max: 350 },
   },
   {
     title: 'Exhaust Gas Temp (Turbo Out / Manifold)',
@@ -91,11 +96,13 @@ const SENSOR_CHART_ROWS: {
       },
       { dataKey: 'exh_gas_temp', label: 'Exh Gas Temp', color: '#EC4899' },
     ],
+    thresholds: { min: 100, max: 400 },
   },
   {
     title: 'Charge Air Pressure',
     yAxisLabel: 'Pressure (bar)',
     series: [{ dataKey: 'chargeair_press', label: 'Charge Air Press' }],
+    thresholds: { min: 0, max: 15 },
   },
   {
     title: 'HT Cooling Water Temperature',
@@ -108,11 +115,13 @@ const SENSOR_CHART_ROWS: {
         color: '#F59E0B',
       },
     ],
+    thresholds: { min: 1000, max: 2800 },
   },
   {
     title: 'Lube Oil Temperature',
     yAxisLabel: 'Temp (°C)',
     series: [{ dataKey: 'lo_temp', label: 'LO Temp' }],
+    thresholds: { min: 40, max: 70 },
   },
 ];
 
@@ -256,6 +265,7 @@ export default function ConditionMonitoringLayout() {
             data={sensorData}
             isLoading={isLoading}
             className="col-span-5"
+            thresholds={row.thresholds}
           />
           <HealthScoreCard className="col-span-3" />
           <ParameterVsPchargeChart className="col-span-3" />
