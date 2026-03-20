@@ -80,20 +80,9 @@ export default function SensorLineChart({
 }: SensorLineChartProps) {
   const formatVal = (v: number) => v.toFixed(2);
 
-  // Downsample if too many points for perf
-  const maxPoints = 200;
-  const sampled =
-    data.length > maxPoints
-      ? data.filter(
-          (_, i) =>
-            i % Math.ceil(data.length / maxPoints) === 0 ||
-            i === data.length - 1
-        )
-      : data;
-
   // Round numeric values to 2 decimal places for display
   const dataKeys = series.map((s) => s.dataKey);
-  const chartData = sampled.map((point) => {
+  const chartData = data.map((point) => {
     const rounded: Record<string, unknown> = { ...point };
     for (const key of dataKeys) {
       const v = (point as Record<string, unknown>)[key];
