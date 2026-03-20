@@ -72,17 +72,17 @@ export default function EngineDetailView({
         },
         detail: engine.detail
           ? {
-              ...engine.detail,
-              lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-              lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-              coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-              coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-              batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-              exhgas_temp_left:
-                live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-              exhgas_temp_right:
-                live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-            }
+            ...engine.detail,
+            lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+            lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+            coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+            coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+            batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+            exhgas_temp_left:
+              live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+            exhgas_temp_right:
+              live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+          }
           : undefined,
       };
     }
@@ -111,7 +111,7 @@ export default function EngineDetailView({
   return (
     <div className="py-4">
       {/* Engine label */}
-      <h6 className="text-center font-semibold">{engine.label}</h6>
+      <h6 className="text-center text-lg font-semibold -mt-8 mb-8">{engine.label}</h6>
 
       {/* Section labels — centered above the gauge cluster */}
       <div className="mx-auto flex justify-between" style={{ maxWidth: 500 }}>
