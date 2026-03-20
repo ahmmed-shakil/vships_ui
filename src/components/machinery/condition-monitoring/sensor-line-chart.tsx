@@ -112,11 +112,15 @@ export default function SensorLineChart({
       action={
         <div className="flex flex-wrap items-center gap-4 text-xs">
           {series.map((s, i) => (
-            <span key={s.dataKey as string} className="flex items-center gap-1.5">
+            <span
+              key={s.dataKey as string}
+              className="flex items-center gap-1.5"
+            >
               <span
                 className="inline-block h-0.5 w-4"
                 style={{
-                  backgroundColor: s.color ?? LINE_COLORS[i % LINE_COLORS.length],
+                  backgroundColor:
+                    s.color ?? LINE_COLORS[i % LINE_COLORS.length],
                 }}
               />
               {s.label}
@@ -181,6 +185,7 @@ export default function SensorLineChart({
                     stroke={s.color ?? LINE_COLORS[i % LINE_COLORS.length]}
                     strokeWidth={2}
                     dot={false}
+                    connectNulls
                     isAnimationActive={false}
                   />
                 ))}
