@@ -1,10 +1,7 @@
 'use client';
 
 import AlarmTable from '@/components/real-time-data/alarm-table';
-import {
-  engineValueToAlarmEngine,
-  vesselAlarmData
-} from '@/data/nura/alarm-data';
+import { useAlarmsWithSummary } from '@/hooks/use-machinery-data';
 import {
   selectedEngineAtom,
   selectedShipAtom,
@@ -55,93 +52,89 @@ function AlarmSummaryCard({
 }
 
 export default function AlarmOverviewPage() {
-  // Get selected ship & engine from global header dropdown
   const selectedShip = useAtomValue(selectedShipAtom);
   const selectedEngine = useAtomValue(selectedEngineAtom);
 
-  // Get alarm data for the selected vessel, optionally filtered by engine
-  const alarms = useMemo(() => {
-    const all = vesselAlarmData[selectedShip.id] ?? [];
-    if (selectedEngine.value === 'all') return all;
-    const engineName = engineValueToAlarmEngine[selectedEngine.value];
-    if (!engineName) return all;
-    return all.filter((a) => a.engine === engineName);
-  }, [selectedShip.id, selectedEngine.value]);
+  // Build query params for the API
+  const queryParams = useMemo(() => {
+    const params: { engine?: string } = {};
+    if (selectedEngine?.value && selectedEngine.value !== 'all') {
+      params.engine = selectedEngine.value;
+    }
+    return params;
+  }, [selectedEngine]);
 
-  // Calculate alarm counts by category (matching machinery-overview)
-  const alarmStats = useMemo(() => {
-    const counts = { critical: 0, warning: 0, notice: 0, info: 0 };
-    // Category counts only for active alarms (matching machinery-overview cards)
-    alarms.forEach((alarm) => {
-      if (alarm.status === 'active') {
-        counts[alarm.category]++;
-      }
-    });
+  const { alarms, summary, isLoading } = useAlarmsWithSummary(queryParams);
 
-    const activeCount = alarms.filter((a) => a.status === 'active').length;
-    const resolvedCount = alarms.filter((a) => a.status === 'resolved').length;
-
-    return {
-      ...counts,
-      total: alarms.length,
-      active: activeCount,
-      resolved: resolvedCount,
-    };
-  }, [alarms]);
+  if (!selectedShip) {
+    return (
+      <Box className="flex h-96 items-center justify-center">
+        <span className="text-muted-foreground">Loading vessel data…</span>
+      </Box>
+    );
+  }
 
   return (
     <Box className="pt-5 @container/pd">
-      {/* Alarm Summary Cards - matching machinery-overview severity colors */}
+      {/* Alarm Summary Cards */}
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-7">
         <AlarmSummaryCard
           title="Critical"
-          count={alarmStats.critical}
+          count={summary.critical}
           color={severityConfig.critical.color}
           bgColor={severityConfig.critical.bgColor}
         />
         <AlarmSummaryCard
           title="Warning"
-          count={alarmStats.warning}
+          count={summary.warning}
           color={severityConfig.warning.color}
           bgColor={severityConfig.warning.bgColor}
         />
         <AlarmSummaryCard
           title="Notice"
-          count={alarmStats.notice}
+          count={summary.notice}
           color={severityConfig.notice.color}
           bgColor={severityConfig.notice.bgColor}
         />
         <AlarmSummaryCard
           title="Info"
-          count={alarmStats.info}
+          count={summary.info}
           color={severityConfig.info.color}
           bgColor={severityConfig.info.bgColor}
         />
         <AlarmSummaryCard
           title="Active"
-          count={alarmStats.active}
+          count={summary.active}
           color="#EF4444"
           bgColor="rgba(239,68,68,0.15)"
         />
         <AlarmSummaryCard
           title="Resolved"
-          count={alarmStats.resolved}
+          count={summary.resolved}
           color="#22C55E"
           bgColor="rgba(34,197,94,0.15)"
         />
         <AlarmSummaryCard
           title="Total"
-          count={alarmStats.total}
+          count={summary.total}
           color="#6B7280"
           bgColor="rgba(107,114,128,0.15)"
         />
       </div>
 
       {/* Alarm Table */}
-      <AlarmTable
-        data={alarms}
-        title={`Alarms — ${selectedShip.label}${selectedEngine.value !== 'all' ? ` — ${selectedEngine.label}` : ''}`}
-      />
+      {isLoading ? (
+        <div className="flex h-40 items-center justify-center">
+          <span className="animate-pulse text-muted-foreground">
+            Loading alarms…
+          </span>
+        </div>
+      ) : (
+        <AlarmTable
+          data={alarms}
+          title={`Alarms — ${selectedShip.label}${selectedEngine?.value && selectedEngine.value !== 'all' ? ` — ${selectedEngine.label}` : ''}`}
+        />
+      )}
     </Box>
   );
 }

@@ -2,11 +2,8 @@
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
-import {
-  trendlineData,
-  trendlineSeries,
-} from '@/data/nura/condition-monitoring-chart-data';
-import { useCallback, useState } from 'react';
+import type { DeltaDeviationResponse } from '@/types/api';
+import { useCallback, useMemo, useState } from 'react';
 import {
   CartesianGrid,
   Legend,
@@ -34,16 +31,28 @@ function DateTimeTick({ x, y, payload }: any) {
   );
 }
 
-/**
- * Delta Deviation Trendline — multi-series line chart with interactive legend.
- *
- * 7 parameters matching the reference screenshot. Clicking a legend item
- * toggles that series' visibility. Orange overlay band for the 10-20 range.
- */
+const SERIES_DEFS = [
+  { key: 'charge_air_temp', label: 'Charge Air Temp', color: '#3B82F6' },
+  { key: 'lube_oil_temp', label: 'Lube Oil Temp', color: '#22C55E' },
+  { key: 'exh_temp', label: 'Exh Temp', color: '#F59E0B' },
+  { key: 'ht_cooling_water_temp', label: 'HT Cooling Water', color: '#A855F7' },
+  { key: 'fuel_oil_pressure', label: 'Fuel Oil Pressure', color: '#EC4899' },
+  { key: 'lube_oil_pressure', label: 'Lube Oil Pressure', color: '#06B6D4' },
+  {
+    key: 'charge_air_pressure',
+    label: 'Charge Air Pressure',
+    color: '#F97316',
+  },
+];
+
 export default function DeltaDeviationTrendline({
   className,
+  response,
+  isLoading,
 }: {
   className?: string;
+  response: DeltaDeviationResponse | null;
+  isLoading: boolean;
 }) {
   // Track which series are hidden (all visible by default)
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
@@ -59,6 +68,17 @@ export default function DeltaDeviationTrendline({
       return next;
     });
   }, []);
+
+  const chartData = useMemo(() => {
+    if (!response?.data) return [];
+    return response.data.map((p) => {
+      const d = new Date(p.timestamp);
+      const date = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}\n${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return { date, ...p };
+    });
+  }, [response]);
+
+  const band = response?.reference_band ?? { upper: 24, lower: 12 };
 
   return (
     <PerfomaxCard
@@ -79,60 +99,67 @@ export default function DeltaDeviationTrendline({
 
         <div className="flex flex-1 flex-col">
           <div className="h-[400px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={trendlineData}
-                margin={{ top: 5, right: 20, left: -10, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <span className="animate-pulse text-sm text-muted-foreground">
+                  Loading…
+                </span>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 5, right: 20, left: -10, bottom: 20 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
 
-                {/* Orange overlay band for parameter range 10–20 */}
-                <ReferenceArea
-                  y1={12}
-                  y2={24}
-                  fill="#F97316"
-                  fillOpacity={0.15}
-                  ifOverflow="hidden"
-                />
-
-                <XAxis
-                  dataKey="date"
-                  tick={<DateTimeTick />}
-                  interval={0}
-                  height={40}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: '#9FA6B5' }}
-                  tickCount={11}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  verticalAlign="top"
-                  onClick={(e: any) => handleLegendClick(e.dataKey)}
-                  wrapperStyle={{
-                    cursor: 'pointer',
-                    fontSize: 11,
-                    color: '#9FA6B5',
-                    paddingBottom: 8,
-                  }}
-                />
-
-                {trendlineSeries.map((s) => (
-                  <Line
-                    key={s.key}
-                    type="monotone"
-                    dataKey={s.key}
-                    name={s.label}
-                    stroke={s.color}
-                    strokeWidth={2}
-                    strokeDasharray={s.dash || undefined}
-                    dot={false}
-                    hide={hiddenSeries.has(s.key)}
-                    activeDot={{ r: 4 }}
+                  {/* Orange overlay band for reference range */}
+                  <ReferenceArea
+                    y1={band.lower}
+                    y2={band.upper}
+                    fill="#F97316"
+                    fillOpacity={0.15}
+                    ifOverflow="hidden"
                   />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
+
+                  <XAxis
+                    dataKey="date"
+                    tick={<DateTimeTick />}
+                    interval={0}
+                    height={40}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: '#9FA6B5' }}
+                    tickCount={11}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                    verticalAlign="top"
+                    onClick={(e: any) => handleLegendClick(e.dataKey)}
+                    wrapperStyle={{
+                      cursor: 'pointer',
+                      fontSize: 11,
+                      color: '#9FA6B5',
+                      paddingBottom: 8,
+                    }}
+                  />
+
+                  {SERIES_DEFS.map((s) => (
+                    <Line
+                      key={s.key}
+                      type="monotone"
+                      dataKey={s.key}
+                      name={s.label}
+                      stroke={s.color}
+                      strokeWidth={2}
+                      dot={false}
+                      hide={hiddenSeries.has(s.key)}
+                      activeDot={{ r: 4 }}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           {/* X-axis label */}

@@ -2,7 +2,7 @@
 
 import HealthScoreHeader from '@/components/cards/health-score-header';
 import PerfomaxCard from '@/components/cards/perfomax-card';
-import { sfocScatterSeries } from '@/data/nura/sfoc-scatter-data';
+import type { SfocResponse } from '@/types/api';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -31,14 +31,14 @@ function minutesToTimestamp(minutes: number): string {
 /* Custom tooltip – shows mode name, time & SFOC on hover             */
 /* ------------------------------------------------------------------ */
 
-function SfocTooltip({ active, payload }: any) {
+function SfocTooltip({ active, payload, modes }: any) {
   if (!active || !payload?.length) return null;
   const p = payload[0];
   const point = p.payload; // { x, y }
 
   // Find the series that contains this exact data point
-  const series = sfocScatterSeries.find((s) =>
-    s.data.some((d) => d.x === point?.x && d.y === point?.y)
+  const series = (modes ?? []).find((s: any) =>
+    s.data.some((d: any) => d.x === point?.x && d.y === point?.y)
   );
   const color = series?.color ?? '#fff';
 
@@ -57,7 +57,16 @@ function SfocTooltip({ active, payload }: any) {
 /* SFOC Scatter Card – first row of condition-monitoring page          */
 /* ------------------------------------------------------------------ */
 
-export default function SfocScatterCard({ className }: { className?: string }) {
+export default function SfocScatterCard({
+  className,
+  response,
+  isLoading,
+}: {
+  className?: string;
+  response: SfocResponse | null;
+  isLoading: boolean;
+}) {
+  const modes = response?.modes ?? [];
   return (
     <PerfomaxCard
       className={className}
@@ -90,44 +99,52 @@ export default function SfocScatterCard({ className }: { className?: string }) {
         {/* Chart + X-axis */}
         <div className="flex flex-1 flex-col">
           <div className="aspect-[1060/520] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart
-                margin={{ top: 5, right: 10, left: -15, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  type="number"
-                  dataKey="x"
-                  name="Time"
-                  tick={{ fontSize: 9 }}
-                  domain={['dataMin', 'dataMax']}
-                  tickFormatter={minutesToTimestamp}
-                />
-                <YAxis
-                  type="number"
-                  dataKey="y"
-                  name="SFOC (g/kWh)"
-                  tick={{ fontSize: 9 }}
-                  domain={[185, 265]}
-                />
-
-                <Tooltip
-                  content={<SfocTooltip />}
-                  cursor={{ strokeDasharray: '3 3' }}
-                />
-
-                {sfocScatterSeries.map((s) => (
-                  <Scatter
-                    key={s.mode}
-                    name={s.mode}
-                    data={s.data}
-                    fill={s.color}
-                    shape={s.shape}
-                    opacity={0.7}
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <span className="animate-pulse text-sm text-muted-foreground">
+                  Loading…
+                </span>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart
+                  margin={{ top: 5, right: 10, left: -15, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    type="number"
+                    dataKey="x"
+                    name="Time"
+                    tick={{ fontSize: 9 }}
+                    domain={['dataMin', 'dataMax']}
+                    tickFormatter={minutesToTimestamp}
                   />
-                ))}
-              </ScatterChart>
-            </ResponsiveContainer>
+                  <YAxis
+                    type="number"
+                    dataKey="y"
+                    name="SFOC (g/kWh)"
+                    tick={{ fontSize: 9 }}
+                    domain={[185, 265]}
+                  />
+
+                  <Tooltip
+                    content={<SfocTooltip modes={modes} />}
+                    cursor={{ strokeDasharray: '3 3' }}
+                  />
+
+                  {modes.map((s) => (
+                    <Scatter
+                      key={s.mode}
+                      name={s.mode}
+                      data={s.data}
+                      fill={s.color}
+                      shape={s.shape as any}
+                      opacity={0.7}
+                    />
+                  ))}
+                </ScatterChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           {/* X-axis label */}

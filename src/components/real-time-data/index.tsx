@@ -1,21 +1,20 @@
 'use client';
 
 import { useSocketData } from '@/app/shared/hooks/useSocket';
-import { engineValueToAlarmEngine, vesselAlarmData } from '@/data/nura/alarm-data';
 import {
   computeGKWH,
-  findEngine,
   FUEL_GAUGE_MAX,
   RPM_GAUGE_MAX,
-  vesselGensetData,
   type EngineMonitorData,
 } from '@/data/nura/engine-data';
+import { useVesselEngineData, useVesselAlarmData } from '@/hooks/use-api-data';
 import {
   selectedEngineAtom,
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
 import { useAtom } from 'jotai';
+import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import { Text } from 'rizzui/typography';
@@ -39,8 +38,12 @@ function applyLiveData(
   const shouldKeepDemoValues = isTargetVessel && isTargetEngine;
 
   const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
-  const liveLoad = shouldKeepDemoValues ? engine.gauge.engine_load : (live.engine_load ?? engine.gauge.engine_load);
-  const liveFuelCons = shouldKeepDemoValues ? engine.gauge.fuel_cons : (live.fuel_cons ?? engine.gauge.fuel_cons);
+  const liveLoad = shouldKeepDemoValues
+    ? engine.gauge.engine_load
+    : (live.engine_load ?? engine.gauge.engine_load);
+  const liveFuelCons = shouldKeepDemoValues
+    ? engine.gauge.fuel_cons
+    : (live.fuel_cons ?? engine.gauge.fuel_cons);
   const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
   const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
 
@@ -57,17 +60,17 @@ function applyLiveData(
     },
     detail: engine.detail
       ? {
-        ...engine.detail,
-        lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-        lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-        coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-        coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-        batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-        exhgas_temp_left:
-          live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-        exhgas_temp_right:
-          live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-      }
+          ...engine.detail,
+          lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+          lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+          coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+          coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+          batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+          exhgas_temp_left:
+            live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+          exhgas_temp_right:
+            live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+        }
       : undefined,
   };
 }
@@ -236,40 +239,60 @@ function GensetGroup({
 
 export const RealTimeDataLayout = () => {
   const [selectedShip] = useAtom(selectedShipAtom);
+
+  if (!selectedShip) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <span className="text-muted-foreground">Loading vessel data…</span>
+      </div>
+    );
+  }
+
+  return <RealTimeDataContent />;
+};
+
+const RealTimeDataContent = () => {
+  const [selectedShip] = useAtom(selectedShipAtom);
   const [selectedEngine, setSelectedEngine] = useAtom(selectedEngineAtom);
-  const { latestME, latestAE } = useSocketData();
+  const { data: session } = useSession();
+  const token = (session as any)?.accessToken ?? null;
+  const { latestME, latestAE } = useSocketData(selectedShip.id, token);
 
-  // Get alarm data for the selected vessel and filter by engine
+  // Fetch engine data from API (falls back to mock)
+  const vesselId = selectedShip.id;
+  const { mainEngines, gensets } = useVesselEngineData(vesselId);
+
+  // Fetch alarm data from API (falls back to mock), filtered by engine
+  const alarmEngine =
+    selectedEngine.value !== 'all' ? selectedEngine.value : undefined;
+  const rawAlarms = useVesselAlarmData(vesselId, alarmEngine);
   const alarms = useMemo(() => {
-    const rawAlarms = vesselAlarmData[selectedShip.id] ?? [];
-    let filtered = rawAlarms;
-
-    if (selectedEngine.value !== 'all') {
-      const alarmEngineName = engineValueToAlarmEngine[selectedEngine.value];
-      if (alarmEngineName) {
-        filtered = rawAlarms.filter((a) => a.engine === alarmEngineName);
-      }
-    }
-
-    // Add date/time proxy fields so the generic table sorter can sort them
-    return filtered.map((a) => ({
+    return rawAlarms.map((a) => ({
       ...a,
       date: a.timestamp,
       time: a.timestamp,
     }));
-  }, [selectedShip.id, selectedEngine.value]);
+  }, [rawAlarms]);
 
   // Lookup engine data for the selected vessel, overlaid with live socket data
-  const vesselId = selectedShip.id;
-  const mePort = applyLiveData(findEngine(vesselId, 'me1'), latestME, latestAE, vesselId);
-  const meStbd = applyLiveData(findEngine(vesselId, 'me2'), latestME, latestAE, vesselId);
-  const meCenter = applyLiveData(
-    findEngine(vesselId, 'me3'),
+  const mePort = applyLiveData(
+    mainEngines.find((e) => e.id === 'me1'),
     latestME,
     latestAE,
     vesselId
   );
-  const gensets = vesselGensetData[vesselId] ?? [];
+  const meStbd = applyLiveData(
+    mainEngines.find((e) => e.id === 'me2'),
+    latestME,
+    latestAE,
+    vesselId
+  );
+  const meCenter = applyLiveData(
+    mainEngines.find((e) => e.id === 'me3'),
+    latestME,
+    latestAE,
+    vesselId
+  );
   const genset1 = applyLiveData(
     gensets.find((e) => e.id === 'ae1'),
     latestME,
@@ -381,10 +404,10 @@ export const RealTimeDataLayout = () => {
         {/* Map */}
         <RealTimeDataMap
           name={selectedShip.label}
-          lat={selectedShip.position.lat}
-          long={selectedShip.position.long}
-          direction={selectedShip.position.direction}
-          timestamp={selectedShip.position.timestamp}
+          lat={selectedShip.position?.lat ?? 0}
+          long={selectedShip.position?.long ?? 0}
+          direction={selectedShip.position?.direction ?? 0}
+          timestamp={selectedShip.position?.timestamp ?? 0}
           minHeight={500}
         />
       </div>

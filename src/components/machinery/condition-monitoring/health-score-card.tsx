@@ -1,6 +1,7 @@
 'use client';
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
+import type { HealthScoreEntry } from '@/types/api';
 import cn from '@/utils/class-names';
 
 /**
@@ -71,7 +72,21 @@ function StatCard({
  * - 2 bell curves + Causality badge
  * - 3 stat cards (Title / Alarms / Peak)
  */
-export default function HealthScoreCard({ className }: { className?: string }) {
+export default function HealthScoreCard({
+  className,
+  entry,
+  isLoading,
+}: {
+  className?: string;
+  entry?: HealthScoreEntry;
+  isLoading?: boolean;
+}) {
+  const score = entry?.score ?? 0;
+  const delta = entry?.delta ?? 0;
+  const alarmCount = entry?.alarm_count ?? 0;
+  const peakValue = entry?.peak_value ?? 0;
+  const peakUnit = entry?.peak_unit ?? '';
+
   return (
     <PerfomaxCard className={cn('relative', className)} bodyClassName="p-5">
       {/* ─── Header: Health + Delta ─────────────────────────────── */}
@@ -80,13 +95,17 @@ export default function HealthScoreCard({ className }: { className?: string }) {
           <span className="text-[20px] font-bold leading-7 text-foreground">
             Score
           </span>
-          <span className="text-4xl font-bold text-primary">80%</span>
+          <span className="text-4xl font-bold text-primary">
+            {isLoading ? '…' : `${score}%`}
+          </span>
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-[20px] font-bold leading-7 text-foreground">
             Delta
           </span>
-          <span className="text-4xl font-bold text-foreground">5%</span>
+          <span className="text-4xl font-bold text-foreground">
+            {isLoading ? '…' : `${delta}%`}
+          </span>
         </div>
       </div>
 
@@ -113,29 +132,40 @@ export default function HealthScoreCard({ className }: { className?: string }) {
         <StatCard
           title="Stats"
           rows={[
-            { label: 'Avg', value: '700' },
-            { label: 'Mov Avg', value: '630' },
-            { label: 'Dev', value: '80' },
+            { label: 'Avg', value: isLoading ? '…' : String(score) },
+            { label: 'Mov Avg', value: isLoading ? '…' : '--' },
+            { label: 'Dev', value: isLoading ? '…' : String(delta) },
           ]}
         />
         <StatCard
           title="Alarms"
           rows={[
-            { label: '7d', value: '11' },
-            { label: '24h', value: '4' },
-            { label: '1h', value: '1' },
+            { label: 'Total', value: isLoading ? '…' : String(alarmCount) },
+            { label: '24h', value: '--' },
+            { label: '1h', value: '--' },
           ]}
         />
         <StatCard
           title="Peak"
           rows={[
-            { label: 'Period', value: '2d' },
-            { label: 'Intensity', value: '20%' },
+            {
+              label: 'Value',
+              value: isLoading
+                ? '…'
+                : `${peakValue}${peakUnit ? ` ${peakUnit}` : ''}`,
+            },
+            { label: 'Intensity', value: '--' },
             {
               label: 'Status',
               value: (
                 <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                  Check
+                  {entry
+                    ? score >= 70
+                      ? 'OK'
+                      : score >= 40
+                        ? 'Check'
+                        : 'Alert'
+                    : '--'}
                 </span>
               ),
             },

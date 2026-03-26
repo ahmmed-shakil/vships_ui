@@ -1,22 +1,41 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { io } from 'socket.io-client';
+import { io, type Socket } from 'socket.io-client';
 
-const SOCKET_URL = 'https://socket.perfomax.tech';
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  'https://ocean-pact-api.perfomax.tech';
 
-export function useSocketData() {
+export function useSocketData(vesselId: number | null, token: string | null) {
   const [latestME, setLatestME] = useState<Record<string, any>>({});
   const [latestAE, setLatestAE] = useState<Record<string, any>>({});
   const [meTotalCount, setMeTotalCount] = useState(0);
   const [aeTotalCount, setAeTotalCount] = useState(0);
   const [connected, setConnected] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
+  const prevVesselRef = useRef<number | null>(null);
 
   useEffect(() => {
+    if (!token || !vesselId) return;
+
+    // Reset state for new connection
+    setLatestME({});
+    setLatestAE({});
+    setMeTotalCount(0);
+    setAeTotalCount(0);
+
     const socket = io(SOCKET_URL, {
       transports: ['websocket'],
       reconnectionAttempts: 5,
+      query: {
+        token,
+        vessel_id: String(vesselId),
+      },
     });
+
+    socketRef.current = socket;
+    prevVesselRef.current = vesselId;
 
     socket.on('connect', () => {
       console.log('Connected:', socket.id);
@@ -50,8 +69,30 @@ export function useSocketData() {
 
     return () => {
       socket.disconnect();
+      socketRef.current = null;
     };
-  }, []);
+  }, [token, vesselId]);
 
-  return { latestME, latestAE, meTotalCount, aeTotalCount, connected };
+  /** Switch vessel room without reconnecting */
+  const switchVessel = (newVesselId: number) => {
+    const s = socketRef.current;
+    if (!s) return;
+    if (prevVesselRef.current) {
+      s.emit('leave', String(prevVesselRef.current));
+    }
+    s.emit('join', String(newVesselId));
+    prevVesselRef.current = newVesselId;
+    // Clear stale data
+    setLatestME({});
+    setLatestAE({});
+  };
+
+  return {
+    latestME,
+    latestAE,
+    meTotalCount,
+    aeTotalCount,
+    connected,
+    switchVessel,
+  };
 }

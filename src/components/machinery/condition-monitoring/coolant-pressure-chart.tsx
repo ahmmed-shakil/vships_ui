@@ -2,9 +2,9 @@
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
-import { getCoolantPressureChartData } from '@/actions/condition-monitoring-actions';
+import type { FuelRateResponse } from '@/types/api';
 import cn from '@/utils/class-names';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import {
   CartesianGrid,
   Line,
@@ -40,42 +40,46 @@ const COLORS = {
 
 export default function CoolantPressureChart({
   className,
+  response,
+  isLoading,
 }: {
   className?: string;
+  response: FuelRateResponse | null;
+  isLoading: boolean;
 }) {
-  const [data, setData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const result = await getCoolantPressureChartData();
-        setData(result);
-      } catch (err) {
-        console.error('Error fetching chart data', err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadData();
-  }, []);
+  const data = useMemo(() => {
+    if (!response?.data) return [];
+    const limits = response.limits ?? { upper: 60, lower: 0 };
+    return response.data.map((p) => {
+      const d = new Date(p.timestamp);
+      const date = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}\n${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return {
+        date,
+        fuelConsRate: p.fuel_cons_rate,
+        upperLimit: limits.upper,
+        lowerLimit: limits.lower,
+      };
+    });
+  }, [response]);
 
   // Calculate bounds or use defaults
   const upperLimit = data.length > 0 ? data[0].upperLimit : 60;
   const lowerLimit = data.length > 0 ? data[0].lowerLimit : 0;
- 
+
   const fuelConsRates = data.map((d) => d.fuelConsRate);
   const dataMin = fuelConsRates.length ? Math.min(...fuelConsRates) : 0;
   const dataMax = fuelConsRates.length ? Math.max(...fuelConsRates) : 100;
- 
+
   // Add padding to the domain
   const domainMin = Math.min(0, dataMin - 5);
   const domainMax = Math.max(upperLimit + 10, dataMax + 5);
- 
+
   // Gradient offset calculation
   const rangeSpan = domainMax - domainMin;
-  const lowerOffset = rangeSpan > 0 ? ((lowerLimit - domainMin) / rangeSpan) * 100 : 0;
-  const upperOffset = rangeSpan > 0 ? ((upperLimit - domainMin) / rangeSpan) * 100 : 80;
+  const lowerOffset =
+    rangeSpan > 0 ? ((lowerLimit - domainMin) / rangeSpan) * 100 : 0;
+  const upperOffset =
+    rangeSpan > 0 ? ((upperLimit - domainMin) / rangeSpan) * 100 : 80;
 
   // Helper to format values to max 2 decimal places without trailing zeros
   const formatVal = (v: number) => Number(v.toFixed(2)).toString();
@@ -104,10 +108,12 @@ export default function CoolantPressureChart({
         </div>
       }
     >
-      <div className="flex h-full min-h-[250px] w-full pb-2 pl-2 pt-2 relative">
+      <div className="relative flex h-full min-h-[250px] w-full pb-2 pl-2 pt-2">
         {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 backdrop-blur-sm">
-            <span className="text-sm font-medium text-muted-foreground animate-pulse">Loading CSV Data...</span>
+            <span className="animate-pulse text-sm font-medium text-muted-foreground">
+              Loading CSV Data...
+            </span>
           </div>
         )}
 
@@ -137,10 +143,22 @@ export default function CoolantPressureChart({
                     y2="0"
                   >
                     <stop offset="0%" stopColor={COLORS.outOfRange} />
-                    <stop offset={`${Math.max(0, lowerOffset)}%`} stopColor={COLORS.outOfRange} />
-                    <stop offset={`${Math.max(0, lowerOffset)}%`} stopColor={COLORS.withinRange} />
-                    <stop offset={`${Math.min(100, upperOffset)}%`} stopColor={COLORS.withinRange} />
-                    <stop offset={`${Math.min(100, upperOffset)}%`} stopColor={COLORS.outOfRange} />
+                    <stop
+                      offset={`${Math.max(0, lowerOffset)}%`}
+                      stopColor={COLORS.outOfRange}
+                    />
+                    <stop
+                      offset={`${Math.max(0, lowerOffset)}%`}
+                      stopColor={COLORS.withinRange}
+                    />
+                    <stop
+                      offset={`${Math.min(100, upperOffset)}%`}
+                      stopColor={COLORS.withinRange}
+                    />
+                    <stop
+                      offset={`${Math.min(100, upperOffset)}%`}
+                      stopColor={COLORS.outOfRange}
+                    />
                     <stop offset="100%" stopColor={COLORS.outOfRange} />
                   </linearGradient>
                 </defs>
@@ -170,9 +188,12 @@ export default function CoolantPressureChart({
                   tickFormatter={formatVal}
                 />
 
-                <Tooltip 
-                  content={<CustomTooltip />} 
-                  formatter={(value: any) => [formatVal(Number(value)), 'Fuel Cons Rate']}
+                <Tooltip
+                  content={<CustomTooltip />}
+                  formatter={(value: any) => [
+                    formatVal(Number(value)),
+                    'Fuel Cons Rate',
+                  ]}
                 />
 
                 {/* Red background bands for out-of-range areas */}
@@ -192,7 +213,7 @@ export default function CoolantPressureChart({
                 {/* Reference Dividers for limits */}
                 <ReferenceArea
                   y1={upperLimit}
-                  y2={upperLimit + (domainMax - domainMin) * 0.005} 
+                  y2={upperLimit + (domainMax - domainMin) * 0.005}
                   className="fill-gray-700 dark:fill-gray-300"
                   fillOpacity={0.8}
                 />

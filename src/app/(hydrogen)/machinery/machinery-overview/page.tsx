@@ -5,321 +5,137 @@ import MachineryCardBody from '@/components/cards/machinery-card-body';
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import StatusGauge from '@/components/machinery-overview/status-gauge';
 import { routes } from '@/config/routes';
-import { getActiveAlarmCounts } from '@/data/nura/alarm-data';
-import { vesselGensetData } from '@/data/nura/engine-data';
 import { engineData } from '@/data/nura/ships';
+import { useMachineryOverview } from '@/hooks/use-machinery-data';
 import {
   selectedEngineAtom,
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
-import { MachineryCardProps } from '@/types';
+import type { MachineryCardProps, MachineryMetric } from '@/types';
+import type { EngineOverviewCard } from '@/types/api';
 import { getHealthColor } from '@/utils/get-health-color';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { Box } from 'rizzui/box';
 
-// Unique dummy data for each metric type
-const rpmData = [
-  { v: 0 },
-  { v: 10 },
-  { v: 20 },
-  { v: 30 },
-  { v: 56 },
-  { v: 82 },
-  { v: 70 },
-  { v: 65 },
-  { v: 30 },
-  { v: 5 },
-  { v: 20 },
-  { v: 69 },
-  { v: 77 },
-  { v: 83 },
-  { v: 67 },
-  { v: 79 },
-  { v: 100 },
-  { v: 73 },
-  { v: 64 },
-  { v: 75 },
-  { v: 81 },
-  { v: 70 },
-  { v: 40 },
-  { v: 20 },
-];
+// ─── Convert API engine card to the shape MachineryCardBody expects ──────────
 
-const exhaustTempData = [
-  { v: 40 },
-  { v: 42 },
-  { v: 45 },
-  { v: 48 },
-  { v: 50 },
-  { v: 55 },
-  { v: 60 },
-  { v: 58 },
-  { v: 52 },
-  { v: 48 },
-  { v: 45 },
-  { v: 65 },
-  { v: 72 },
-  { v: 78 },
-  { v: 82 },
-  { v: 85 },
-  { v: 90 },
-  { v: 88 },
-  { v: 80 },
-  { v: 75 },
-  { v: 70 },
-  { v: 68 },
-  { v: 65 },
-  { v: 62 },
-];
+function toMetrics(card: EngineOverviewCard): MachineryMetric[] {
+  const m = card.metrics;
+  const s = card.sparklines;
+  const toSparkline = (arr: number[]) => arr.map((v) => ({ v }));
+  const hasData = (v: number | null) => v != null;
 
-const oilPressureData = [
-  { v: 60 },
-  { v: 62 },
-  { v: 64 },
-  { v: 66 },
-  { v: 65 },
-  { v: 63 },
-  { v: 61 },
-  { v: 60 },
-  { v: 58 },
-  { v: 55 },
-  { v: 57 },
-  { v: 59 },
-  { v: 61 },
-  { v: 63 },
-  { v: 65 },
-  { v: 67 },
-  { v: 68 },
-  { v: 66 },
-  { v: 64 },
-  { v: 62 },
-  { v: 60 },
-  { v: 58 },
-  { v: 56 },
-  { v: 55 },
-];
-
-const oilTempData = [
-  { v: 30 },
-  { v: 32 },
-  { v: 35 },
-  { v: 38 },
-  { v: 40 },
-  { v: 45 },
-  { v: 50 },
-  { v: 52 },
-  { v: 55 },
-  { v: 58 },
-  { v: 60 },
-  { v: 62 },
-  { v: 64 },
-  { v: 66 },
-  { v: 68 },
-  { v: 70 },
-  { v: 72 },
-  { v: 70 },
-  { v: 68 },
-  { v: 65 },
-  { v: 62 },
-  { v: 60 },
-  { v: 58 },
-  { v: 56 },
-];
-
-const coolantTempData = [
-  { v: 20 },
-  { v: 22 },
-  { v: 25 },
-  { v: 28 },
-  { v: 30 },
-  { v: 35 },
-  { v: 40 },
-  { v: 42 },
-  { v: 45 },
-  { v: 50 },
-  { v: 52 },
-  { v: 55 },
-  { v: 58 },
-  { v: 60 },
-  { v: 62 },
-  { v: 64 },
-  { v: 66 },
-  { v: 68 },
-  { v: 70 },
-  { v: 72 },
-  { v: 75 },
-  { v: 78 },
-  { v: 80 },
-  { v: 78 },
-];
-
-const consumptionData = [
-  { v: 10 },
-  { v: 12 },
-  { v: 14 },
-  { v: 16 },
-  { v: 18 },
-  { v: 20 },
-  { v: 22 },
-  { v: 24 },
-  { v: 26 },
-  { v: 28 },
-  { v: 30 },
-  { v: 32 },
-  { v: 34 },
-  { v: 36 },
-  { v: 38 },
-  { v: 40 },
-  { v: 42 },
-  { v: 44 },
-  { v: 46 },
-  { v: 48 },
-  { v: 50 },
-  { v: 52 },
-  { v: 54 },
-  { v: 56 },
-];
-
-const getMetrics = (
-  rpmVal: string | number, rpmUnit: string,
-  exTempVal: string | number,
-  oilPressVal: string | number, oilPressUnit: string,
-  oilTempVal: string | number,
-  coolTempVal: string | number,
-  consVal: string | number, consUnit: string
-) => [
+  return [
     {
       label: 'RPM',
-      value: String(rpmVal),
-      unit: rpmUnit,
-      showSparkline: rpmVal !== '--',
-      sparklineData: rpmData,
+      value: m.rpm != null ? String(m.rpm) : '--',
+      unit: hasData(m.rpm) ? 'rpm' : '',
+      showSparkline: hasData(m.rpm),
+      sparklineData: toSparkline(s.rpm),
       sparklineColor: 'currentColor',
     },
     {
       label: 'Exhaust Temp',
-      value: String(exTempVal),
-      unit: exTempVal !== '--' ? '°C' : '',
-      showSparkline: exTempVal !== '--',
-      sparklineData: exhaustTempData,
+      value: m.exhaust_temp != null ? String(m.exhaust_temp) : '--',
+      unit: hasData(m.exhaust_temp) ? '°C' : '',
+      showSparkline: hasData(m.exhaust_temp),
+      sparklineData: toSparkline(s.exhaust_temp),
       sparklineColor: 'currentColor',
     },
     {
       label: 'Oil pressure',
-      value: String(oilPressVal),
-      unit: oilPressVal !== '--' ? oilPressUnit : '',
-      showSparkline: oilPressVal !== '--',
-      sparklineData: oilPressureData,
+      value: m.oil_pressure != null ? String(m.oil_pressure) : '--',
+      unit: hasData(m.oil_pressure) ? 'kPa' : '',
+      showSparkline: hasData(m.oil_pressure),
+      sparklineData: toSparkline(s.oil_pressure),
       sparklineColor: 'currentColor',
     },
     {
       label: 'Oil temp',
-      value: String(oilTempVal),
-      unit: oilTempVal !== '--' ? '°C' : '',
-      showSparkline: oilTempVal !== '--',
-      sparklineData: oilTempData,
+      value: m.oil_temp != null ? String(m.oil_temp) : '--',
+      unit: hasData(m.oil_temp) ? '°C' : '',
+      showSparkline: hasData(m.oil_temp),
+      sparklineData: toSparkline(s.oil_temp),
       sparklineColor: 'currentColor',
     },
     {
       label: 'Coolant temp',
-      value: String(coolTempVal),
-      unit: coolTempVal !== '--' ? '°C' : '',
-      showSparkline: coolTempVal !== '--',
-      sparklineData: coolantTempData,
+      value: m.coolant_temp != null ? String(m.coolant_temp) : '--',
+      unit: hasData(m.coolant_temp) ? '°C' : '',
+      showSparkline: hasData(m.coolant_temp),
+      sparklineData: toSparkline(s.coolant_temp),
       sparklineColor: 'currentColor',
     },
     {
       label: 'Consumption',
-      value: String(consVal),
-      unit: consVal !== '--' ? consUnit : '',
-      showSparkline: consVal !== '--',
-      sparklineData: consumptionData,
+      value: m.fuel_consumption != null ? String(m.fuel_consumption) : '--',
+      unit: hasData(m.fuel_consumption) ? 'L/H' : '',
+      showSparkline: hasData(m.fuel_consumption),
+      sparklineData: toSparkline(s.fuel_consumption),
       sparklineColor: 'currentColor',
     },
   ];
+}
 
-const machineryData: (Omit<MachineryCardProps, 'alarms'> & {
-  engineValue?: string;
-})[] = [
-    {
-      id: 1,
-      title: 'ME Port',
-      engineValue: 'me1',
-      healthScore: 80,
-      status: 'running',
-      metrics: getMetrics('1270', 'rpm', '356', '465', 'kPa', '76', '84', '11.23', 'kg/h'),
-    },
-    {
-      id: 2,
-      title: 'ME Stbd',
-      engineValue: 'me2',
-      healthScore: 98,
-      status: 'running',
-      metrics: getMetrics('1264', 'rpm', '45', '479', 'kPa', '78', '87', '8.98', 'kg/h'),
-    },
-    {
-      id: 3,
-      title: 'ME Center',
-      engineValue: 'me3',
-      healthScore: 55,
-      status: 'standby',
-      metrics: getMetrics('0', 'rpm', '370', '469', 'kPa', '79', '82', '0', 'kg/h'),
-    },
-    {
-      id: 5,
-      title: 'Genset 1',
-      engineValue: 'ae1',
-      healthScore: 80,
-      status: 'off',
-      metrics: getMetrics('0', 'rpm', '--', '--', '', '--', '--', '--', ''),
-    },
-    {
-      id: 6,
-      title: 'Genset 2',
-      engineValue: 'ae2',
-      healthScore: 80,
-      status: 'standby',
-      metrics: getMetrics('1413', 'rpm', '--', '--', '', '--', '--', '--', ''),
-    },
-  ];
+function toCardProps(card: EngineOverviewCard): Omit<
+  MachineryCardProps,
+  'alarms'
+> & {
+  engineValue: string;
+  alarms: MachineryCardProps['alarms'];
+} {
+  return {
+    id: card.engine_id.charCodeAt(0),
+    title: card.label,
+    engineValue: card.engine_id,
+    healthScore: card.health_score,
+    status: card.status,
+    metrics: toMetrics(card),
+    alarms: card.alarms,
+  };
+}
 
 export default function MachineryOverviewPage() {
-  const [selectedShip] = useAtom(selectedShipAtom);
+  const selectedShip = useAtomValue(selectedShipAtom);
   const setSelectedEngine = useSetAtom(selectedEngineAtom);
   const router = useRouter();
+  const { engines: apiEngines, loading } = useMachineryOverview();
 
-  // Lookup engine data for the selected vessel
-  const vesselId = selectedShip.id;
-  const gensets = vesselGensetData[vesselId] ?? [];
+  if (!selectedShip) {
+    return (
+      <Box className="flex h-96 items-center justify-center">
+        <span className="text-muted-foreground">Loading vessel data…</span>
+      </Box>
+    );
+  }
 
-  // Merge real alarm counts from vesselAlarmData into each card
-  const cardsWithAlarms = useMemo(
-    () =>
-      machineryData.map((item) => ({
-        ...item,
-        alarms: getActiveAlarmCounts(vesselId, item.engineValue),
-      })),
-    [vesselId]
-  );
+  if (loading) {
+    return (
+      <Box className="flex h-96 items-center justify-center">
+        <span className="animate-pulse text-muted-foreground">
+          Loading machinery data…
+        </span>
+      </Box>
+    );
+  }
+
+  const cards = apiEngines.map(toCardProps);
 
   // Group cards into rows
-  const engines = cardsWithAlarms.filter((item) => item.title.startsWith('ME'));
-  const gensetCards = cardsWithAlarms.filter((item) =>
-    item.title.startsWith('Genset')
-  );
+  const engineCards = cards.filter((item) => item.engineValue.startsWith('me'));
+  const gensetCards = cards.filter((item) => item.engineValue.startsWith('ae'));
 
-  const handleCardClick = (item: (typeof cardsWithAlarms)[number]) => {
-    // Find matching engine option; fallback to 'All Engine'
+  const handleCardClick = (item: (typeof cards)[number]) => {
     const match = engineData.find((e) => e.value === item.engineValue);
     setSelectedEngine(match ?? engineData[0]);
     router.push(routes.machinery.conditionMonitoring);
   };
 
-  const renderCard = (item: (typeof cardsWithAlarms)[number]) => (
+  const renderCard = (item: (typeof cards)[number]) => (
     <PerfomaxCard
-      key={item.id}
+      key={item.engineValue}
       title={item.title}
       accentColor={getHealthColor(item.healthScore)}
       headerRight={<StatusGauge status={item.status} />}
@@ -335,13 +151,15 @@ export default function MachineryOverviewPage() {
     <Box className="pt-5 @container/pd">
       {/* Row 1: Engines */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {engines.map(renderCard)}
+        {engineCards.map(renderCard)}
       </div>
 
       {/* Row 2: Gen Sets */}
-      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {gensetCards.map(renderCard)}
-      </div>
+      {gensetCards.length > 0 && (
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {gensetCards.map(renderCard)}
+        </div>
+      )}
     </Box>
   );
 }

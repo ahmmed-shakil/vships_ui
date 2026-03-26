@@ -23,9 +23,8 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
 
-    // UAT credentials
-    UAT_EMAIL: z.string().email(),
-    UAT_PASSWORD: z.string().min(1),
+    // Backend API base URL (server-side, not exposed to client)
+    API_BASE_URL: z.string().url().optional(),
   },
   /*
    * Environment variables available on the client (and server).
@@ -33,6 +32,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_APP_NAME: z.string().optional(),
     NEXT_PUBLIC_GOOGLE_MAP_API_KEY: z.string().optional().default(''),
+    NEXT_PUBLIC_API_BASE_URL: z.string().url().optional(),
   },
   runtimeEnv: process.env,
 });

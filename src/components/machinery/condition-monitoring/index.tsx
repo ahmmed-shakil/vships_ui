@@ -2,7 +2,15 @@
 
 import HealthScoreHeader from '@/components/cards/health-score-header';
 import PerfomaxCard from '@/components/cards/perfomax-card';
-import { useSensorData } from '@/hooks/use-sensor-data';
+import {
+  useDeltaDeviation,
+  useFuelRate,
+  useHealthScores,
+  useParameterScatter,
+  useSensorDataApi,
+  useSfocScatter,
+  useSpareParts,
+} from '@/hooks/use-machinery-data';
 import {
   selectedEngineAtom,
   selectedShipAtom,
@@ -129,7 +137,23 @@ export default function ConditionMonitoringLayout() {
   // Read global state from atoms (selectors are in the header)
   const selectedShip = useAtomValue(selectedShipAtom);
   const selectedEngine = useAtomValue(selectedEngineAtom);
-  const { data: sensorData, isLoading } = useSensorData();
+  const { data: sensorData, isLoading } = useSensorDataApi();
+  const { response: deltaResponse, isLoading: deltaLoading } =
+    useDeltaDeviation();
+  const { response: scatterResponse, isLoading: scatterLoading } =
+    useParameterScatter();
+  const { response: sfocResponse, isLoading: sfocLoading } = useSfocScatter();
+  const { response: fuelResponse, isLoading: fuelLoading } = useFuelRate();
+  const { scores: healthScores, isLoading: healthLoading } = useHealthScores();
+  const { parts: spareParts, isLoading: partsLoading } = useSpareParts();
+
+  if (!selectedShip) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <span className="text-muted-foreground">Loading vessel data…</span>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -228,21 +252,36 @@ export default function ConditionMonitoringLayout() {
         </PerfomaxCard>
 
         {/* ─── Card 3: SFOC Scatter ───────────────────────────────────────────── */}
-        <SfocScatterCard className="flex flex-col" />
+        <SfocScatterCard
+          className="flex flex-col"
+          response={sfocResponse}
+          isLoading={sfocLoading}
+        />
       </div>
 
       {/* ─── Charts Row 1: Trendline + Scatter ─────────────────────────────── */}
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <DeltaDeviationTrendline className="h-full" />
+          <DeltaDeviationTrendline
+            className="h-full"
+            response={deltaResponse}
+            isLoading={deltaLoading}
+          />
         </div>
         <div className="lg:col-span-2">
-          <ParameterScatterChart className="h-full" />
+          <ParameterScatterChart
+            className="h-full"
+            response={scatterResponse}
+            isLoading={scatterLoading}
+          />
         </div>
       </div>
 
       <div className="mt-6">
-        <ConditionBasedAnalysisTable />
+        <ConditionBasedAnalysisTable
+          parts={spareParts}
+          isLoading={partsLoading}
+        />
       </div>
 
       {/* ─── Charts Row 2: Coolant + Health Score + Pcharge ─────────────────── */}
@@ -253,24 +292,34 @@ export default function ConditionMonitoringLayout() {
       </div> */}
 
       {/* ─── Sensor Chart Rows (8 rows: chart + health score + pcharge) ──── */}
-      {SENSOR_CHART_ROWS.map((row) => (
-        <div
-          key={row.title}
-          className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11"
-        >
-          <SensorLineChart
-            title={row.title}
-            yAxisLabel={row.yAxisLabel}
-            series={row.series}
-            data={sensorData}
-            isLoading={isLoading}
-            className="col-span-5"
-            thresholds={row.thresholds}
-          />
-          <HealthScoreCard className="col-span-3" />
-          <ParameterVsPchargeChart className="col-span-3" />
-        </div>
-      ))}
+      {SENSOR_CHART_ROWS.map((row, idx) => {
+        // Match health score entry by a key derived from the chart title
+        const scoreEntry = healthScores.find(
+          (s) => s.label === row.title || s.parameter === row.title
+        );
+        return (
+          <div
+            key={row.title}
+            className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11"
+          >
+            <SensorLineChart
+              title={row.title}
+              yAxisLabel={row.yAxisLabel}
+              series={row.series}
+              data={sensorData}
+              isLoading={isLoading}
+              className="col-span-5"
+              thresholds={row.thresholds}
+            />
+            <HealthScoreCard
+              className="col-span-3"
+              entry={scoreEntry}
+              isLoading={healthLoading}
+            />
+            <ParameterVsPchargeChart className="col-span-3" />
+          </div>
+        );
+      })}
     </>
   );
 }

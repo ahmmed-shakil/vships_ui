@@ -2,10 +2,7 @@
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
-import {
-  scatterDataGreen,
-  scatterDataPurple,
-} from '@/data/nura/condition-monitoring-chart-data';
+import type { ParameterScatterResponse } from '@/types/api';
 import { useMemo, useState } from 'react';
 import {
   CartesianGrid,
@@ -38,8 +35,12 @@ const paramOptions = [
 
 export default function ParameterScatterChart({
   className,
+  response,
+  isLoading,
 }: {
   className?: string;
+  response: ParameterScatterResponse | null;
+  isLoading: boolean;
 }) {
   const [opt1, setOpt1] = useState(paramOptions[0]);
   const [opt2, setOpt2] = useState(paramOptions[1]);
@@ -54,13 +55,37 @@ export default function ParameterScatterChart({
     [opt1]
   );
 
+  // Derive scatter data from API — split by operating_modes
+  const { normalData, abnormalData } = useMemo(() => {
+    if (!response?.data?.length) return { normalData: [], abnormalData: [] };
+    const normalSet = new Set(response.operating_modes?.normal ?? []);
+    const abnormalSet = new Set(response.operating_modes?.abnormal ?? []);
+
+    const normalPts: { x: number; y: number }[] = [];
+    const abnormalPts: { x: number; y: number }[] = [];
+
+    response.data.forEach((p, i) => {
+      const xVal = (p as any)[opt1.value] as number;
+      const yVal = (p as any)[opt2.value] as number;
+      if (xVal == null || yVal == null) return;
+      const pt = { x: xVal, y: yVal };
+      if (abnormalSet.has(i)) {
+        abnormalPts.push(pt);
+      } else {
+        normalPts.push(pt);
+      }
+    });
+
+    return { normalData: normalPts, abnormalData: abnormalPts };
+  }, [response, opt1.value, opt2.value]);
+
   return (
     <PerfomaxCard
       className={className}
       title="Scatter"
       // titleClassName="text-lg font-bold"
       action={
-        <div className="flex items-center gap-8 pt-1 text-xs whitespace-nowrap">
+        <div className="flex items-center gap-8 whitespace-nowrap pt-1 text-xs">
           <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
             <span
               className="inline-block h-2.5 w-4 rounded-sm"
@@ -115,44 +140,49 @@ export default function ParameterScatterChart({
         {/* Chart + X-axis */}
         <div className="mt-4 flex flex-1 flex-col">
           <div className="h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart
-                margin={{ top: 5, right: 20, left: -30, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  type="number"
-                  dataKey="x"
-                  name="Fuel Pump Index"
-                  tick={{ fontSize: 11 }}
-                  domain={[0, 100]}
-                />
-                <YAxis
-                  type="number"
-                  dataKey="y"
-                  name="Charge Air Pressure"
-                  tick={{ fontSize: 11 }}
-                  domain={[0, 5]}
-                  tickCount={11}
-                />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ strokeDasharray: '3 3' }}
-                />
-                <Scatter
-                  name="Series 1"
-                  data={scatterDataGreen}
-                  fill="#22C55E"
-                  shape="circle"
-                />
-                <Scatter
-                  name="Series 2"
-                  data={scatterDataPurple}
-                  fill="#A855F7"
-                  shape="diamond"
-                />
-              </ScatterChart>
-            </ResponsiveContainer>
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <span className="animate-pulse text-sm text-muted-foreground">
+                  Loading…
+                </span>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart
+                  margin={{ top: 5, right: 20, left: -30, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    type="number"
+                    dataKey="x"
+                    name={opt1.label}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <YAxis
+                    type="number"
+                    dataKey="y"
+                    name={opt2.label}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ strokeDasharray: '3 3' }}
+                  />
+                  <Scatter
+                    name="Normal"
+                    data={normalData}
+                    fill="#22C55E"
+                    shape="circle"
+                  />
+                  <Scatter
+                    name="Abnormal"
+                    data={abnormalData}
+                    fill="#A855F7"
+                    shape="diamond"
+                  />
+                </ScatterChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           {/* X-axis label */}

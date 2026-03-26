@@ -1,21 +1,31 @@
 'use client';
 
-import { engineData, shipData, type Ship } from '@/data/nura/ships';
+import { useVesselOptions, useEngineOptionsList } from '@/hooks/use-api-data';
+import type { Ship } from '@/data/nura/ships';
 import {
   selectedEngineAtom,
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
 import { useAtom } from 'jotai';
+import { useCallback } from 'react';
 import { Select } from 'rizzui/select';
 
 export default function AlarmOverviewHeaderSelectors() {
   const [selectedShip, setSelectedShip] = useAtom(selectedShipAtom);
   const [selectedEngine, setSelectedEngine] = useAtom(selectedEngineAtom);
+  const handleLoaded = useCallback(
+    (vessels: Ship[]) => {
+      if (vessels.length > 0 && !selectedShip?.id) setSelectedShip(vessels[0]);
+    },
+    [selectedShip, setSelectedShip]
+  );
+  const vesselOptions = useVesselOptions(handleLoaded);
+  const engineOptions = useEngineOptionsList();
 
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Select
-        options={shipData}
+        options={vesselOptions}
         value={selectedShip}
         onChange={(v: Ship) => setSelectedShip(v)}
         className="w-44"
@@ -24,7 +34,7 @@ export default function AlarmOverviewHeaderSelectors() {
         placeholder="Select Vessel"
       />
       <Select
-        options={engineData}
+        options={engineOptions}
         value={selectedEngine}
         onChange={setSelectedEngine}
         className="w-36"

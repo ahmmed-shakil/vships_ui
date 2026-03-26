@@ -2,6 +2,7 @@
 
 import SpeedMeter from '@/components/speed-meter/speed-meter';
 import { findEngineWithDetail, RPM_GAUGE_MAX } from '@/data/nura/engine-data';
+import { useVesselEngineData } from '@/hooks/use-api-data';
 import { Text } from 'rizzui/typography';
 
 // ─── Gauge max values ────────────────────────────────────────────────────────
@@ -49,7 +50,12 @@ export default function EngineDetailView({
   latestME = {},
   latestAE = {},
 }: EngineDetailViewProps) {
-  let engine = findEngineWithDetail(vesselId, engineId);
+  // Try API data first, fall back to mock
+  const { mainEngines, gensets } = useVesselEngineData(vesselId);
+  const apiEngine = [...mainEngines, ...gensets].find((e) => e.id === engineId);
+  let engine = apiEngine?.detail
+    ? apiEngine
+    : findEngineWithDetail(vesselId, engineId);
 
   // Overlay live socket data
   if (engine) {
@@ -72,17 +78,17 @@ export default function EngineDetailView({
         },
         detail: engine.detail
           ? {
-            ...engine.detail,
-            lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-            lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-            coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-            coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-            batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-            exhgas_temp_left:
-              live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-            exhgas_temp_right:
-              live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-          }
+              ...engine.detail,
+              lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+              lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+              coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+              coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+              batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+              exhgas_temp_left:
+                live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+              exhgas_temp_right:
+                live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+            }
           : undefined,
       };
     }
@@ -111,7 +117,9 @@ export default function EngineDetailView({
   return (
     <div className="py-4">
       {/* Engine label */}
-      <h6 className="text-center text-lg font-semibold -mt-8 mb-8">{engine.label}</h6>
+      <h6 className="-mt-8 mb-8 text-center text-lg font-semibold">
+        {engine.label}
+      </h6>
 
       {/* Section labels — centered above the gauge cluster */}
       <div className="mx-auto flex justify-between" style={{ maxWidth: 500 }}>

@@ -3,7 +3,7 @@
 import { Title, Text, Avatar, Button, Popover } from 'rizzui';
 import cn from '@/utils/class-names';
 import { routes } from '@/config/routes';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -17,6 +17,9 @@ export default function ProfileMenu({
   avatarClassName?: string;
   username?: boolean;
 }) {
+  const { data: session } = useSession();
+  const userName = session?.user?.name || 'User';
+
   return (
     <ProfileMenuPopover>
       <Popover.Trigger>
@@ -28,12 +31,12 @@ export default function ProfileMenu({
         >
           <Avatar
             src="/user.jpg"
-            name="Demo User"
+            name={userName}
             className={cn('!h-9 w-9 sm:!h-10 sm:!w-10', avatarClassName)}
           />
           {!!username && (
             <span className="username hidden text-gray-200 dark:text-gray-700 md:inline-flex">
-              Hi, Andry
+              Hi, {userName.split(' ')[0]}
             </span>
           )}
         </button>
@@ -82,15 +85,19 @@ const menuItems = [
 ];
 
 function DropdownMenu() {
+  const { data: session } = useSession();
+  const userName = session?.user?.name || 'User';
+  const userEmail = session?.user?.email || '';
+
   return (
     <div className="w-64 text-left rtl:text-right">
       <div className="flex items-center border-b border-gray-300 px-6 pb-5 pt-6">
-        <Avatar src="/user.jpg" name="Demo User" />
+        <Avatar src="/user.jpg" name={userName} />
         <div className="ms-3">
           <Title as="h6" className="font-semibold">
-            Demo User
+            {userName}
           </Title>
-          <Text className="text-gray-600">demo@perfomax.tech</Text>
+          <Text className="text-gray-600">{userEmail}</Text>
         </div>
       </div>
       <div className="grid px-3.5 py-3.5 font-medium text-gray-700">

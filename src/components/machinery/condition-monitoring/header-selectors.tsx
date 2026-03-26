@@ -1,7 +1,8 @@
 'use client';
 
 import DateRangePicker from '@/components/date/date-range';
-import { cmEngineData, cmShipData, type Ship } from '@/data/nura/ships';
+import type { Ship } from '@/data/nura/ships';
+import { useEngineOptionsList, useVesselOptions } from '@/hooks/use-api-data';
 import {
   dateRangeAtom,
   selectedEngineAtom,
@@ -10,7 +11,7 @@ import {
 } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
 import { useAtom } from 'jotai';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Select } from 'rizzui/select';
 
 const timeOptions = ['1h', '1d', '7d', '1m', '3m', 'Custom Time'];
@@ -22,18 +23,27 @@ export default function ConditionMonitoringHeaderSelectors() {
   const [dateRange, setDateRange] = useAtom(dateRangeAtom);
   const datePickerRef = useRef<HTMLElement>(null);
 
-  // If selected engine is not in the CM engine list, auto-select the first
-  useEffect(() => {
-    const valid = cmEngineData.some((e) => e.value === selectedEngine?.value);
-    if (!valid && cmEngineData.length > 0) {
-      setSelectedEngine(cmEngineData[0]);
-    }
-  }, [selectedEngine, setSelectedEngine]);
+  // Fetch real vessel & engine options from API
+  const handleVesselLoaded = useCallback(
+    (vessels: Ship[]) => {
+      if (vessels.length > 0 && !selectedShip?.id) setSelectedShip(vessels[0]);
+    },
+    [selectedShip, setSelectedShip]
+  );
+  const vesselOptions = useVesselOptions(handleVesselLoaded);
+  const engineOptions = useEngineOptionsList();
 
-  // Set vessel to the CM vessel on mount
+  // If selected engine is not in the API list, auto-select the first
   useEffect(() => {
-    setSelectedShip(cmShipData[0]);
-  }, [setSelectedShip]);
+    if (engineOptions.length > 0) {
+      const valid = engineOptions.some(
+        (e) => e.value === selectedEngine?.value
+      );
+      if (!valid) {
+        setSelectedEngine(engineOptions[0]);
+      }
+    }
+  }, [engineOptions, selectedEngine, setSelectedEngine]);
 
   // Auto-open date picker when "Custom Time" is selected
   useEffect(() => {
@@ -54,17 +64,16 @@ export default function ConditionMonitoringHeaderSelectors() {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <Select
-        options={cmShipData}
+        options={vesselOptions}
         value={selectedShip}
         onChange={(v: Ship) => setSelectedShip(v)}
         className="w-52"
         selectClassName="h-9 text-sm"
         dropdownClassName="text-gray-900"
-        disabled
       />
 
       <Select
-        options={cmEngineData}
+        options={engineOptions}
         value={selectedEngine}
         onChange={setSelectedEngine}
         className="w-36"

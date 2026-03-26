@@ -1,6 +1,6 @@
 'use client';
 
-import { engineData, shipData, type Ship } from '@/data/nura/ships';
+import { engineData, type Ship } from '@/data/nura/ships';
 import { atom } from 'jotai';
 
 /**
@@ -8,8 +8,8 @@ import { atom } from 'jotai';
  * Used by both the header selectors and the page content.
  */
 
-/** Selected vessel */
-export const selectedShipAtom = atom<Ship>(shipData[0]);
+/** Selected vessel — starts null, set to first API vessel on load */
+export const selectedShipAtom = atom<Ship>(null as unknown as Ship);
 
 /** Selected engine option */
 export const selectedEngineAtom = atom(engineData[0]);

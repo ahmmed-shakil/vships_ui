@@ -1,7 +1,7 @@
 'use client';
 
 import BasicTableWidget from '@/components/controlled-table/basic-table-widget';
-import { conditionAnalysisData } from '@/data/nura/condition-based-analysis-data';
+import type { SparePartEntry } from '@/types/api';
 import cn from '@/utils/class-names';
 import { Text } from 'rizzui';
 
@@ -25,11 +25,11 @@ const getColumns = () => [
         DESIGN LIFE (HRS)
       </Text>
     ),
-    dataIndex: 'lifeHrs',
-    key: 'lifeHrs',
+    dataIndex: 'design_life_hrs',
+    key: 'design_life_hrs',
     width: 140,
     render: (v: number) => (
-      <Text className="font-mono text-sm">{v.toLocaleString()}</Text>
+      <Text className="font-mono text-sm">{v?.toLocaleString() ?? '-'}</Text>
     ),
   },
   {
@@ -38,11 +38,11 @@ const getColumns = () => [
         ADJUSTED LIFE
       </Text>
     ),
-    dataIndex: 'effectiveLife',
-    key: 'effectiveLife',
+    dataIndex: 'effective_life',
+    key: 'effective_life',
     width: 120,
     render: (v: number) => (
-      <Text className="font-mono text-sm">{v.toLocaleString()}</Text>
+      <Text className="font-mono text-sm">{v?.toLocaleString() ?? '-'}</Text>
     ),
   },
   {
@@ -51,8 +51,8 @@ const getColumns = () => [
         HOURS SINCE OH
       </Text>
     ),
-    dataIndex: 'hoursSinceOh',
-    key: 'hoursSinceOh',
+    dataIndex: 'hours_since_oh',
+    key: 'hours_since_oh',
     width: 140,
     render: (v: number) => (
       <Text className="font-mono text-sm">{v?.toLocaleString() || '-'}</Text>
@@ -64,11 +64,11 @@ const getColumns = () => [
         REMAINING HRS
       </Text>
     ),
-    dataIndex: 'remainingLife',
-    key: 'remainingLife',
+    dataIndex: 'remaining_life',
+    key: 'remaining_life',
     width: 130,
     render: (v: number) => (
-      <Text className="font-mono text-sm">{v.toLocaleString()}</Text>
+      <Text className="font-mono text-sm">{v?.toLocaleString() ?? '-'}</Text>
     ),
   },
   {
@@ -88,19 +88,22 @@ const getColumns = () => [
         PMS SCHEDULE
       </Text>
     ),
-    dataIndex: 'pmsLink',
-    key: 'pmsLink',
+    dataIndex: 'pms_link',
+    key: 'pms_link',
     width: 120,
-    render: (link: string) => (
-      <a
-        href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-sm text-blue-500 hover:underline"
-      >
-        {link}
-      </a>
-    ),
+    render: (link: string) =>
+      link ? (
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-blue-500 hover:underline"
+        >
+          View
+        </a>
+      ) : (
+        <Text className="text-sm text-muted-foreground">-</Text>
+      ),
   },
   {
     title: (
@@ -142,7 +145,9 @@ const getColumns = () => [
     dataIndex: 'remarks',
     key: 'remarks',
     width: 250,
-    render: (remarks: string) => <Text className="text-sm italic text-gray-500">{remarks}</Text>,
+    render: (remarks: string) => (
+      <Text className="text-sm italic text-gray-500">{remarks}</Text>
+    ),
   },
 ];
 
@@ -150,15 +155,19 @@ const getColumns = () => [
 
 interface ConditionBasedAnalysisTableProps {
   className?: string;
+  parts?: SparePartEntry[];
+  isLoading?: boolean;
 }
 
 export default function ConditionBasedAnalysisTable({
   className,
+  parts = [],
+  isLoading,
 }: ConditionBasedAnalysisTableProps) {
   return (
     <BasicTableWidget
       title="Condition Based Analysis"
-      data={conditionAnalysisData}
+      data={parts}
       getColumns={getColumns}
       enableSearch={false}
       enablePagination={false}

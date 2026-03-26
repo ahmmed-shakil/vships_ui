@@ -7,14 +7,14 @@ import {
   computeKW,
   FUEL_GAUGE_MAX,
   RPM_GAUGE_MAX,
-  vesselEngineData,
-  vesselGensetData,
   type EngineMonitorData,
 } from '@/data/nura/engine-data';
-import { getChartData } from '@/data/nura/operation-monitor-charts-data';
+import { useVesselEngineData, useChartData } from '@/hooks/use-api-data';
 import { useSocketData } from '@/app/shared/hooks/useSocket';
 import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
+import type { Ship } from '@/data/nura/ships';
 import { useAtomValue } from 'jotai';
+import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import { Box } from 'rizzui/box';
@@ -122,7 +122,6 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
           title={engine.label}
           value={gkwh}
           max={FUEL_GAUGE_MAX}
-
           min={140}
           centerLabel={`${gkwh}`}
           unit="g/Kwh"
@@ -321,8 +320,9 @@ function LiveSocketCard({
         <div className="flex items-center gap-2">
           <span>Live Socket Data</span>
           <span
-            className={`inline-block h-2.5 w-2.5 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'
-              }`}
+            className={`inline-block h-2.5 w-2.5 rounded-full ${
+              connected ? 'bg-green-500' : 'bg-red-500'
+            }`}
           />
           <span className="text-xs font-normal text-muted-foreground">
             {hasData
@@ -356,22 +356,43 @@ function LiveSocketCard({
 
 const OperationOverviewLayout = () => {
   const vessel = useAtomValue(selectedShipAtom);
-  const { latestME, latestAE, meTotalCount, aeTotalCount, connected } =
-    useSocketData();
 
-  // Engine data for the selected vessel, overlaid with live socket values
-  const baseEngines = vesselEngineData[vessel.id] ?? [];
+  if (!vessel) {
+    return (
+      <Box className="flex h-96 items-center justify-center">
+        <span className="text-muted-foreground">Loading vessel data…</span>
+      </Box>
+    );
+  }
+
+  return <OperationOverviewContent vessel={vessel} />;
+};
+
+const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
+  const { data: session } = useSession();
+  const token = (session as any)?.accessToken ?? null;
+  const { latestME, latestAE, meTotalCount, aeTotalCount, connected } =
+    useSocketData(vessel.id, token);
+
+  // Engine data for the selected vessel from API (falls back to mock)
+  const { mainEngines: baseEngines, gensets: vesselGensets } =
+    useVesselEngineData(vessel.id);
   const engines = baseEngines.map((engine) => {
     const socketKey = engine.id.toUpperCase(); // "me1" → "ME1"
     const live = latestME[socketKey];
     if (!live) return engine;
 
     // For Ocean Voyager (ID 1), we want to keep the demo values for fuel consumption and load
-    const shouldKeepDemoValues = vessel.id === 1 && (engine.id === 'me1' || engine.id === 'me2');
+    const shouldKeepDemoValues =
+      vessel.id === 1 && (engine.id === 'me1' || engine.id === 'me2');
 
     const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
-    const liveLoad = shouldKeepDemoValues ? engine.gauge.engine_load : (live.engine_load ?? engine.gauge.engine_load);
-    const liveFuelCons = shouldKeepDemoValues ? engine.gauge.fuel_cons : (live.fuel_cons ?? engine.gauge.fuel_cons);
+    const liveLoad = shouldKeepDemoValues
+      ? engine.gauge.engine_load
+      : (live.engine_load ?? engine.gauge.engine_load);
+    const liveFuelCons = shouldKeepDemoValues
+      ? engine.gauge.fuel_cons
+      : (live.fuel_cons ?? engine.gauge.fuel_cons);
 
     // FM Cons = fuel_cons × 0.8, FM In = FM Cons + FM Out
     const fmCons = liveFuelCons * 0.8;
@@ -393,12 +414,12 @@ const OperationOverviewLayout = () => {
     };
   });
 
-  // Chart data for the selected vessel (memoized to avoid re-generating on every render)
-  const chartData = useMemo(() => getChartData(vessel.id), [vessel.id]);
+  // Chart data for the selected vessel from API (falls back to mock)
+  const { consumptionVsSpeed: baseChartData } = useChartData(vessel.id);
 
   // Consumption vs Speed: scale chart data close to socket ME values, last row = exact socket value
   const consumptionVsSpeedData = useMemo(() => {
-    const baseData = chartData.consumptionVsSpeed;
+    const baseData = baseChartData;
     if (Object.keys(latestME).length === 0) return baseData;
 
     const engineKeys = baseEngines.map((e) => e.id);
@@ -427,10 +448,10 @@ const OperationOverviewLayout = () => {
       });
       return newPoint;
     });
-  }, [chartData.consumptionVsSpeed, latestME, baseEngines]);
+  }, [baseChartData, latestME, baseEngines]);
 
   // Genset consumption chart data generated from socket AE values
-  const gensetCount = vesselGensetData[vessel.id]?.length ?? 2;
+  const gensetCount = vesselGensets.length || 2;
   const gensetChartData = useMemo(() => {
     // Filter hours to current Singapore time (UTC+8) — same logic as operation-monitor-charts-data.ts
     // const ALL_HOURS = [
@@ -438,10 +459,30 @@ const OperationOverviewLayout = () => {
     //   '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
     // ];
     const ALL_HOURS = [
-      '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
-      '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
-      '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
-      '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
+      '00:00',
+      '01:00',
+      '02:00',
+      '03:00',
+      '04:00',
+      '05:00',
+      '06:00',
+      '07:00',
+      '08:00',
+      '09:00',
+      '10:00',
+      '11:00',
+      '12:00',
+      '13:00',
+      '14:00',
+      '15:00',
+      '16:00',
+      '17:00',
+      '18:00',
+      '19:00',
+      '20:00',
+      '21:00',
+      '22:00',
+      '23:00',
     ];
     const sgtHour = new Date(
       new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
@@ -463,7 +504,7 @@ const OperationOverviewLayout = () => {
     }
 
     return HOURS.map((time, i) => {
-      const point: { time: string;[engine: string]: number | string } = {
+      const point: { time: string; [engine: string]: number | string } = {
         time,
       };
       const isLast = i === HOURS.length - 1;
@@ -522,10 +563,10 @@ const OperationOverviewLayout = () => {
           <Box className="col-span-10 lg:col-span-3">
             <RealTimeDataMap
               name={vessel.label}
-              lat={vessel.position.lat}
-              long={vessel.position.long}
-              direction={vessel.position.direction}
-              timestamp={vessel.position.timestamp}
+              lat={vessel.position?.lat ?? 0}
+              long={vessel.position?.long ?? 0}
+              direction={vessel.position?.direction ?? 0}
+              timestamp={vessel.position?.timestamp ?? 0}
               minHeight={600}
             />
           </Box>
