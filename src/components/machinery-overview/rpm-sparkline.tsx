@@ -56,7 +56,8 @@ export default function RpmSparkline({
   color = '#3872FA',
   className,
 }: RpmSparklineProps) {
-  const gradientId = useId();
+  const rawId = useId();
+  const gradientId = rawId.replace(/:/g, '_');
 
   return (
     <div className={cn('inline-flex h-5 w-[50px] shrink-0', className)}>

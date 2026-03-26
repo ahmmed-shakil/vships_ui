@@ -31,16 +31,19 @@ export default function ConditionMonitoringHeaderSelectors() {
     [selectedShip, setSelectedShip]
   );
   const vesselOptions = useVesselOptions(handleVesselLoaded);
-  const engineOptions = useEngineOptionsList();
+  const allEngineOptions = useEngineOptionsList();
+  // Condition Monitoring doesn't use the "All Engine" view
+  const engineOptions = allEngineOptions.filter((e) => e.value !== 'all');
 
-  // If selected engine is not in the API list, auto-select the first
+  // Default to ME Port (me1) for this page
   useEffect(() => {
     if (engineOptions.length > 0) {
       const valid = engineOptions.some(
         (e) => e.value === selectedEngine?.value
       );
       if (!valid) {
-        setSelectedEngine(engineOptions[0]);
+        const me1 = engineOptions.find((e) => e.value === 'me1');
+        setSelectedEngine(me1 ?? engineOptions[0]);
       }
     }
   }, [engineOptions, selectedEngine, setSelectedEngine]);

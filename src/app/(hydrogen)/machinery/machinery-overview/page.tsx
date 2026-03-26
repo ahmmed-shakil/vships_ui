@@ -25,7 +25,7 @@ function toMetrics(card: EngineOverviewCard): MachineryMetric[] {
   const m = card.metrics;
   const s = card.sparklines;
   const toSparkline = (arr: number[]) => arr.map((v) => ({ v }));
-  const hasSpark = (arr: number[]) => arr.length > 0;
+  const hasSpark = (arr: number[]) => arr.some((v) => v !== 0);
   const color = getHealthColor(card.health_score);
 
   return [
