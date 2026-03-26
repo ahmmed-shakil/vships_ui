@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useEffect, useMemo, useState } from 'react';
-import { setAccessToken } from '@/services/api-client';
+import { setAccessToken, setRefreshToken } from '@/services/api-client';
 import * as api from '@/services/api';
 
 // Mock data fallbacks
@@ -24,9 +24,11 @@ import type { EngineMonitorData } from '@/data/nura/engine-data';
 function useApiToken(): string | null {
   const { data: session } = useSession();
   const token = (session as any)?.accessToken ?? null;
+  const refresh = (session as any)?.refreshToken ?? null;
   useEffect(() => {
     if (token) setAccessToken(token);
-  }, [token]);
+    if (refresh) setRefreshToken(refresh);
+  }, [token, refresh]);
   return token;
 }
 

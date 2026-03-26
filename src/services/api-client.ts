@@ -84,13 +84,22 @@ function refreshAccessToken(): Promise<boolean> {
   return refreshPromise;
 }
 
+let isSigningOut = false;
+
 /** Sign the user out client-side */
 async function forceSignOut() {
+  if (isSigningOut) return;
+  isSigningOut = true;
+
   clearAccessToken();
   if (typeof window !== 'undefined') {
-    // Dynamic import to avoid circular deps at module load time
-    const { signOut } = await import('next-auth/react');
-    signOut({ callbackUrl: '/signin' });
+    try {
+      const { signOut } = await import('next-auth/react');
+      await signOut({ callbackUrl: '/signin' });
+    } catch {
+      // Fallback: hard redirect if signOut fails
+      window.location.href = '/signin';
+    }
   }
 }
 
