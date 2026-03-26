@@ -364,9 +364,19 @@ const RealTimeDataContent = () => {
                 <div className="absolute bottom-1/4 left-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
                 <div className="absolute bottom-1/4 right-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
                 <h6
-                  className="cursor-pointer text-center text-sm font-semibold uppercase transition-colors hover:text-primary"
-                  onClick={() =>
-                    setSelectedEngine({ label: 'ME Center', value: 'me3' })
+                  className={cn(
+                    'text-center text-sm font-semibold uppercase',
+                    meCenter &&
+                      'cursor-pointer transition-colors hover:text-primary'
+                  )}
+                  onClick={
+                    meCenter
+                      ? () =>
+                          setSelectedEngine({
+                            label: 'ME Center',
+                            value: 'me3',
+                          })
+                      : undefined
                   }
                 >
                   ME Center
@@ -376,8 +386,14 @@ const RealTimeDataContent = () => {
                   layout="vertical"
                   className2="-mt-20"
                   className3="-mt-10"
-                  onClick={() =>
-                    setSelectedEngine({ label: 'ME Center', value: 'me3' })
+                  onClick={
+                    meCenter
+                      ? () =>
+                          setSelectedEngine({
+                            label: 'ME Center',
+                            value: 'me3',
+                          })
+                      : undefined
                   }
                 />
               </div>

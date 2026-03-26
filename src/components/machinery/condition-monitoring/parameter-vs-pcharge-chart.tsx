@@ -92,12 +92,7 @@ export default function ParameterVsPchargeChart({
                   shape="circle"
                   legendType="line"
                 />
-                <Scatter
-                  name="Dots"
-                  data={[]}
-                  fill="#A855F7"
-                  shape="circle"
-                />
+                <Scatter name="Dots" data={[]} fill="#A855F7" shape="circle" />
               </ScatterChart>
             </ResponsiveContainer>
           </div>

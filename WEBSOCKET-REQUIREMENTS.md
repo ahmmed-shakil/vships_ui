@@ -106,22 +106,52 @@ Same structure, emitted for each genset.
 
 ## Field Reference
 
-| Field               | Unit      | Source (DB column)               | Notes                                           |
-| ------------------- | --------- | -------------------------------- | ----------------------------------------------- |
-| `engineId`          | string    | `asset_id` mapping               | **UPPERCASE**: `me1` → `"ME1"`, `ae2` → `"AE2"` |
-| `vessel_id`         | integer   | `vessel_id`                      | Vessel this engine belongs to                   |
-| `engine_rpm`        | RPM       | `sensor_data.rpm`                | Direct reading                                  |
-| `engine_load`       | % (0–100) | `sensor_data.fpi`                | Fuel rack position                              |
-| `fuel_cons`         | L/H       | `fo_flow_inlet - fo_flow_outlet` | Computed                                        |
-| `run_hrs_counter`   | hours     | `sensor_data.run_hrs_counter`    | Cumulative                                      |
-| `total_fuel`        | M³        | `sensor_data.total_fuel`         | Cumulative                                      |
-| `lubeoil_press`     | **bar**   | `sensor_data.lo_press`           | Frontend multiplies ×100 for kPa                |
-| `lubeoil_temp`      | °C        | `sensor_data.lo_temp`            | Direct                                          |
-| `coolant_press`     | **bar**   | `sensor_data.coolant_press`      | Frontend multiplies ×100 for kPa                |
-| `coolant_temp`      | °C        | `sensor_data.coolant_temp`       | Direct                                          |
-| `Batt_volt`         | VDC       | `sensor_data.batt_volt`          | **Capital "B"** — field name must match         |
-| `exhgas_temp_left`  | °C        | AVG(`eg_temp_1`..`eg_temp_4`)    | Left bank average                               |
-| `exhgas_temp_right` | °C        | AVG(`eg_temp_5`..`eg_temp_8`)    | Right bank average                              |
+| Field               | Unit      | Source (DB column)                         | Notes                                                                           |
+| ------------------- | --------- | ------------------------------------------ | ------------------------------------------------------------------------------- |
+| `engineId`          | string    | `asset_id` mapping                         | **UPPERCASE**: `me1` → `"ME1"`, `ae2` → `"AE2"`                                 |
+| `vessel_id`         | integer   | `vessel_id`                                | Vessel this engine belongs to                                                   |
+| `engine_rpm`        | RPM       | `sensor_data.rpm`                          | Direct reading                                                                  |
+| `engine_load`       | % (0–100) | `sensor_data.fpi`                          | Fuel rack position                                                              |
+| `fuel_cons`         | L/H       | `fo_flow_inlet - fo_flow_outlet`           | Computed                                                                        |
+| `run_hrs_counter`   | hours     | **Engine controller ECU**                  | ⚠️ NOT in sensor_data — fetch from CAN/Modbus or calculate from historical data |
+| `total_fuel`        | M³        | **Engine controller ECU**                  | ⚠️ NOT in sensor_data — fetch from CAN/Modbus or calculate cumulative sum       |
+| `lubeoil_press`     | **bar**   | `sensor_data.lo_press`                     | Frontend multiplies ×100 for kPa                                                |
+| `lubeoil_temp`      | °C        | `sensor_data.lo_temp`                      | Direct                                                                          |
+| `coolant_press`     | **bar**   | `sensor_data.ht_cw_press`                  | HT cooling water pressure — Frontend multiplies ×100 for kPa                    |
+| `coolant_temp`      | °C        | `sensor_data.ht_cw_temp`                   | HT cooling water outlet temp                                                    |
+| `Batt_volt`         | VDC       | `sensor_data.gen_voltage` or `bus_voltage` | **Capital "B"** — field name must match. Use gen or bus voltage as proxy        |
+| `exhgas_temp_left`  | °C        | AVG(`eg_temp_1`..`eg_temp_4`)              | Left bank average                                                               |
+| `exhgas_temp_right` | °C        | AVG(`eg_temp_5`..`eg_temp_8`)              | Right bank average                                                              |
+
+---
+
+## Cumulative Counters (Important!)
+
+### `run_hrs_counter` and `total_fuel`
+
+These fields are **NOT stored in the `sensor_data` table**. They are cumulative running totals that typically come from the engine's ECU/controller via CAN bus or Modbus.
+
+**Implementation options:**
+
+1. **Direct from ECU** (Recommended):
+
+   - If your data pipeline receives these counters from the engine controller, use those values directly
+   - Usually available as persistent registers: `RunningHours` and `TotalFuel`
+
+2. **Calculate from historical data**:
+
+   - `run_hrs_counter`: Track engine RPM > 0 periods, sum elapsed time
+   - `total_fuel`: Sum all `(fo_flow_inlet - fo_flow_outlet) * time_interval` over engine lifetime
+   - Store in a separate `engine_counters` table updated by a background job
+
+3. **Estimate from current session** (Fallback):
+   - If historical data unavailable, calculate since last restart
+   - Not accurate for lifetime totals but better than nothing
+
+**If these fields are unavailable:**
+
+- The frontend will display `"--"` for the stat cards
+- The main RPM/Fuel gauges will still work (they don't require these fields)
 
 ---
 
