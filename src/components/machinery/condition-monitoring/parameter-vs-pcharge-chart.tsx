@@ -3,10 +3,6 @@
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
 import {
-  pchargeScatterDots,
-  pchargeScatterLine,
-} from '@/data/nura/condition-monitoring-chart-data';
-import {
   CartesianGrid,
   ResponsiveContainer,
   Scatter,
@@ -90,7 +86,7 @@ export default function ParameterVsPchargeChart({
                 />
                 <Scatter
                   name="Line"
-                  data={pchargeScatterLine}
+                  data={[]}
                   fill="#22C55E"
                   line={{ stroke: '#22C55E', strokeWidth: 2 }}
                   shape="circle"
@@ -98,7 +94,7 @@ export default function ParameterVsPchargeChart({
                 />
                 <Scatter
                   name="Dots"
-                  data={pchargeScatterDots}
+                  data={[]}
                   fill="#A855F7"
                   shape="circle"
                 />
