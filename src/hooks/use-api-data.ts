@@ -68,7 +68,13 @@ export function useEngineOptionsList(): typeof defaultEngineData {
     api
       .fetchEngineOptions()
       .then((e) => {
-        setEngines(e.length > 0 ? e : defaultEngineData);
+        const list = e.length > 0 ? e : defaultEngineData;
+        // Ensure "All Engine" is always the first option
+        const hasAll = list.some((opt) => opt.value === 'all');
+        const withAll = hasAll
+          ? list
+          : [{ label: 'All Engine', value: 'all' }, ...list];
+        setEngines(withAll as typeof defaultEngineData);
       })
       .catch(() => setEngines(defaultEngineData));
   }, [token]);

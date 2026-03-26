@@ -25,56 +25,57 @@ function toMetrics(card: EngineOverviewCard): MachineryMetric[] {
   const m = card.metrics;
   const s = card.sparklines;
   const toSparkline = (arr: number[]) => arr.map((v) => ({ v }));
-  const hasData = (v: number | null) => v != null;
+  const hasSpark = (arr: number[]) => arr.length > 0;
+  const color = getHealthColor(card.health_score);
 
   return [
     {
       label: 'RPM',
       value: m.rpm != null ? String(m.rpm) : '--',
-      unit: hasData(m.rpm) ? 'rpm' : '',
-      showSparkline: hasData(m.rpm),
+      unit: m.rpm != null ? 'rpm' : '',
+      showSparkline: hasSpark(s.rpm),
       sparklineData: toSparkline(s.rpm),
-      sparklineColor: 'currentColor',
+      sparklineColor: color,
     },
     {
       label: 'Exhaust Temp',
       value: m.exhaust_temp != null ? String(m.exhaust_temp) : '--',
-      unit: hasData(m.exhaust_temp) ? '°C' : '',
-      showSparkline: hasData(m.exhaust_temp),
+      unit: m.exhaust_temp != null ? '°C' : '',
+      showSparkline: hasSpark(s.exhaust_temp),
       sparklineData: toSparkline(s.exhaust_temp),
-      sparklineColor: 'currentColor',
+      sparklineColor: color,
     },
     {
       label: 'Oil pressure',
       value: m.oil_pressure != null ? String(m.oil_pressure) : '--',
-      unit: hasData(m.oil_pressure) ? 'kPa' : '',
-      showSparkline: hasData(m.oil_pressure),
+      unit: m.oil_pressure != null ? 'kPa' : '',
+      showSparkline: hasSpark(s.oil_pressure),
       sparklineData: toSparkline(s.oil_pressure),
-      sparklineColor: 'currentColor',
+      sparklineColor: color,
     },
     {
       label: 'Oil temp',
       value: m.oil_temp != null ? String(m.oil_temp) : '--',
-      unit: hasData(m.oil_temp) ? '°C' : '',
-      showSparkline: hasData(m.oil_temp),
+      unit: m.oil_temp != null ? '°C' : '',
+      showSparkline: hasSpark(s.oil_temp),
       sparklineData: toSparkline(s.oil_temp),
-      sparklineColor: 'currentColor',
+      sparklineColor: color,
     },
     {
       label: 'Coolant temp',
       value: m.coolant_temp != null ? String(m.coolant_temp) : '--',
-      unit: hasData(m.coolant_temp) ? '°C' : '',
-      showSparkline: hasData(m.coolant_temp),
+      unit: m.coolant_temp != null ? '°C' : '',
+      showSparkline: hasSpark(s.coolant_temp),
       sparklineData: toSparkline(s.coolant_temp),
-      sparklineColor: 'currentColor',
+      sparklineColor: color,
     },
     {
       label: 'Consumption',
       value: m.fuel_consumption != null ? String(m.fuel_consumption) : '--',
-      unit: hasData(m.fuel_consumption) ? 'L/H' : '',
-      showSparkline: hasData(m.fuel_consumption),
+      unit: m.fuel_consumption != null ? 'L/H' : '',
+      showSparkline: hasSpark(s.fuel_consumption),
       sparklineData: toSparkline(s.fuel_consumption),
-      sparklineColor: 'currentColor',
+      sparklineColor: color,
     },
   ];
 }
