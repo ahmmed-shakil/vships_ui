@@ -1,7 +1,7 @@
 'use client';
 
 import SpeedMeter from '@/components/speed-meter/speed-meter';
-import { findEngineWithDetail, RPM_GAUGE_MAX } from '@/data/nura/engine-data';
+import { RPM_GAUGE_MAX } from '@/data/nura/engine-data';
 import { useVesselEngineData } from '@/hooks/use-api-data';
 import { Text } from 'rizzui/typography';
 
@@ -50,51 +50,11 @@ export default function EngineDetailView({
   latestME = {},
   latestAE = {},
 }: EngineDetailViewProps) {
-  // Try API data first, fall back to mock
+  // Use API data only - no fallback to mock data
   const { mainEngines, gensets } = useVesselEngineData(vesselId);
   const apiEngine = [...mainEngines, ...gensets].find((e) => e.id === engineId);
-  let engine = apiEngine?.detail
-    ? apiEngine
-    : findEngineWithDetail(vesselId, engineId);
 
-  // Overlay live socket data
-  if (engine) {
-    const socketKey = engine.id.toUpperCase();
-    const live = latestME[socketKey] ?? latestAE[socketKey];
-    if (live) {
-      const shouldKeepDemoValues =
-        vesselId === 1 && (engine.id === 'me1' || engine.id === 'me2');
-
-      engine = {
-        ...engine,
-        gauge: {
-          engine_rpm: live.engine_rpm ?? engine.gauge.engine_rpm,
-          engine_load: shouldKeepDemoValues
-            ? engine.gauge.engine_load
-            : (live.engine_load ?? engine.gauge.engine_load),
-          fuel_cons: shouldKeepDemoValues
-            ? engine.gauge.fuel_cons
-            : (live.fuel_cons ?? engine.gauge.fuel_cons),
-        },
-        detail: engine.detail
-          ? {
-              ...engine.detail,
-              lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-              lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-              coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-              coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-              batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-              exhgas_temp_left:
-                live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-              exhgas_temp_right:
-                live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-            }
-          : undefined,
-      };
-    }
-  }
-
-  if (!engine) {
+  if (!apiEngine) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
         <Text className="italic text-muted-foreground">
@@ -102,6 +62,44 @@ export default function EngineDetailView({
         </Text>
       </div>
     );
+  }
+
+  let engine = apiEngine;
+
+  // Overlay live socket data
+  const socketKey = engine.id.toUpperCase();
+  const live = latestME[socketKey] ?? latestAE[socketKey];
+  if (live) {
+    engine = {
+      ...engine,
+      gauge: {
+        engine_rpm: live.engine_rpm ?? engine.gauge.engine_rpm,
+        engine_load: live.engine_load ?? engine.gauge.engine_load,
+        fuel_cons: live.fuel_cons ?? engine.gauge.fuel_cons,
+      },
+      detail: engine.detail
+        ? {
+            ...engine.detail,
+            lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+            lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+            coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+            coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+            batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+            exhgas_temp_left:
+              live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+            exhgas_temp_right:
+              live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+          }
+        : {
+            lubeoil_press: live.lubeoil_press ?? 0,
+            lubeoil_temp: live.lubeoil_temp ?? 0,
+            coolant_press: live.coolant_press ?? 0,
+            coolant_temp: live.coolant_temp ?? 0,
+            batt_volt: live.Batt_volt ?? 0,
+            exhgas_temp_left: live.exhgas_temp_left ?? 0,
+            exhgas_temp_right: live.exhgas_temp_right ?? 0,
+          },
+    };
   }
 
   const d = engine.detail ?? {

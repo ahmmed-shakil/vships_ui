@@ -32,18 +32,9 @@ function applyLiveData(
   const live = latestME[socketKey] ?? latestAE[socketKey];
   if (!live) return engine;
 
-  // For Ocean Voyager (ID 1), we want to keep the demo values for fuel consumption and load (to result in 202.5/203.9)
-  const isTargetVessel = vesselId === 1;
-  const isTargetEngine = engine.id === 'me1' || engine.id === 'me2';
-  const shouldKeepDemoValues = isTargetVessel && isTargetEngine;
-
   const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
-  const liveLoad = shouldKeepDemoValues
-    ? engine.gauge.engine_load
-    : (live.engine_load ?? engine.gauge.engine_load);
-  const liveFuelCons = shouldKeepDemoValues
-    ? engine.gauge.fuel_cons
-    : (live.fuel_cons ?? engine.gauge.fuel_cons);
+  const liveLoad = live.engine_load ?? engine.gauge.engine_load;
+  const liveFuelCons = live.fuel_cons ?? engine.gauge.fuel_cons;
   const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
   const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
 

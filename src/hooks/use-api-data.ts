@@ -8,10 +8,6 @@ import * as api from '@/services/api';
 // Mock data fallbacks
 import { shipData, engineData as defaultEngineData } from '@/data/nura/ships';
 import { vesselAlarmData as mockAlarmData } from '@/data/nura/alarm-data';
-import {
-  vesselEngineData as mockEngineData,
-  vesselGensetData as mockGensetData,
-} from '@/data/nura/engine-data';
 
 // Types
 import type { Ship } from '@/data/nura/ships';
@@ -227,8 +223,9 @@ export function useVesselEngineData(vesselId: number) {
         setGensets(engines.filter((e) => e.id.startsWith('ae')));
       })
       .catch(() => {
-        setMainEngines(mockEngineData[vesselId] ?? []);
-        setGensets(mockGensetData[vesselId] ?? []);
+        // If API fails, show no data instead of mock data
+        setMainEngines([]);
+        setGensets([]);
       });
   }, [token, vesselId]);
 
