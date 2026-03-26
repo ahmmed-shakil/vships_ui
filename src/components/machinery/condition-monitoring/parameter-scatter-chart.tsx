@@ -16,17 +16,17 @@ import {
 import { Select } from 'rizzui/select';
 
 /* ------------------------------------------------------------------ */
-/* Dropdown options */
+/* Dropdown options & API field mapping */
 /* ------------------------------------------------------------------ */
 
 const paramOptions = [
-  { label: 'Fuel Consumption', value: 'fuelConsumption' },
-  { label: 'Engine RPM', value: 'engineRpm' },
-  { label: 'Engine Load', value: 'engineLoad' },
-  { label: 'Exhaust Temp', value: 'exhaustTemp' },
-  { label: 'Lube Oil Pressure', value: 'lubeOilPressure' },
-  { label: 'Coolant Temp', value: 'coolantTemp' },
-  { label: 'Charge Air Pressure', value: 'chargeAirPressure' },
+  { label: 'Fuel Consumption', value: 'fuel_consumption' },
+  { label: 'Engine RPM', value: 'engine_rpm' },
+  { label: 'Engine Load', value: 'engine_load' },
+  { label: 'Exhaust Temp', value: 'exhaust_temp' },
+  { label: 'Lube Oil Pressure', value: 'lube_oil_pressure' },
+  { label: 'Coolant Temp', value: 'coolant_temp' },
+  { label: 'Charge Air Pressure', value: 'charge_air_pressure' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -133,7 +133,7 @@ export default function ParameterScatterChart({
             className="text-[10px] font-medium text-muted-foreground"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
-            Charge Air Pressure
+            {opt2.label}
           </span>
         </div>
 
@@ -188,7 +188,7 @@ export default function ParameterScatterChart({
           {/* X-axis label */}
           <div className="mt-1 flex items-center justify-center gap-2">
             <span className="text-[10px] font-medium text-muted-foreground">
-              Fuel Pump Index
+              {opt1.label}
             </span>
           </div>
         </div>
