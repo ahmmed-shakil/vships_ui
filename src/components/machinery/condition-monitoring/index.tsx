@@ -155,6 +155,10 @@ export default function ConditionMonitoringLayout() {
     );
   }
 
+  const engineSpecs = selectedEngine.value.startsWith('ae')
+    ? { make: 'CAT 3408', built: '2005', rating: '--' }
+    : { make: 'MAK 8M25C', built: '2005', rating: '2550 kW' };
+
   return (
     <>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -188,9 +192,21 @@ export default function ConditionMonitoringLayout() {
               />
             </div>
             <div className="flex w-full flex-col justify-center">
-              <DottedRow label="Make" value="MaK 9M25C" className="my-1" />
-              <DottedRow label="Built" value="2016" className="my-1" />
-              <DottedRow label="Rating" value="2500 kW" className="my-1" />
+              <DottedRow
+                label="Make"
+                value={engineSpecs.make}
+                className="my-1"
+              />
+              <DottedRow
+                label="Built"
+                value={engineSpecs.built}
+                className="my-1"
+              />
+              <DottedRow
+                label="Rating"
+                value={engineSpecs.rating}
+                className="my-1"
+              />
             </div>
           </div>
         </PerfomaxCard>
