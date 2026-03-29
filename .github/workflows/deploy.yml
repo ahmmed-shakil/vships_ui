@@ -44,9 +44,13 @@ jobs:
 
       - name: Configure Nginx
         run: |
-          # Copy the HTTP-only config
+          # Remove old SSL-enabled configs completely
+          sudo rm -f /etc/nginx/sites-enabled/vships.perfomax.io
+          sudo rm -f /etc/nginx/sites-available/vships.perfomax.io
+          
+          # Copy the fresh HTTP-only config
           sudo cp nginx/vships.perfomax.io.conf /etc/nginx/sites-available/vships.perfomax.io
-          sudo ln -sf /etc/nginx/sites-available/vships.perfomax.io /etc/nginx/sites-enabled/vships.perfomax.io
+          sudo ln -s /etc/nginx/sites-available/vships.perfomax.io /etc/nginx/sites-enabled/vships.perfomax.io
           
           # Test and reload with HTTP-only config first
           sudo nginx -t
