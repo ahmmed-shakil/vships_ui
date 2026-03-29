@@ -44,7 +44,7 @@ jobs:
 
       - name: Configure Nginx
         run: |
-          # Remove old SSL-enabled configs completely (both .conf and without extension)
+          # Remove old configs
           sudo rm -f /etc/nginx/sites-enabled/vships.perfomax.io
           sudo rm -f /etc/nginx/sites-enabled/vships.perfomax.io.conf
           sudo rm -f /etc/nginx/sites-available/vships.perfomax.io
@@ -54,8 +54,15 @@ jobs:
           sudo cp nginx/vships.perfomax.io.conf /etc/nginx/sites-available/vships.perfomax.io
           sudo ln -s /etc/nginx/sites-available/vships.perfomax.io /etc/nginx/sites-enabled/vships.perfomax.io
           
-          # Reload nginx (skip test due to other broken SSL configs on server)
-          sudo systemctl reload nginx || sudo systemctl restart nginx
+          # Test nginx config - if it fails, remove our config and exit
+          if ! sudo nginx -t; then
+            echo "Nginx config test failed, removing vships config"
+            sudo rm -f /etc/nginx/sites-enabled/vships.perfomax.io
+            exit 1
+          fi
+          
+          # Config is valid, reload nginx
+          sudo systemctl reload nginx
           
           # Now run certbot to add SSL (it will modify the config)
           if [ ! -f "/etc/letsencrypt/live/vships.perfomax.io/fullchain.pem" ]; then
