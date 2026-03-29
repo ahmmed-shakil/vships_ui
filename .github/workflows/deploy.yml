@@ -46,6 +46,15 @@ jobs:
         run: |
           sudo cp nginx/vships.perfomax.io.conf /etc/nginx/sites-available/vships.perfomax.io
           sudo ln -sf /etc/nginx/sites-available/vships.perfomax.io /etc/nginx/sites-enabled/vships.perfomax.io
+          # Issue cert if missing, renew if it already exists
+          if [ ! -f "/etc/letsencrypt/live/vships.perfomax.io/fullchain.pem" ]; then
+            sudo certbot --nginx -d vships.perfomax.io \
+              --non-interactive --agree-tos \
+              -m info@perfomax.io \
+              --redirect
+          else
+            sudo certbot renew --quiet --cert-name vships.perfomax.io
+          fi
           sudo nginx -t
           sudo systemctl reload nginx
 
