@@ -1,4 +1,4 @@
-name: Deploy Perfomax Client
+name: Deploy VShips Client
 
 on:
   push:
@@ -17,7 +17,7 @@ env:
 jobs:
   deploy:
     name: Deploy to VPS
-    runs-on: self-hosted
+    runs-on: [self-hosted, vships]
 
     steps:
       - name: Checkout code
@@ -44,18 +44,18 @@ jobs:
 
       - name: Start application with PM2
         run: |
-          pm2 delete perfomax-client 2>/dev/null || true
+          pm2 delete vships-client 2>/dev/null || true
           pm2 start ecosystem.config.js
           pm2 save
 
-          echo "Application started on port 4000"
+          echo "Application started on port 4001"
 
       - name: Health check
         run: |
           sleep 10
-          pm2 status perfomax-client
-          pm2 logs perfomax-client --lines 20 --nostream || true
+          pm2 status vships-client
+          pm2 logs vships-client --lines 20 --nostream || true
 
       - name: Cleanup
         run: |
-          pm2 flush perfomax-client || true
+          pm2 flush vships-client || true

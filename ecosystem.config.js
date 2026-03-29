@@ -1,10 +1,10 @@
 module.exports = {
   apps: [
     {
-      name: 'perfomax-client',
+      name: 'vships-client',
       script: 'node_modules/next/dist/bin/next',
       args: 'start',
-      cwd: '/home/deploy/actions-runner/_work/nura_client/nura_client',
+      cwd: '/home/deploy/actions-runner-vships/_work/vships_ui/vships_ui',
       exec_mode: 'fork',
       instances: 1,
       autorestart: true,
@@ -12,7 +12,7 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
-        PORT: 4000,
+        PORT: 4001,
       },
     },
   ],
