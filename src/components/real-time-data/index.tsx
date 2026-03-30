@@ -1,12 +1,7 @@
 'use client';
 
 import { useSocketData } from '@/app/shared/hooks/useSocket';
-import {
-  computeGKWH,
-  FUEL_GAUGE_MAX,
-  RPM_GAUGE_MAX,
-  type EngineMonitorData,
-} from '@/data/nura/engine-data';
+import { RPM_GAUGE_MAX, type EngineMonitorData } from '@/data/nura/engine-data';
 import { useVesselAlarmData, useVesselEngineData } from '@/hooks/use-api-data';
 import {
   selectedEngineAtom,
@@ -37,6 +32,7 @@ function applyLiveData(
   const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
   const liveLoad = live.engine_load ?? engine.gauge.engine_load;
   const liveFuelCons = live.fuel_cons ?? engine.gauge.fuel_cons;
+  const liveLoadKw = live.load_kw ?? engine.gauge.load_kw;
 
   // FM Cons (kg/h) = fuel_cons (L/h) × 0.85, FM In = FM Cons + FM Out
   const fmCons = liveFuelCons * 0.85;
@@ -49,6 +45,7 @@ function applyLiveData(
       engine_rpm: liveRpm,
       engine_load: liveLoad,
       fuel_cons: liveFuelCons,
+      load_kw: liveLoadKw,
     },
     flowMeter: {
       fm_in: fmIn,
@@ -153,7 +150,8 @@ function EngineGroup({
     );
   }
 
-  const gkwh = computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
+  const loadKw = engine.gauge.load_kw ?? 0;
+  const LOAD_KW_MAX = 3000;
 
   return (
     <div
@@ -178,15 +176,14 @@ function EngineGroup({
           unit="RPM"
           className="border-0"
         />
-        {/* Fuel meter */}
+        {/* Load kW meter */}
         <SpeedMeter
           bare
           size={size}
-          value={gkwh}
-          max={FUEL_GAUGE_MAX}
-          min={140}
-          centerLabel={`${gkwh}`}
-          unit="g/Kwh"
+          value={loadKw}
+          max={LOAD_KW_MAX}
+          centerLabel={`${loadKw.toFixed(0)}`}
+          unit="kW"
           fillColor="#00858D"
           className={cn('border-0', className2)}
         />

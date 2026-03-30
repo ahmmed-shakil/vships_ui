@@ -7,8 +7,8 @@ import { Text } from 'rizzui/typography';
 
 // ─── Gauge max values ────────────────────────────────────────────────────────
 
-const LUBEOIL_PRESS_MAX = 10; // bar
-const LUBEOIL_TEMP_MAX = 250; // °C
+const FUEL_OIL_PRESS_MAX = 5; // bar
+const FUEL_OIL_TEMP_MAX = 150; // °C
 const COOLANT_PRESS_MAX = 5; // bar
 const COOLANT_TEMP_MAX = 120; // °C
 
@@ -72,7 +72,6 @@ export default function EngineDetailView({
   const socketKey = engine.id.toUpperCase();
   const live =
     latestDG[socketKey] ?? latestME[socketKey] ?? latestAE[socketKey];
-  // console.log(`Socket Update for ${socketKey}:`, live, latestDG, latestME, latestAE);
 
   if (live) {
     engine = {
@@ -92,6 +91,7 @@ export default function EngineDetailView({
             lt_coolant_press:
               live.lt_coolant_press ?? engine.detail.lt_coolant_press,
             fuel_oil_press: live.fuel_oil_press ?? engine.detail.fuel_oil_press,
+            fuel_oil_temp: live.fuel_oil_temp ?? engine.detail.fuel_oil_temp,
             start_air_press:
               live.start_air_press ?? engine.detail.start_air_press,
             batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
@@ -107,6 +107,7 @@ export default function EngineDetailView({
             coolant_temp: live.coolant_temp ?? 0,
             lt_coolant_press: live.lt_coolant_press ?? 0,
             fuel_oil_press: live.fuel_oil_press ?? 0,
+            fuel_oil_temp: live.fuel_oil_temp ?? 0,
             start_air_press: live.start_air_press ?? 0,
             batt_volt: live.Batt_volt ?? 0,
             exhgas_temp_left: live.exhgas_temp_left ?? 0,
@@ -122,6 +123,7 @@ export default function EngineDetailView({
     coolant_temp: 0,
     lt_coolant_press: 0,
     fuel_oil_press: 0,
+    fuel_oil_temp: 0,
     start_air_press: 0,
     batt_volt: 0,
     exhgas_temp_left: 0,
@@ -137,7 +139,7 @@ export default function EngineDetailView({
 
       {/* Section labels — centered above the gauge cluster */}
       <div className="mx-auto flex justify-between" style={{ maxWidth: 500 }}>
-        <h6 className="text-sm font-semibold">Lube Oil</h6>
+        <h6 className="text-sm font-semibold">Fuel Oil</h6>
         <h6 className="text-sm font-semibold">Coolant</h6>
       </div>
 
@@ -150,7 +152,7 @@ export default function EngineDetailView({
         - z-index layers them correctly
       */}
       <div className="flex w-full items-center justify-center">
-        {/* ─ Outer left: Lube Oil Pressure (sm, clipped right) ─ */}
+        {/* ─ Outer left: Fuel Oil Pressure (sm, clipped right) ─ */}
         <div
           style={{
             width: 280,
@@ -165,16 +167,16 @@ export default function EngineDetailView({
           <SpeedMeter
             bare
             size="default"
-            value={d.lubeoil_press}
-            max={LUBEOIL_PRESS_MAX}
-            centerLabel={`${Number(d.lubeoil_press).toFixed(1)}`}
+            value={d.fuel_oil_press}
+            max={FUEL_OIL_PRESS_MAX}
+            centerLabel={`${Number(d.fuel_oil_press).toFixed(2)}`}
             unit="bar"
             fillColor="#6366F1"
             className="border-0"
           />
         </div>
 
-        {/* ─ Inner left: Lube Oil Temp (default, clipped right) ─ */}
+        {/* ─ Inner left: Fuel Oil Temp (default, clipped right) ─ */}
         <div
           style={{
             width: 280,
@@ -187,9 +189,9 @@ export default function EngineDetailView({
         >
           <SpeedMeter
             bare
-            value={d.lubeoil_temp}
-            max={LUBEOIL_TEMP_MAX}
-            centerLabel={`${Number(d.lubeoil_temp).toFixed(1)}`}
+            value={d.fuel_oil_temp}
+            max={FUEL_OIL_TEMP_MAX}
+            centerLabel={`${Number(d.fuel_oil_temp).toFixed(1)}`}
             unit="°C"
             fillColor="#8B5CF6"
             className="border-0"

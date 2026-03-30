@@ -3,13 +3,7 @@
 import { useSocketData } from '@/app/shared/hooks/useSocket';
 import WidgetCard from '@/components/cards/widget-card';
 import SpeedMeter from '@/components/speed-meter/speed-meter';
-import {
-  computeGKWH,
-  computeKW,
-  FUEL_GAUGE_MAX,
-  RPM_GAUGE_MAX,
-  type EngineMonitorData,
-} from '@/data/nura/engine-data';
+import { RPM_GAUGE_MAX, type EngineMonitorData } from '@/data/nura/engine-data';
 import type { Ship } from '@/data/nura/ships';
 import { useChartData, useVesselEngineData } from '@/hooks/use-api-data';
 import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
@@ -77,9 +71,10 @@ function StatBadge({
 
 // ─── Engine Monitor Card ─────────────────────────────────────────────────────
 
+const LOAD_KW_MAX = 3000;
+
 function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
-  const kw = computeKW(engine.gauge.engine_load);
-  const gkwh = computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
+  const loadKw = engine.gauge.load_kw ?? 0;
 
   return (
     <WidgetCard
@@ -99,46 +94,31 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
           unit="RPM"
           gaugeHeight={220}
         />
-        {/* <div className="-mt-20 flex items-center justify-center gap-6">
-          <div className="text-center">
-            <span className="text-xs text-muted-foreground">
-              {engine.label}
-            </span>
-          </div>
-        </div> */}
         <div className="mt-1 flex items-center justify-center">
           <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
-            {kw}
+            {engine.gauge.engine_rpm.toFixed(0)}
           </span>
-          <span className="ml-2 text-xs text-muted-foreground">kw</span>
+          <span className="ml-2 text-xs text-muted-foreground">RPM</span>
         </div>
       </div>
 
-      {/* Fuel Gauge */}
+      {/* Load kW Gauge */}
       <div className="mt-4">
         <SpeedMeter
           bare
           title={engine.label}
-          value={gkwh}
-          max={FUEL_GAUGE_MAX}
-          min={140}
-          centerLabel={`${gkwh}`}
-          unit="g/Kwh"
+          value={loadKw}
+          max={LOAD_KW_MAX}
+          centerLabel={`${loadKw.toFixed(0)}`}
+          unit="kW"
           fillColor="#00858D"
           gaugeHeight={220}
         />
-        {/* <div className="-mt-20 flex items-center justify-center gap-6">
-          <div className="text-center">
-            <span className="text-xs text-muted-foreground">
-              {engine.label}
-            </span>
-          </div>
-        </div> */}
         <div className="mt-1 flex items-center justify-center">
           <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
-            {engine.gauge.fuel_cons.toFixed(1)}
+            {loadKw.toFixed(0)}
           </span>
-          <span className="ml-2 text-xs text-muted-foreground">L/H</span>
+          <span className="ml-2 text-xs text-muted-foreground">kW</span>
         </div>
       </div>
 
@@ -394,6 +374,10 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
 
     return {
       ...engine,
+      gauge: {
+        ...engine.gauge,
+        load_kw: live.load_kw ?? engine.gauge.load_kw,
+      },
       flowMeter: {
         fm_in: fmIn,
         fm_cons: fmCons,
