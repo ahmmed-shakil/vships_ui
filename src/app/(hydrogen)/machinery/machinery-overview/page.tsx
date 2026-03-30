@@ -124,9 +124,24 @@ export default function MachineryOverviewPage() {
 
   const cards = apiEngines.map(toCardProps);
 
-  // Group cards into rows
-  const engineCards = cards.filter((item) => item.engineValue.startsWith('me'));
+  const mainEngineCards = cards.filter((item) =>
+    item.engineValue.startsWith('me')
+  );
+  const dgCards = cards.filter((item) => item.engineValue.startsWith('dg'));
   const gensetCards = cards.filter((item) => item.engineValue.startsWith('ae'));
+  const otherCards = cards.filter(
+    (item) =>
+      !item.engineValue.startsWith('me') &&
+      !item.engineValue.startsWith('dg') &&
+      !item.engineValue.startsWith('ae')
+  );
+  const auxiliaryRow = [...gensetCards, ...otherCards];
+
+  const cardRows = [
+    { key: 'me' as const, items: mainEngineCards },
+    { key: 'dg' as const, items: dgCards },
+    { key: 'aux' as const, items: auxiliaryRow },
+  ].filter((row) => row.items.length > 0);
 
   const handleCardClick = (item: (typeof cards)[number]) => {
     const match = engineData.find((e) => e.value === item.engineValue);
@@ -148,19 +163,19 @@ export default function MachineryOverviewPage() {
     </PerfomaxCard>
   );
 
+  const gridClass =
+    'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4';
+
   return (
     <Box className="pt-5 @container/pd">
-      {/* Row 1: Engines */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {engineCards.map(renderCard)}
-      </div>
-
-      {/* Row 2: Gen Sets */}
-      {gensetCards.length > 0 && (
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {gensetCards.map(renderCard)}
+      {cardRows.map((row, index) => (
+        <div
+          key={row.key}
+          className={`${gridClass}${index > 0 ? ' mt-4' : ''}`}
+        >
+          {row.items.map(renderCard)}
         </div>
-      )}
+      ))}
     </Box>
   );
 }
