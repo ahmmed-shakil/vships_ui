@@ -7,10 +7,10 @@ import { Text } from 'rizzui/typography';
 
 // ─── Gauge max values ────────────────────────────────────────────────────────
 
-const LUBEOIL_PRESS_MAX = 1250; // kPa
+const LUBEOIL_PRESS_MAX = 10; // bar
 const LUBEOIL_TEMP_MAX = 250; // °C
-const COOLANT_PRESS_MAX = 500; // kPa
-const COOLANT_TEMP_MAX = 360; // °C
+const COOLANT_PRESS_MAX = 5; // bar
+const COOLANT_TEMP_MAX = 120; // °C
 
 // ─── Stat card ───────────────────────────────────────────────────────────────
 
@@ -165,7 +165,7 @@ export default function EngineDetailView({
             value={d.lubeoil_press}
             max={LUBEOIL_PRESS_MAX}
             centerLabel={`${Number(d.lubeoil_press).toFixed(1)}`}
-            unit="kPa"
+            unit="bar"
             fillColor="#6366F1"
             className="border-0"
           />
@@ -248,8 +248,8 @@ export default function EngineDetailView({
             reverseFill
             value={d.coolant_press}
             max={COOLANT_PRESS_MAX}
-            centerLabel={`${Number(d.coolant_press).toFixed(1)}`}
-            unit="kPa"
+            centerLabel={`${Number(d.coolant_press).toFixed(2)}`}
+            unit="bar"
             fillColor="#06B6D4"
             className="border-0"
           />
@@ -310,7 +310,7 @@ export default function EngineDetailView({
         />
         <StatCard
           label="Starting Battery"
-          unit="Volt. (VDC)"
+          unit="Volt. (V)"
           value={d.batt_volt.toFixed(1)}
         />
       </div>

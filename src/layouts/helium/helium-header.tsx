@@ -77,7 +77,7 @@ export default function Header() {
   return (
     <header
       className={
-        'sticky top-0 z-[9999] flex items-center bg-gray-0/80 px-4 py-4 backdrop-blur-xl dark:bg-gray-50/50 md:px-5 lg:px-6 xl:-ms-1.5 xl:pl-4 2xl:-ms-0 2xl:py-6 2xl:pl-6 3xl:px-8 3xl:pl-6 4xl:px-10 4xl:pl-9'
+        'sticky top-0 z-[999] flex items-center bg-gray-0/80 px-4 py-4 backdrop-blur-xl dark:bg-gray-50/50 md:px-5 lg:px-6 xl:-ms-1.5 xl:pl-4 2xl:-ms-0 2xl:py-6 2xl:pl-6 3xl:px-8 3xl:pl-6 4xl:px-10 4xl:pl-9'
       }
     >
       <div
@@ -108,31 +108,31 @@ export default function Header() {
       </div>
 
       {isConditionMonitoring && (
-        <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
+        <div className="mx-4 flex-1 2xl:mx-10">
           <ConditionMonitoringHeaderSelectors />
         </div>
       )}
 
       {isMachineryOverview && (
-        <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
+        <div className="mx-4 flex-1 2xl:mx-10">
           <MachineryOverviewHeaderSelectors />
         </div>
       )}
 
       {isAlarmOverview && (
-        <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
+        <div className="mx-4 flex-1 2xl:mx-10">
           <AlarmOverviewHeaderSelectors />
         </div>
       )}
 
       {isRealTimeData && (
-        <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
+        <div className="mx-4 flex-1 2xl:mx-10">
           <RealTimeDataHeaderSelectors />
         </div>
       )}
 
       {isOperationOverview && (
-        <div className="mx-4 flex-1 overflow-x-auto 2xl:mx-10">
+        <div className="mx-4 flex-1 2xl:mx-10">
           <OperationOverviewHeaderSelectors />
         </div>
       )}
