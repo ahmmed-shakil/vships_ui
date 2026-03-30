@@ -75,7 +75,7 @@ async function tryRefresh(): Promise<boolean> {
 }
 
 /** Deduplicated refresh — prevents multiple concurrent refresh calls */
-function refreshAccessToken(): Promise<boolean> {
+export function refreshAccessToken(): Promise<boolean> {
   if (!refreshPromise) {
     refreshPromise = tryRefresh().finally(() => {
       refreshPromise = null;
