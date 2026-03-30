@@ -83,7 +83,7 @@ export async function fetchEmissionZones(): Promise<EmissionZone[]> {
 export async function fetchVesselEngines(
   vesselId: number
 ): Promise<VesselEnginesResponse> {
-  return apiFetch<VesselEnginesResponse>(`/api/engines?vessel_id=${vesselId}`);
+  return apiFetch<VesselEnginesResponse>(`/api/vessels/${vesselId}/engines`);
 }
 
 // ─── Charts ───────────────────────────────────────────────────────────────────

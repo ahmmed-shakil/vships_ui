@@ -391,8 +391,11 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
       ? engine.gauge.fuel_cons
       : (live.fuel_cons ?? engine.gauge.fuel_cons);
 
-    // FM Cons = fuel_cons × 0.8, FM In = FM Cons + FM Out
-    const fmCons = liveFuelCons * 0.8;
+    const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
+    const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
+
+    // FM Cons (kg/h) = fuel_cons (L/h) × 0.85, FM In = FM Cons + FM Out
+    const fmCons = liveFuelCons * 0.85;
     const fmOut = engine.flowMeter.fm_out;
     const fmIn = fmCons + fmOut;
 
@@ -407,6 +410,10 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
         fm_in: fmIn,
         fm_cons: fmCons,
         fm_out: fmOut,
+      },
+      totals: {
+        total_fuel: liveTotalFuel,
+        running_hours: liveRunHrs,
       },
     };
   });

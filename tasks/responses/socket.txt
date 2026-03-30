@@ -1,0 +1,5 @@
+socket.on('DG', (data) => {
+  console.log(data.engineId);  // "DG1", "DG2", "DG3", "DG4", "DG5", "DG6"
+  console.log(data.fuel_cons);  // Fuel consumption
+  console.log(data.engine_rpm); // RPM
+});

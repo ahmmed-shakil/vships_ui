@@ -39,12 +39,22 @@ function applyLiveData(
   const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
   const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
 
+  // FM Cons (kg/h) = fuel_cons (L/h) × 0.85, FM In = FM Cons + FM Out
+  const fmCons = liveFuelCons * 0.85;
+  const fmOut = engine.flowMeter.fm_out;
+  const fmIn = fmCons + fmOut;
+
   return {
     ...engine,
     gauge: {
       engine_rpm: liveRpm,
       engine_load: liveLoad,
       fuel_cons: liveFuelCons,
+    },
+    flowMeter: {
+      fm_in: fmIn,
+      fm_cons: fmCons,
+      fm_out: fmOut,
     },
     totals: {
       running_hours: liveRunHrs,
