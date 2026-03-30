@@ -52,4 +52,6 @@ next-env.d.ts
 
 tsconfig.tsbuildinfo
 
-/task
+# /tasks
+# /tasks/
+# /task/*

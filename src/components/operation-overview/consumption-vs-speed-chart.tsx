@@ -21,6 +21,12 @@ const ENGINE_COLORS: Record<string, string> = {
   me2: '#10b981',
   me3: '#eab308',
   me4: '#f97316',
+  dg1: '#5a5fd7',
+  dg2: '#10b981',
+  dg3: '#eab308',
+  dg4: '#f97316',
+  dg5: '#0ea5e9',
+  dg6: '#ec4899',
 };
 
 const ENGINE_LABELS: Record<string, string> = {
@@ -28,6 +34,12 @@ const ENGINE_LABELS: Record<string, string> = {
   me2: 'ME STBD',
   me3: 'ME CENTER',
   me4: 'AUX 1',
+  dg1: 'DG 1',
+  dg2: 'DG 2',
+  dg3: 'DG 3',
+  dg4: 'DG 4',
+  dg5: 'DG 5',
+  dg6: 'DG 6',
 };
 
 interface Props {
@@ -43,7 +55,16 @@ export default function ConsumptionVsSpeedChart({
 }: Props) {
   const isMediumScreen = useMedia('(max-width: 1200px)', false);
   const isTablet = useMedia('(max-width: 800px)', false);
-  const engineKeys = ['me1', 'me2', 'me3', 'me4'].slice(0, engineCount);
+  
+  const parsedKeys = data.length > 0 
+    ? Object.keys(data[0]).filter((k) => k !== 'time' && k !== 'speed') 
+    : [];
+
+  const fallbackKeys = ['dg1', 'dg2', 'dg3', 'dg4', 'dg5', 'dg6', 'me1', 'me2', 'me3', 'me4'];
+
+  const engineKeys = parsedKeys.length > 0
+    ? parsedKeys
+    : fallbackKeys.slice(0, engineCount);
 
   // Ensure axes render even when there's no data
   const chartData =

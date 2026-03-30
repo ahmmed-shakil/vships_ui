@@ -1,0 +1,28 @@
+{
+    "engines": [
+        {
+            "label": "DG1",
+            "value": "dg1"
+        },
+        {
+            "label": "DG2",
+            "value": "dg2"
+        },
+        {
+            "label": "DG3",
+            "value": "dg3"
+        },
+        {
+            "label": "DG4",
+            "value": "dg4"
+        },
+        {
+            "label": "DG5",
+            "value": "dg5"
+        },
+        {
+            "label": "DG6",
+            "value": "dg6"
+        }
+    ]
+}

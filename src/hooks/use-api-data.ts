@@ -218,9 +218,17 @@ export function useVesselEngineData(vesselId: number) {
             })
           );
 
-        // Separate by prefix: me* → main engines, ae* → gensets
-        setMainEngines(engines.filter((e) => e.id.startsWith('me')));
-        setGensets(engines.filter((e) => e.id.startsWith('ae')));
+        // Separate by prefix: me* or dg* → main engines, ae* → gensets
+        setMainEngines(
+          engines.filter(
+            (e) =>
+              e.id.toLowerCase().startsWith('me') ||
+              e.id.toLowerCase().startsWith('dg')
+          )
+        );
+        setGensets(
+          engines.filter((e) => e.id.toLowerCase().startsWith('ae'))
+        );
       })
       .catch(() => {
         // If API fails, show no data instead of mock data
