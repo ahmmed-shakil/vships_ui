@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { io, type Socket } from 'socket.io-client';
+import io from 'socket.io-client';
+
+type Socket = any; // v2 types are different, using any for simplicity in this hook
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||

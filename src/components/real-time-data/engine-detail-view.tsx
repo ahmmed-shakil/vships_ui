@@ -71,6 +71,8 @@ export default function EngineDetailView({
   // Overlay live socket data
   const socketKey = engine.id.toUpperCase();
   const live = latestDG[socketKey] ?? latestME[socketKey] ?? latestAE[socketKey];
+  console.log(`Socket Update for ${socketKey}:`, live, latestDG, latestME, latestAE);
+
   if (live) {
     engine = {
       ...engine,
@@ -81,26 +83,32 @@ export default function EngineDetailView({
       },
       detail: engine.detail
         ? {
-            ...engine.detail,
-            lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-            lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-            coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-            coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-            batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-            exhgas_temp_left:
-              live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-            exhgas_temp_right:
-              live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-          }
+          ...engine.detail,
+          lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+          lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+          coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+          coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+          lt_coolant_press: live.lt_coolant_press ?? engine.detail.lt_coolant_press,
+          fuel_oil_press: live.fuel_oil_press ?? engine.detail.fuel_oil_press,
+          start_air_press: live.start_air_press ?? engine.detail.start_air_press,
+          batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+          exhgas_temp_left:
+            live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+          exhgas_temp_right:
+            live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+        }
         : {
-            lubeoil_press: live.lubeoil_press ?? 0,
-            lubeoil_temp: live.lubeoil_temp ?? 0,
-            coolant_press: live.coolant_press ?? 0,
-            coolant_temp: live.coolant_temp ?? 0,
-            batt_volt: live.Batt_volt ?? 0,
-            exhgas_temp_left: live.exhgas_temp_left ?? 0,
-            exhgas_temp_right: live.exhgas_temp_right ?? 0,
-          },
+          lubeoil_press: live.lubeoil_press ?? 0,
+          lubeoil_temp: live.lubeoil_temp ?? 0,
+          coolant_press: live.coolant_press ?? 0,
+          coolant_temp: live.coolant_temp ?? 0,
+          lt_coolant_press: live.lt_coolant_press ?? 0,
+          fuel_oil_press: live.fuel_oil_press ?? 0,
+          start_air_press: live.start_air_press ?? 0,
+          batt_volt: live.Batt_volt ?? 0,
+          exhgas_temp_left: live.exhgas_temp_left ?? 0,
+          exhgas_temp_right: live.exhgas_temp_right ?? 0,
+        },
     };
   }
 
@@ -274,7 +282,7 @@ export default function EngineDetailView({
       </div>
 
       {/* Stat cards */}
-      <div className="mx-auto -mt-8 grid grid-cols-4 gap-4 px-4 overflow-x-auto">
+      <div className="mx-auto -mt-8 grid grid-cols-3 lg:grid-cols-6 gap-4 px-4 overflow-x-auto">
         <StatCard
           label="Engine Load"
           unit="(%)"

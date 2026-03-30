@@ -411,8 +411,8 @@ export default function WindyMap({
               const pos = vesselPositions[vessel.vessel_id];
               if (!pos) return null;
 
-              const color = colorByRecency(vessel.position.timestamp);
-              const diff = Date.now() - vessel.position.timestamp * 1000;
+              const color = colorByRecency(vessel.online);
+              const diff = Date.now() - vessel.online * 1000;
               const shouldPulse = diff < 3 * 60 * 60 * 1000;
 
               const totalAlarms =
@@ -511,7 +511,7 @@ export default function WindyMap({
                             Last data received
                           </span>
                           <span className="font-semibold text-gray-400">
-                            2 mins ago
+                            {formatDistanceToNowStrict(new Date(vessel.online * 1000))} ago
                           </span>
                         </div>
                       </div>
@@ -564,13 +564,9 @@ export default function WindyMap({
                           <div
                             className="relative flex h-10 w-10 items-center justify-center rounded-full border"
                             style={{
-                              backgroundColor: colorByRecency(
-                                vessel.position.timestamp
-                              ),
-                              borderColor: colorByRecency(
-                                vessel.position.timestamp
-                              ),
-                              boxShadow: `0 0 10px ${colorByRecency(vessel.position.timestamp)}50`,
+                              backgroundColor: colorByRecency(vessel.online),
+                              borderColor: colorByRecency(vessel.online),
+                              boxShadow: `0 0 10px ${colorByRecency(vessel.online)}50`,
                             }}
                           >
                             <PiNavigationArrow

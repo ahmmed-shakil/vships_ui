@@ -98,7 +98,7 @@
     "rizzui": "^1.0.1",
     "sharp": "^0.33.5",
     "simplebar-react": "^3.3.2",
-    "socket.io-client": "^4.8.3",
+    "socket.io-client": "^2.3.0",
     "swiper": "^11.2.6",
     "tailwind-merge": "^3.0.2",
     "typescript": "5.8.2",

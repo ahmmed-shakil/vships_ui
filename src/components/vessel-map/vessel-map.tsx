@@ -5,6 +5,7 @@ import {
   vesselAlarmData as fallbackAlarmData,
   type AlarmEntry,
 } from '@/data/nura/alarm-data';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { emissionZones as fallbackEmissionZones } from '@/data/nura/emission-zones';
 import type { FleetVessel } from '@/data/nura/fleet-data';
 import { engineData, shipData } from '@/data/nura/ships';
@@ -107,10 +108,10 @@ function colorByRecency(timestampMs: number): string {
 function createVesselIcon(
   name: string,
   direction: number,
-  timestampMs: number
+  onlineMs: number
 ) {
-  const color = colorByRecency(timestampMs);
-  const diff = Date.now() - timestampMs;
+  const color = colorByRecency(onlineMs);
+  const diff = Date.now() - onlineMs;
   const shouldPulse = diff < 3 * 60 * 60 * 1000;
 
   return L.divIcon({
@@ -456,7 +457,7 @@ export default function VesselMap({
             <Marker
               key={idx}
               position={v.position}
-              icon={createVesselIcon(v.name, v.direction, v.timestamp)}
+              icon={createVesselIcon(v.name, v.direction, v.online)}
               eventHandlers={{
                 mouseover: (e) => e.target.openPopup(),
               }}
@@ -494,9 +495,8 @@ export default function VesselMap({
                       <span className="text-muted-foreground">
                         Last data received
                       </span>
-                      {/* <span className="font-semibold text-muted-foreground">{formatDistanceToNowStrict(new Date(v.timestamp))} ago</span> */}
                       <span className="font-semibold text-muted-foreground">
-                        2 mins ago
+                        {formatDistanceToNowStrict(new Date(v.online))} ago
                       </span>
                     </div>
                   </div>
@@ -549,9 +549,9 @@ export default function VesselMap({
                       <div
                         className="relative flex h-10 w-10 items-center justify-center rounded-full border"
                         style={{
-                          backgroundColor: colorByRecency(v.timestamp),
-                          borderColor: colorByRecency(v.timestamp),
-                          boxShadow: `0 0 10px ${colorByRecency(v.timestamp)}50`,
+                          backgroundColor: colorByRecency(v.online),
+                          borderColor: colorByRecency(v.online),
+                          boxShadow: `0 0 10px ${colorByRecency(v.online)}50`,
                         }}
                       >
                         <PiNavigationArrow
