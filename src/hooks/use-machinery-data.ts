@@ -23,6 +23,7 @@ import type {
   SfocResponse,
   SparePartEntry,
   AlarmWithUnit,
+  LatestSensorDataResponse,
 } from '@/types/api';
 
 // ─── Internal: sync NextAuth token to api-client ─────────────────────────────
@@ -523,4 +524,44 @@ export function useAlarmsWithSummary(params?: {
   }, [token, vesselId, paramsKey]);
 
   return { alarms, summary, isLoading };
+}
+
+// ─── Latest Sensor Values ───────────────────────────────────────────────────
+
+export function useLatestSensorValues() {
+  const token = useApiToken();
+  const selectedShip = useAtomValue(selectedShipAtom);
+
+  const [response, setResponse] = useState<LatestSensorDataResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const vesselId = selectedShip?.id;
+
+  useEffect(() => {
+    setResponse(null);
+    setIsLoading(true);
+    if (!token || !vesselId) {
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    api
+      .fetchLatestSensorValues(vesselId)
+      .then((res: LatestSensorDataResponse) => {
+        if (!cancelled) setResponse(res);
+      })
+      .catch(() => {
+        if (!cancelled) setResponse(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, vesselId]);
+
+  return { response, isLoading };
 }

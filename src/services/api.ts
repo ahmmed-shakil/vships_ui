@@ -22,6 +22,7 @@ import type {
   Ship,
   SparePartsResponse,
   VesselEnginesResponse,
+  LatestSensorDataResponse,
 } from '@/types/api';
 
 // ─── Auth (server-side only — called from NextAuth authorize) ─────────────────
@@ -287,5 +288,15 @@ export async function fetchSpareParts(
   const qs = engine && engine !== 'all' ? `?engine=${engine}` : '';
   return apiFetch<SparePartsResponse>(
     `/api/vessels/${vesselId}/condition-monitoring/spare-parts${qs}`
+  );
+}
+
+// ─── Latest Sensor Values ───────────────────────────────────────────────────
+
+export async function fetchLatestSensorValues(
+  vesselId: number
+): Promise<LatestSensorDataResponse> {
+  return apiFetch<LatestSensorDataResponse>(
+    `/api/vessels/${vesselId}/latest-sensor-values`
   );
 }

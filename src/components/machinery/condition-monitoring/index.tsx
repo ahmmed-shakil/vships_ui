@@ -10,6 +10,7 @@ import {
   useSensorDataApi,
   useSfocScatter,
   useSpareParts,
+  useLatestSensorValues,
 } from '@/hooks/use-machinery-data';
 import {
   selectedEngineAtom,
@@ -59,79 +60,80 @@ const SENSOR_CHART_ROWS: {
   series: SensorSeries[];
   thresholds?: { min?: number; max?: number };
 }[] = [
-  {
-    title: 'Turbocharger RPM',
-    yAxisLabel: 'TC RPM',
-    series: [{ dataKey: 'tc_rpm', label: 'TC RPM' }],
-    thresholds: { min: 25, max: 30 },
-  },
-  {
-    title: 'Engine RPM',
-    yAxisLabel: 'RPM',
-    series: [{ dataKey: 'rpm', label: 'RPM' }],
-    thresholds: { min: 100, max: 700 },
-  },
-  {
-    title: 'Fuel Performance Index',
-    yAxisLabel: 'FPI',
-    series: [{ dataKey: 'fpi', label: 'FPI' }],
-    thresholds: { min: 5, max: 40 },
-  },
-  {
-    title: 'Exhaust Gas Temperatures (Cylinders)',
-    yAxisLabel: 'EG Temp (°C)',
-    series: [
-      { dataKey: 'eg_temp_1', label: 'Cyl 1', color: '#3B82F6' },
-      { dataKey: 'eg_temp_2', label: 'Cyl 2', color: '#EF4444' },
-      { dataKey: 'eg_temp_3', label: 'Cyl 3', color: '#22C55E' },
-      { dataKey: 'eg_temp_4', label: 'Cyl 4', color: '#F59E0B' },
-      { dataKey: 'eg_temp_5', label: 'Cyl 5', color: '#A855F7' },
-      { dataKey: 'eg_temp_6', label: 'Cyl 6', color: '#EC4899' },
-      { dataKey: 'eg_temp_7', label: 'Cyl 7', color: '#06B6D4' },
-      { dataKey: 'eg_temp_8', label: 'Cyl 8', color: '#F97316' },
-      { dataKey: 'eg_temp_mean', label: 'Mean', color: '#FFFFFF' },
-    ],
-    thresholds: { min: 100, max: 350 },
-  },
-  {
-    title: 'Exhaust Gas Temp (Turbo Out / Manifold)',
-    yAxisLabel: 'Temp (°C)',
-    series: [
-      {
-        dataKey: 'eg_temp_out_turbo',
-        label: 'EG Temp Out Turbo',
-        color: '#A855F7',
-      },
-      { dataKey: 'exh_gas_temp', label: 'Exh Gas Temp', color: '#EC4899' },
-    ],
-    thresholds: { min: 100, max: 400 },
-  },
-  {
-    title: 'Charge Air Pressure',
-    yAxisLabel: 'Pressure (bar)',
-    series: [{ dataKey: 'chargeair_press', label: 'Charge Air Press' }],
-    thresholds: { min: 0, max: 15 },
-  },
-  {
-    title: 'HT Cooling Water Temperature',
-    yAxisLabel: 'Temp (°C)',
-    series: [
-      { dataKey: 'ht_cw_temp', label: 'HT CW Temp', color: '#06B6D4' },
-      {
-        dataKey: 'ht_cw_inlet_temp',
-        label: 'HT CW Inlet Temp',
-        color: '#F59E0B',
-      },
-    ],
-    thresholds: { min: 1000, max: 2800 },
-  },
-  {
-    title: 'Lube Oil Temperature',
-    yAxisLabel: 'Temp (°C)',
-    series: [{ dataKey: 'lo_temp', label: 'LO Temp' }],
-    thresholds: { min: 40, max: 70 },
-  },
-];
+    {
+      title: 'Turbocharger RPM',
+      yAxisLabel: 'TC RPM',
+      series: [{ dataKey: 'tc_rpm', label: 'TC RPM' }],
+      thresholds: { min: 25, max: 30 },
+    },
+    {
+      title: 'Engine RPM',
+      yAxisLabel: 'RPM',
+      series: [{ dataKey: 'rpm', label: 'RPM' }],
+      thresholds: { min: 100, max: 700 },
+    },
+    {
+      title: 'Fuel Performance Index',
+      yAxisLabel: 'FPI',
+      series: [{ dataKey: 'fpi', label: 'FPI' }],
+      thresholds: { min: 5, max: 40 },
+    },
+    {
+      title: 'Exhaust Gas Temperatures (Cylinders)',
+      yAxisLabel: 'EG Temp (°C)',
+      series: [
+        { dataKey: 'eg_temp_1', label: 'Cyl 1', color: '#3B82F6' },
+        { dataKey: 'eg_temp_2', label: 'Cyl 2', color: '#EF4444' },
+        { dataKey: 'eg_temp_3', label: 'Cyl 3', color: '#22C55E' },
+        { dataKey: 'eg_temp_4', label: 'Cyl 4', color: '#F59E0B' },
+        { dataKey: 'eg_temp_5', label: 'Cyl 5', color: '#A855F7' },
+        { dataKey: 'eg_temp_6', label: 'Cyl 6', color: '#EC4899' },
+        { dataKey: 'eg_temp_7', label: 'Cyl 7', color: '#06B6D4' },
+        { dataKey: 'eg_temp_8', label: 'Cyl 8', color: '#F97316' },
+        { dataKey: 'eg_temp_9', label: 'Cyl 9', color: '#14B8A6' },
+        { dataKey: 'eg_temp_mean', label: 'Mean', color: '#FFFFFF' },
+      ],
+      thresholds: { min: 100, max: 350 },
+    },
+    {
+      title: 'Exhaust Gas Temp (Turbo Out / Manifold)',
+      yAxisLabel: 'Temp (°C)',
+      series: [
+        {
+          dataKey: 'eg_temp_out_turbo',
+          label: 'EG Temp Out Turbo',
+          color: '#A855F7',
+        },
+        { dataKey: 'exh_gas_temp', label: 'Exh Gas Temp', color: '#EC4899' },
+      ],
+      thresholds: { min: 100, max: 400 },
+    },
+    {
+      title: 'Charge Air Pressure',
+      yAxisLabel: 'Pressure (bar)',
+      series: [{ dataKey: 'chargeair_press', label: 'Charge Air Press' }],
+      thresholds: { min: 0, max: 15 },
+    },
+    {
+      title: 'HT Cooling Water Temperature',
+      yAxisLabel: 'Temp (°C)',
+      series: [
+        { dataKey: 'ht_cw_temp', label: 'HT CW Temp', color: '#06B6D4' },
+        {
+          dataKey: 'ht_cw_inlet_temp',
+          label: 'HT CW Inlet Temp',
+          color: '#F59E0B',
+        },
+      ],
+      thresholds: { min: 1000, max: 2800 },
+    },
+    {
+      title: 'Lube Oil Temperature',
+      yAxisLabel: 'Temp (°C)',
+      series: [{ dataKey: 'lo_temp', label: 'LO Temp' }],
+      thresholds: { min: 40, max: 70 },
+    },
+  ];
 
 export default function ConditionMonitoringLayout() {
   // Read global state from atoms (selectors are in the header)
@@ -146,6 +148,8 @@ export default function ConditionMonitoringLayout() {
   const { response: fuelResponse, isLoading: fuelLoading } = useFuelRate();
   const { scores: healthScores, isLoading: healthLoading } = useHealthScores();
   const { parts: spareParts, isLoading: partsLoading } = useSpareParts();
+  const { response: latestSensorResponse, isLoading: latestSensorLoading } =
+    useLatestSensorValues();
 
   if (!selectedShip) {
     return (
@@ -158,6 +162,10 @@ export default function ConditionMonitoringLayout() {
   const engineSpecs = selectedEngine.value.startsWith('ae')
     ? { make: 'MAN 9l32/40', built: '2024', rating: '3450 ekW' }
     : { make: 'MAN 9l32/40', built: '2024', rating: '3450 ekW' };
+
+  const engineLatestData = latestSensorResponse?.data.find(
+    (d) => d.asset_id.toLowerCase() === selectedEngine.value.toLowerCase()
+  );
 
   return (
     <>
@@ -240,28 +248,28 @@ export default function ConditionMonitoringLayout() {
         >
           <div className="flex flex-1 flex-col justify-center gap-1">
             <DottedRow
-              label="Last overhaul"
-              value="12 Nov 2025"
+              label="Engine Speed"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.rpm ?? '--'} RPM`}
               className="py-1"
             />
             <DottedRow
-              label="Total running hours"
-              value="5403 hrs"
+              label="Current Load"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.load_kw ?? '--'} kW`}
               className="py-1"
             />
             <DottedRow
-              label="Period running hours"
-              value="251 hrs"
+              label="Fuel Flow (Inlet)"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.fo_flow_inlet ?? '--'} L/h`}
               className="py-1"
             />
             <DottedRow
-              label="Duration fuel consumption"
-              value="-- kg"
+              label="Charge Air Temp"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.chargeair_temp ?? '--'} °C`}
               className="py-1"
             />
             <DottedRow
-              label="Duration average load"
-              value="-- %"
+              label="Lube Oil Temp"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.lo_temp ?? '--'} °C`}
               className="py-1"
             />
           </div>
