@@ -109,6 +109,9 @@ export default function EngineDetailView({
     lubeoil_temp: 0,
     coolant_press: 0,
     coolant_temp: 0,
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     batt_volt: 0,
     exhgas_temp_left: 0,
     exhgas_temp_right: 0,
@@ -271,10 +274,7 @@ export default function EngineDetailView({
       </div>
 
       {/* Stat cards */}
-      <div
-        className="mx-auto -mt-8 grid grid-cols-3 gap-4"
-        style={{ maxWidth: '60%' }}
-      >
+      <div className="mx-auto -mt-8 grid grid-cols-4 gap-4 px-4 overflow-x-auto">
         <StatCard
           label="Engine Load"
           unit="(%)"
@@ -284,6 +284,21 @@ export default function EngineDetailView({
           label="Fuel Consumption"
           unit="Rate (l/hr)"
           value={engine.gauge.fuel_cons.toFixed(1)}
+        />
+        <StatCard
+          label="LT Coolant"
+          unit="Press. (bar)"
+          value={(d.lt_coolant_press ?? 0).toFixed(2)}
+        />
+        <StatCard
+          label="Fuel Oil"
+          unit="Press. (bar)"
+          value={(d.fuel_oil_press ?? 0).toFixed(2)}
+        />
+        <StatCard
+          label="Start Air"
+          unit="Press. (bar)"
+          value={(d.start_air_press ?? 0).toFixed(2)}
         />
         <StatCard
           label="Starting Battery"

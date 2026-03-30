@@ -32,6 +32,9 @@ export interface EngineDetailData {
   lubeoil_temp: number; // °C
   coolant_press: number; // kPa
   coolant_temp: number; // °C
+  lt_coolant_press: number; // bar
+  fuel_oil_press: number; // bar
+  start_air_press: number; // bar
   batt_volt: number; // VDC
   exhgas_temp_left: number; // °C
   exhgas_temp_right: number; // °C
@@ -462,6 +465,9 @@ export const engineMonitorData: EngineMonitorData[] = vesselEngineData[1];
 const engineDetailMap: Record<string, EngineDetailData> = {
   // Ocean Voyager
   '1:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 420,
     lubeoil_temp: 78,
     coolant_press: 185,
@@ -471,6 +477,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 345,
   },
   '1:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 410,
     lubeoil_temp: 76,
     coolant_press: 180,
@@ -480,6 +489,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 340,
   },
   '1:me3': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 0,
     lubeoil_temp: 0,
     coolant_press: 0,
@@ -489,6 +501,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 0,
   },
   '1:ae1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 350,
     lubeoil_temp: 65,
     coolant_press: 160,
@@ -498,6 +513,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 285,
   },
   '1:ae2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 340,
     lubeoil_temp: 63,
     coolant_press: 155,
@@ -509,6 +527,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
 
   // Sea Explorer
   '2:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 480,
     lubeoil_temp: 85,
     coolant_press: 200,
@@ -518,6 +539,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 385,
   },
   '2:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 465,
     lubeoil_temp: 83,
     coolant_press: 195,
@@ -527,6 +551,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 378,
   },
   '2:ae1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 360,
     lubeoil_temp: 68,
     coolant_press: 165,
@@ -536,6 +563,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 292,
   },
   '2:ae2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 355,
     lubeoil_temp: 66,
     coolant_press: 162,
@@ -547,6 +577,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
 
   // Wave Rider
   '3:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 520,
     lubeoil_temp: 92,
     coolant_press: 220,
@@ -556,6 +589,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 415,
   },
   '3:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 510,
     lubeoil_temp: 90,
     coolant_press: 215,
@@ -565,6 +601,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 408,
   },
   '3:me3': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 500,
     lubeoil_temp: 88,
     coolant_press: 210,
@@ -574,6 +613,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 403,
   },
   '3:ae1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 380,
     lubeoil_temp: 72,
     coolant_press: 175,
@@ -585,6 +627,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
 
   // Storm Chaser
   '4:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 400,
     lubeoil_temp: 74,
     coolant_press: 178,
@@ -594,6 +639,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 325,
   },
   '4:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 395,
     lubeoil_temp: 72,
     coolant_press: 175,
@@ -603,6 +651,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 320,
   },
   '4:me3': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 405,
     lubeoil_temp: 75,
     coolant_press: 180,
@@ -612,6 +663,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 328,
   },
   '4:ae1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 330,
     lubeoil_temp: 60,
     coolant_press: 150,
@@ -621,6 +675,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 268,
   },
   '4:ae2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 325,
     lubeoil_temp: 58,
     coolant_press: 148,
@@ -632,6 +689,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
 
   // Blue Horizon
   '5:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 550,
     lubeoil_temp: 96,
     coolant_press: 230,
@@ -641,6 +701,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 435,
   },
   '5:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 540,
     lubeoil_temp: 94,
     coolant_press: 225,
@@ -652,6 +715,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
 
   // Coral Navigator
   '6:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 450,
     lubeoil_temp: 80,
     coolant_press: 190,
@@ -661,6 +727,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 355,
   },
   '6:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 440,
     lubeoil_temp: 78,
     coolant_press: 185,
@@ -670,6 +739,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 350,
   },
   '6:me3': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 0,
     lubeoil_temp: 0,
     coolant_press: 0,
@@ -679,6 +751,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 0,
   },
   '6:ae1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 355,
     lubeoil_temp: 65,
     coolant_press: 162,
@@ -690,6 +765,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
 
   // Aurora Spirit
   '7:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 580,
     lubeoil_temp: 100,
     coolant_press: 240,
@@ -699,6 +777,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 455,
   },
   '7:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 570,
     lubeoil_temp: 98,
     coolant_press: 235,
@@ -708,6 +789,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 450,
   },
   '7:me3': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 555,
     lubeoil_temp: 95,
     coolant_press: 228,
@@ -717,6 +801,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 440,
   },
   '7:ae1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 400,
     lubeoil_temp: 75,
     coolant_press: 180,
@@ -726,6 +813,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 335,
   },
   '7:ae2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 395,
     lubeoil_temp: 73,
     coolant_press: 178,
@@ -737,6 +827,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
 
   // Tide Breaker
   '8:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 380,
     lubeoil_temp: 70,
     coolant_press: 170,
@@ -746,6 +839,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 305,
   },
   '8:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 375,
     lubeoil_temp: 68,
     coolant_press: 168,
@@ -757,6 +853,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
 
   // Harbor Guardian
   '9:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 500,
     lubeoil_temp: 88,
     coolant_press: 210,
@@ -766,6 +865,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 400,
   },
   '9:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 490,
     lubeoil_temp: 86,
     coolant_press: 205,
@@ -775,6 +877,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 395,
   },
   '9:me3': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 480,
     lubeoil_temp: 84,
     coolant_press: 200,
@@ -784,6 +889,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 388,
   },
   '9:ae1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 370,
     lubeoil_temp: 70,
     coolant_press: 170,
@@ -793,6 +901,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 305,
   },
   '9:ae2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 365,
     lubeoil_temp: 68,
     coolant_press: 168,
@@ -804,6 +915,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
 
   // Sea Sentinel
   '10:me1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 350,
     lubeoil_temp: 62,
     coolant_press: 155,
@@ -813,6 +927,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 275,
   },
   '10:me2': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 345,
     lubeoil_temp: 60,
     coolant_press: 152,
@@ -822,6 +939,9 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     exhgas_temp_right: 270,
   },
   '10:ae1': {
+    lt_coolant_press: 0,
+    fuel_oil_press: 0,
+    start_air_press: 0,
     lubeoil_press: 300,
     lubeoil_temp: 55,
     coolant_press: 140,
