@@ -25,6 +25,7 @@ import {
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
 import { engineData, shipData } from '@/data/nura/ships';
+import * as api from '@/services/api';
 
 // Declare global window types for Leaflet and Windy
 declare global {
@@ -77,16 +78,78 @@ export default function WindyMap({
   const setShip = useSetAtom(selectedShipAtom);
   const setEngine = useSetAtom(selectedEngineAtom);
 
-  const handleConditionMonitoringClick = (v: FleetVessel) => {
-    const ship = shipData.find((s) => s.id === v.vessel_id);
-    if (ship) setShip(ship);
-    router.push('/machinery/condition-monitoring');
+  const handleConditionMonitoringClick = async (v: FleetVessel) => {
+    try {
+      const vessels = await api.fetchVessels();
+      const ship = vessels.find((s) => s.id === v.vessel_id);
+      if (ship) setShip(ship);
+      else {
+        setShip({
+          id: v.vessel_id,
+          label: v.name,
+          value: String(v.vessel_id),
+          engines: [],
+          position: {
+            lat: v.position.lat,
+            long: v.position.long,
+            direction: v.position.direction,
+            timestamp: v.position.timestamp,
+          },
+        });
+      }
+    } catch {
+      setShip({
+        id: v.vessel_id,
+        label: v.name,
+        value: String(v.vessel_id),
+        engines: [],
+        position: {
+          lat: v.position.lat,
+          long: v.position.long,
+          direction: v.position.direction,
+          timestamp: v.position.timestamp,
+        },
+      });
+    } finally {
+      router.push('/machinery/condition-monitoring');
+    }
   };
 
-  const handleEngineClick = (v: FleetVessel, engineValue: string) => {
-    const ship = shipData.find((s) => s.id === v.vessel_id);
+  const handleEngineClick = async (v: FleetVessel, engineValue: string) => {
+    try {
+      const vessels = await api.fetchVessels();
+      const ship = vessels.find((s) => s.id === v.vessel_id);
+      if (ship) setShip(ship);
+      else {
+        setShip({
+          id: v.vessel_id,
+          label: v.name,
+          value: String(v.vessel_id),
+          engines: [],
+          position: {
+            lat: v.position.lat,
+            long: v.position.long,
+            direction: v.position.direction,
+            timestamp: v.position.timestamp,
+          },
+        });
+      }
+    } catch {
+      setShip({
+        id: v.vessel_id,
+        label: v.name,
+        value: String(v.vessel_id),
+        engines: [],
+        position: {
+          lat: v.position.lat,
+          long: v.position.long,
+          direction: v.position.direction,
+          timestamp: v.position.timestamp,
+        },
+      });
+    }
+
     const engineOpt = engineData.find((e) => e.value === engineValue);
-    if (ship) setShip(ship);
     if (engineOpt) setEngine(engineOpt);
     router.push('/real-time-data');
   };

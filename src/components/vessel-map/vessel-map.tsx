@@ -8,6 +8,7 @@ import {
 import { emissionZones as fallbackEmissionZones } from '@/data/nura/emission-zones';
 import type { FleetVessel } from '@/data/nura/fleet-data';
 import { engineData, shipData } from '@/data/nura/ships';
+import * as api from '@/services/api';
 import {
   selectedEngineAtom,
   selectedShipAtom,
@@ -301,16 +302,80 @@ export default function VesselMap({
   const setShip = useSetAtom(selectedShipAtom);
   const setEngine = useSetAtom(selectedEngineAtom);
 
-  const handleConditionMonitoringClick = (v: VesselPoint) => {
-    const ship = shipData.find((s) => s.id === v.vessel_id);
-    if (ship) setShip(ship);
-    router.push('machinery/condition-monitoring');
+  const handleConditionMonitoringClick = async (v: VesselPoint) => {
+    // Use the real API vessel list so the Helium header selects the correct vessel
+    // (instead of the hardcoded demo `shipData`).
+    try {
+      const vessels = await api.fetchVessels();
+      const ship = vessels.find((s) => s.id === v.vessel_id);
+      if (ship) setShip(ship);
+      else {
+        setShip({
+          id: v.vessel_id,
+          label: v.name,
+          value: String(v.vessel_id),
+          engines: [],
+          position: {
+            lat: v.position[0],
+            long: v.position[1],
+            direction: v.direction,
+            timestamp: Math.floor(v.timestamp / 1000),
+          },
+        });
+      }
+    } catch {
+      setShip({
+        id: v.vessel_id,
+        label: v.name,
+        value: String(v.vessel_id),
+        engines: [],
+        position: {
+          lat: v.position[0],
+          long: v.position[1],
+          direction: v.direction,
+          timestamp: Math.floor(v.timestamp / 1000),
+        },
+      });
+    } finally {
+      router.push('machinery/condition-monitoring');
+    }
   };
 
-  const handleEngineClick = (v: VesselPoint, engineValue: string) => {
-    const ship = shipData.find((s) => s.id === v.vessel_id);
-    const engineOpt = engineData.find((e) => e.value === engineValue); // Fixed type error by ensuring engineData is correctly typed
-    if (ship) setShip(ship);
+  const handleEngineClick = async (v: VesselPoint, engineValue: string) => {
+    try {
+      const vessels = await api.fetchVessels();
+      const ship = vessels.find((s) => s.id === v.vessel_id);
+      if (ship) setShip(ship);
+      else {
+        setShip({
+          id: v.vessel_id,
+          label: v.name,
+          value: String(v.vessel_id),
+          engines: [],
+          position: {
+            lat: v.position[0],
+            long: v.position[1],
+            direction: v.direction,
+            timestamp: Math.floor(v.timestamp / 1000),
+          },
+        });
+      }
+    } catch {
+      setShip({
+        id: v.vessel_id,
+        label: v.name,
+        value: String(v.vessel_id),
+        engines: [],
+        position: {
+          lat: v.position[0],
+          long: v.position[1],
+          direction: v.direction,
+          timestamp: Math.floor(v.timestamp / 1000),
+        },
+      });
+    }
+
+    const engineOpt = engineData.find((e) => e.value === engineValue);
     if (engineOpt) setEngine(engineOpt);
     router.push('/real-time-data');
   };
