@@ -616,8 +616,51 @@ export default function WindyMap({
                               objKey: 'ae2',
                               icon: PiLightningFill,
                             },
+                            {
+                              key: 'dg1',
+                              label: 'DG1',
+                              objKey: 'dg1',
+                              icon: PiEngine,
+                            },
+                            {
+                              key: 'dg2',
+                              label: 'DG2',
+                              objKey: 'dg2',
+                              icon: PiEngine,
+                            },
+                            {
+                              key: 'dg3',
+                              label: 'DG3',
+                              objKey: 'dg3',
+                              icon: PiEngine,
+                            },
+                            {
+                              key: 'dg4',
+                              label: 'DG4',
+                              objKey: 'dg4',
+                              icon: PiEngine,
+                            },
+                            {
+                              key: 'dg5',
+                              label: 'DG5',
+                              objKey: 'dg5',
+                              icon: PiEngine,
+                            },
+                            {
+                              key: 'dg6',
+                              label: 'DG6',
+                              objKey: 'dg6',
+                              icon: PiEngine,
+                            },
                           ] as const
                         ).map(({ key, label, objKey, icon: Icon }) => {
+                          const engineTimestampSec =
+                            objKey.startsWith('dg')
+                              ? vessel.engines?.[
+                                  `DG${objKey.replace('dg', '')}`
+                                ] ?? 0
+                              : (vessel as any)[objKey] ?? 0;
+
                           const eqEngineId = key;
                           const eqAlarmEngine =
                             engineValueToAlarmEngine[eqEngineId];
@@ -639,7 +682,7 @@ export default function WindyMap({
                             key === 'me1' || key === 'me2' || key === 'ae1';
                           const engineTimeColor = isForcedGreen
                             ? '#4ade80'
-                            : colorByRecency((vessel as any)[objKey]);
+                            : colorByRecency(engineTimestampSec);
                           const hasCritical = vesselAlarmData[
                             vessel.vessel_id
                           ]?.some(
@@ -656,7 +699,7 @@ export default function WindyMap({
                           )
                             finalColor = '#facc15';
 
-                          if ((vessel as any)[objKey] === 0) return null;
+                          if (engineTimestampSec === 0) return null;
 
                           return (
                             <div

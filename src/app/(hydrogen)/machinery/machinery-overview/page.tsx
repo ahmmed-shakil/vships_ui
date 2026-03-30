@@ -145,7 +145,10 @@ export default function MachineryOverviewPage() {
 
   const handleCardClick = (item: (typeof cards)[number]) => {
     const match = engineData.find((e) => e.value === item.engineValue);
-    setSelectedEngine(match ?? engineData[0]);
+    // `engineData` is static and may not include API-provided `dg*` engines.
+    // If there's no match, use the card label/value directly so the header selects the right engine.
+    const selected = match ?? { label: item.title, value: item.engineValue };
+    setSelectedEngine(selected as any);
     router.push(routes.machinery.conditionMonitoring);
   };
 
