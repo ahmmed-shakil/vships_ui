@@ -56,14 +56,14 @@ export function useSocketData(vesselId: number | null, token: string | null) {
       setConnected(true);
       // Some backends expect an explicit room join; safe no-op if not used.
       socket.emit('join', String(vesselId));
-    });
+    };
 
     socket.on('connect_error', (err: any) => {
       console.log('Connection error:', err.message);
       setConnected(false);
     });
 
-    socket.on('disconnect', (reason: any) => {
+    const onDisconnect = (reason: any) => {
       console.log('Disconnected:', reason);
       setConnected(false);
     };
