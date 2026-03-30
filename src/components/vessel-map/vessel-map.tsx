@@ -50,6 +50,12 @@ interface VesselPoint {
   me3: number;
   ae1: number;
   ae2: number;
+  dg1?: number;
+  dg2?: number;
+  dg3?: number;
+  dg4?: number;
+  dg5?: number;
+  dg6?: number;
 }
 
 interface VesselMapProps {
@@ -77,6 +83,12 @@ function toPoints(vessels: FleetVessel[]): VesselPoint[] {
       me3: v.me3 * 1000,
       ae1: v.ae1 * 1000,
       ae2: v.ae2 * 1000,
+      dg1: (v.engines?.DG1 ?? v.engines?.dg1 ?? 0) * 1000,
+      dg2: (v.engines?.DG2 ?? v.engines?.dg2 ?? 0) * 1000,
+      dg3: (v.engines?.DG3 ?? v.engines?.dg3 ?? 0) * 1000,
+      dg4: (v.engines?.DG4 ?? v.engines?.dg4 ?? 0) * 1000,
+      dg5: (v.engines?.DG5 ?? v.engines?.dg5 ?? 0) * 1000,
+      dg6: (v.engines?.DG6 ?? v.engines?.dg6 ?? 0) * 1000,
     }));
 }
 
@@ -522,6 +534,42 @@ export default function VesselMap({
                           objKey: 'ae2',
                           icon: PiLightningFill,
                         },
+                        {
+                          key: 'dg1',
+                          label: 'DG1',
+                          objKey: 'dg1',
+                          icon: PiEngine,
+                        },
+                        {
+                          key: 'dg2',
+                          label: 'DG2',
+                          objKey: 'dg2',
+                          icon: PiEngine,
+                        },
+                        {
+                          key: 'dg3',
+                          label: 'DG3',
+                          objKey: 'dg3',
+                          icon: PiEngine,
+                        },
+                        {
+                          key: 'dg4',
+                          label: 'DG4',
+                          objKey: 'dg4',
+                          icon: PiEngine,
+                        },
+                        {
+                          key: 'dg5',
+                          label: 'DG5',
+                          objKey: 'dg5',
+                          icon: PiEngine,
+                        },
+                        {
+                          key: 'dg6',
+                          label: 'DG6',
+                          objKey: 'dg6',
+                          icon: PiEngine,
+                        },
                       ] as const
                     ).map(({ key, label, objKey, icon: Icon }) => {
                       // Find engine alarms
@@ -541,7 +589,7 @@ export default function VesselMap({
                         key === 'me1' || key === 'me2' || key === 'ae1';
                       const engineTimeColor = isForcedGreen
                         ? '#4ade80'
-                        : colorByRecency((v as any)[objKey]);
+                        : colorByRecency((v as any)[objKey] ?? 0);
                       const hasCritical = vesselAlarmData[v.vessel_id]?.some(
                         (a) =>
                           a.status === 'active' &&
@@ -556,7 +604,7 @@ export default function VesselMap({
                       )
                         finalColor = '#facc15'; // Warn if critical alarms exist but data is fresh
 
-                      if ((v as any)[objKey] === 0) return null; // No engine mapping (e.g. ship without AE2 or ME3)
+                      if (((v as any)[objKey] ?? 0) === 0) return null; // No engine mapping (e.g. ship without AE2/ME3/DG*)
 
                       return (
                         <div

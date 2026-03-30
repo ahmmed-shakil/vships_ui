@@ -13,6 +13,11 @@ export interface FleetVessel {
   me3: number;
   ae1: number;
   ae2: number;
+  /**
+   * API may return engine status timestamps grouped by type, e.g.:
+   * engines: { DG1: 177..., DG2: 177..., ... }
+   */
+  engines?: Record<string, number>;
 }
 
 // Helper: generate a unix timestamp N minutes ago from now
