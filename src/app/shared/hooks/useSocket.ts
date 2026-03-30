@@ -8,12 +8,9 @@ import io from 'socket.io-client';
 type Socket = any; // v2 types are different, using any for simplicity in this hook
 
 const SOCKET_URL =
+  process.env.NEXT_PUBLIC_WS_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   'https://vship-api.perfomax.tech';
-
-// Keep a module-level record of active sockets to prevent multiple initializations 
-// and accidental disconnects during rapid React re-mounts.
-const activeSockets: Record<string, { socket: Socket; count: number }> = {};
 
 export function useSocketData(vesselId: number | null, token: string | null) {
   const [latestME, setLatestME] = useState<Record<string, any>>({});
@@ -30,31 +27,26 @@ export function useSocketData(vesselId: number | null, token: string | null) {
   useEffect(() => {
     if (!token || !vesselId) return;
 
-    const socketKey = `${vesselId}-${token}`;
-    
-    // 1. Check if we already have a socket for this vessel/token
-    if (activeSockets[socketKey]) {
-      activeSockets[socketKey].count++;
-      socketRef.current = activeSockets[socketKey].socket;
-      setConnected(socketRef.current.connected);
-      console.log(`[Socket] Reusing existing connection for Vessel ${vesselId}`);
-    } else {
-      // 2. Initialize new socket
-      console.log(`[Socket] Initializing NEW connection for Vessel ${vesselId}...`);
-      const socket = io(SOCKET_URL, {
-        transports: ['websocket'],
-        reconnectionAttempts: 5,
-        query: {
-          token,
-          vessel_id: String(vesselId),
-        },
-      });
-      
-      activeSockets[socketKey] = { socket, count: 1 };
-      socketRef.current = socket;
-    }
+    // Reset state for new connection
+    setLatestME({});
+    setLatestAE({});
+    setLatestDG({});
+    setMeTotalCount(0);
+    setAeTotalCount(0);
+    setDgTotalCount(0);
 
-    const socket = socketRef.current!;
+    const socket = io(SOCKET_URL, {
+      transports: ['websocket'],
+      // Prefer socket.io auth payload over query token when supported.
+      auth: { token },
+      query: { vessel_id: String(vesselId) },
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+    });
+
+    socketRef.current = socket;
     prevVesselRef.current = vesselId;
 
     // Set up listeners (Socket.io listeners are additive in some versions, but v2 handles .on well)
@@ -62,10 +54,17 @@ export function useSocketData(vesselId: number | null, token: string | null) {
     const onConnect = () => {
       console.log('[Socket] Connected:', socket.id);
       setConnected(true);
-    };
+      // Some backends expect an explicit room join; safe no-op if not used.
+      socket.emit('join', String(vesselId));
+    });
 
-    const onDisconnect = (reason: any) => {
-      console.warn('[Socket] Disconnected:', reason);
+    socket.on('connect_error', (err: any) => {
+      console.log('Connection error:', err.message);
+      setConnected(false);
+    });
+
+    socket.on('disconnect', (reason: any) => {
+      console.log('Disconnected:', reason);
       setConnected(false);
     };
 
@@ -103,24 +102,8 @@ export function useSocketData(vesselId: number | null, token: string | null) {
     socket.on('DG', onDataDG);
 
     return () => {
-      if (activeSockets[socketKey]) {
-        activeSockets[socketKey].count--;
-        
-        // Only actually disconnect and remove listeners if NO components are using this socket
-        if (activeSockets[socketKey].count <= 0) {
-          console.log(`[Socket] Closing connection for Vessel ${vesselId} (no more subscribers)`);
-          socket.disconnect();
-          delete activeSockets[socketKey];
-        } else {
-          console.log(`[Socket] Detaching subscriber from Vessel ${vesselId} (${activeSockets[socketKey].count} left)`);
-          // Clean up local listeners to avoid memory leaks if reused
-          socket.off('connect', onConnect);
-          socket.off('disconnect', onDisconnect);
-          socket.off('ME', onDataME);
-          socket.off('AE', onDataAE);
-          socket.off('DG', onDataDG);
-        }
-      }
+      socket.removeAllListeners();
+      socket.disconnect();
       socketRef.current = null;
     };
   }, [token, vesselId]);
