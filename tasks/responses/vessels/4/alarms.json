@@ -1,0 +1,12 @@
+{
+    "alarms": [],
+    "summary": {
+        "active": 0,
+        "critical": 0,
+        "info": 0,
+        "notice": 0,
+        "resolved": 0,
+        "total": 0,
+        "warning": 0
+    }
+}

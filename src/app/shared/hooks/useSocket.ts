@@ -10,8 +10,10 @@ const SOCKET_URL =
 export function useSocketData(vesselId: number | null, token: string | null) {
   const [latestME, setLatestME] = useState<Record<string, any>>({});
   const [latestAE, setLatestAE] = useState<Record<string, any>>({});
+  const [latestDG, setLatestDG] = useState<Record<string, any>>({});
   const [meTotalCount, setMeTotalCount] = useState(0);
   const [aeTotalCount, setAeTotalCount] = useState(0);
+  const [dgTotalCount, setDgTotalCount] = useState(0);
   const [connected, setConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const prevVesselRef = useRef<number | null>(null);
@@ -22,8 +24,10 @@ export function useSocketData(vesselId: number | null, token: string | null) {
     // Reset state for new connection
     setLatestME({});
     setLatestAE({});
+    setLatestDG({});
     setMeTotalCount(0);
     setAeTotalCount(0);
+    setDgTotalCount(0);
 
     const socket = io(SOCKET_URL, {
       transports: ['websocket'],
@@ -67,6 +71,14 @@ export function useSocketData(vesselId: number | null, token: string | null) {
       setAeTotalCount((prev) => prev + 1);
     });
 
+    socket.on('DG', (data) => {
+      setLatestDG((prev) => ({
+        ...prev,
+        [data.engineId]: { ...data, _receivedAt: Date.now() },
+      }));
+      setDgTotalCount((prev) => prev + 1);
+    });
+
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -85,13 +97,16 @@ export function useSocketData(vesselId: number | null, token: string | null) {
     // Clear stale data
     setLatestME({});
     setLatestAE({});
+    setLatestDG({});
   };
 
   return {
     latestME,
     latestAE,
+    latestDG,
     meTotalCount,
     aeTotalCount,
+    dgTotalCount,
     connected,
     switchVessel,
   };

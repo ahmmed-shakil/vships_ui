@@ -1,5 +1,6 @@
 'use client';
 
+import { useSocketData } from '@/app/shared/hooks/useSocket';
 import WidgetCard from '@/components/cards/widget-card';
 import SpeedMeter from '@/components/speed-meter/speed-meter';
 import {
@@ -9,17 +10,15 @@ import {
   RPM_GAUGE_MAX,
   type EngineMonitorData,
 } from '@/data/nura/engine-data';
-import { useVesselEngineData, useChartData } from '@/hooks/use-api-data';
-import { useSocketData } from '@/app/shared/hooks/useSocket';
-import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
 import type { Ship } from '@/data/nura/ships';
+import { useChartData, useVesselEngineData } from '@/hooks/use-api-data';
+import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
 import { useAtomValue } from 'jotai';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import { Box } from 'rizzui/box';
 import ConsumptionVsSpeedChart from './consumption-vs-speed-chart';
-import EngineConsumptionChart from './engine-consumption-chart';
 
 const RealTimeDataMap = dynamic(
   () => import('@/components/operation-overview/real-time-data-map'),
@@ -320,9 +319,8 @@ function LiveSocketCard({
         <div className="flex items-center gap-2">
           <span>Live Socket Data</span>
           <span
-            className={`inline-block h-2.5 w-2.5 rounded-full ${
-              connected ? 'bg-green-500' : 'bg-red-500'
-            }`}
+            className={`inline-block h-2.5 w-2.5 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'
+              }`}
           />
           <span className="text-xs font-normal text-muted-foreground">
             {hasData
@@ -371,15 +369,14 @@ const OperationOverviewLayout = () => {
 const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
   const { data: session } = useSession();
   const token = (session as any)?.accessToken ?? null;
-  const { latestME, latestAE, meTotalCount, aeTotalCount, connected } =
+  const { latestME, latestAE, latestDG, meTotalCount, aeTotalCount, dgTotalCount, connected } =
     useSocketData(vessel.id, token);
 
   // Engine data for the selected vessel from API (falls back to mock)
-  const { mainEngines: baseEngines, gensets: vesselGensets } =
-    useVesselEngineData(vessel.id);
+  const { mainEngines: baseEngines } = useVesselEngineData(vessel.id);
   const engines = baseEngines.map((engine) => {
-    const socketKey = engine.id.toUpperCase(); // "me1" → "ME1"
-    const live = latestME[socketKey];
+    const socketKey = engine.id.toUpperCase();
+    const live = latestDG?.[socketKey] || latestME?.[socketKey];
     if (!live) return engine;
 
     // For Ocean Voyager (ID 1), we want to keep the demo values for fuel consumption and load
@@ -394,8 +391,11 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
       ? engine.gauge.fuel_cons
       : (live.fuel_cons ?? engine.gauge.fuel_cons);
 
-    // FM Cons = fuel_cons × 0.8, FM In = FM Cons + FM Out
-    const fmCons = liveFuelCons * 0.8;
+    const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
+    const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
+
+    // FM Cons (kg/h) = fuel_cons (L/h) × 0.85, FM In = FM Cons + FM Out
+    const fmCons = liveFuelCons * 0.85;
     const fmOut = engine.flowMeter.fm_out;
     const fmIn = fmCons + fmOut;
 
@@ -411,6 +411,10 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
         fm_cons: fmCons,
         fm_out: fmOut,
       },
+      totals: {
+        total_fuel: liveTotalFuel,
+        running_hours: liveRunHrs,
+      },
     };
   });
 
@@ -420,12 +424,12 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
   // Consumption vs Speed: scale chart data close to socket ME values, last row = exact socket value
   const consumptionVsSpeedData = useMemo(() => {
     const baseData = baseChartData;
-    if (Object.keys(latestME).length === 0) return baseData;
+    if (Object.keys(latestME).length === 0 && Object.keys(latestDG).length === 0) return baseData;
 
     const engineKeys = baseEngines.map((e) => e.id);
     const socketFuelCons: Record<string, number> = {};
     engineKeys.forEach((key) => {
-      const live = latestME[key.toUpperCase()];
+      const live = latestDG[key.toUpperCase()] || latestME[key.toUpperCase()];
       if (live?.fuel_cons != null) socketFuelCons[key] = live.fuel_cons;
     });
 
@@ -448,88 +452,17 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
       });
       return newPoint;
     });
-  }, [baseChartData, latestME, baseEngines]);
-
-  // Genset consumption chart data generated from socket AE values
-  const gensetCount = vesselGensets.length || 2;
-  const gensetChartData = useMemo(() => {
-    // Filter hours to current Singapore time (UTC+8) — same logic as operation-monitor-charts-data.ts
-    // const ALL_HOURS = [
-    //   '08:00', '09:00', '10:00', '11:00', '12:00', '13:00',
-    //   '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
-    // ];
-    const ALL_HOURS = [
-      '00:00',
-      '01:00',
-      '02:00',
-      '03:00',
-      '04:00',
-      '05:00',
-      '06:00',
-      '07:00',
-      '08:00',
-      '09:00',
-      '10:00',
-      '11:00',
-      '12:00',
-      '13:00',
-      '14:00',
-      '15:00',
-      '16:00',
-      '17:00',
-      '18:00',
-      '19:00',
-      '20:00',
-      '21:00',
-      '22:00',
-      '23:00',
-    ];
-    const sgtHour = new Date(
-      new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
-    ).getHours();
-    const currentTimeStr = `${String(sgtHour).padStart(2, '0')}:00`;
-    const HOURS = ALL_HOURS.filter((h) => h <= currentTimeStr);
-    const gensetKeys = ['ae1', 'ae2'].slice(0, gensetCount);
-    const aeFuelCons: Record<string, number> = {};
-    gensetKeys.forEach((key) => {
-      const live = latestAE[key.toUpperCase()];
-      aeFuelCons[key] = live?.fuel_cons ?? 0;
-    });
-
-    let s = vessel.id * 700;
-    const variations: number[] = [];
-    for (let i = 0; i < HOURS.length; i++) {
-      s = (s * 16807 + 12345) % 2147483647;
-      variations.push(0.85 + (s / 2147483647) * 0.3);
-    }
-
-    return HOURS.map((time, i) => {
-      const point: { time: string; [engine: string]: number | string } = {
-        time,
-      };
-      const isLast = i === HOURS.length - 1;
-      gensetKeys.forEach((key) => {
-        const base = aeFuelCons[key];
-        if (base === 0) {
-          point[key] = 0;
-        } else if (isLast) {
-          point[key] = Number(base.toFixed(1));
-        } else {
-          const offset = key === 'ae2' ? 0.02 : 0;
-          point[key] = Number((base * (variations[i] + offset)).toFixed(1));
-        }
-      });
-      return point;
-    });
-  }, [vessel.id, latestAE, gensetCount]);
+  }, [baseChartData, latestME, latestDG, baseEngines]);
 
   // Grid columns based on engine count
   const gridCols =
-    engines.length > 3
-      ? 'lg:grid-cols-4'
-      : engines.length === 3
-        ? 'lg:grid-cols-3'
-        : 'lg:grid-cols-2';
+    engines.length >= 6
+      ? 'lg:grid-cols-3'
+      : engines.length > 3
+        ? 'lg:grid-cols-4'
+        : engines.length === 3
+          ? 'lg:grid-cols-3'
+          : 'lg:grid-cols-2';
 
   return (
     <>
@@ -580,13 +513,6 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
           />
         </Box>
 
-        {/* Row 2 — Genset Consumptions */}
-        <Box className="mt-6 grid grid-cols-1 gap-6 @container/pd lg:mt-8 3xl:gap-8">
-          <EngineConsumptionChart
-            data={gensetChartData}
-            engineCount={gensetCount}
-          />
-        </Box>
       </Box>
     </>
   );

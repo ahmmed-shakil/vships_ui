@@ -1,0 +1,23 @@
+{
+    "vessels": [
+        {
+            "id": 4,
+            "label": "MV Pacific Star",
+            "value": "mv-pacific-star",
+            "engines": [
+                "DG1",
+                "DG2",
+                "DG3",
+                "DG4",
+                "DG5",
+                "DG6"
+            ],
+            "position": {
+                "direction": 47.7,
+                "lat": 1.1611116666666668,
+                "long": 103.74935333333333,
+                "timestamp": 1774842900
+            }
+        }
+    ]
+}

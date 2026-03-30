@@ -43,7 +43,7 @@ export interface EngineMonitorData {
   flowMeter: EngineFlowMeter;
   gauge: EngineGaugeData;
   totals: EngineTotals;
-  detail?: EngineDetailData;
+  detail?: EngineDetailData | null;
 }
 
 // ─── RPM gauge config ────────────────────────────────────────────────────────

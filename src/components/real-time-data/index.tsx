@@ -7,7 +7,7 @@ import {
   RPM_GAUGE_MAX,
   type EngineMonitorData,
 } from '@/data/nura/engine-data';
-import { useVesselEngineData, useVesselAlarmData } from '@/hooks/use-api-data';
+import { useVesselAlarmData, useVesselEngineData } from '@/hooks/use-api-data';
 import {
   selectedEngineAtom,
   selectedShipAtom,
@@ -25,11 +25,12 @@ function applyLiveData(
   engine: EngineMonitorData | undefined,
   latestME: Record<string, any>,
   latestAE: Record<string, any>,
+  latestDG: Record<string, any>,
   vesselId?: number
 ): EngineMonitorData | undefined {
   if (!engine) return undefined;
   const socketKey = engine.id.toUpperCase(); // "me1" → "ME1"
-  const live = latestME[socketKey] ?? latestAE[socketKey];
+  const live = latestDG[socketKey] ?? latestME[socketKey] ?? latestAE[socketKey];
   if (!live) return engine;
 
   const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
@@ -38,6 +39,11 @@ function applyLiveData(
   const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
   const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
 
+  // FM Cons (kg/h) = fuel_cons (L/h) × 0.85, FM In = FM Cons + FM Out
+  const fmCons = liveFuelCons * 0.85;
+  const fmOut = engine.flowMeter.fm_out;
+  const fmIn = fmCons + fmOut;
+
   return {
     ...engine,
     gauge: {
@@ -45,23 +51,28 @@ function applyLiveData(
       engine_load: liveLoad,
       fuel_cons: liveFuelCons,
     },
+    flowMeter: {
+      fm_in: fmIn,
+      fm_cons: fmCons,
+      fm_out: fmOut,
+    },
     totals: {
       running_hours: liveRunHrs,
       total_fuel: liveTotalFuel,
     },
     detail: engine.detail
       ? {
-          ...engine.detail,
-          lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-          lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-          coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-          coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-          batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-          exhgas_temp_left:
-            live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-          exhgas_temp_right:
-            live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-        }
+        ...engine.detail,
+        lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+        lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+        coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+        coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+        batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+        exhgas_temp_left:
+          live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+        exhgas_temp_right:
+          live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+      }
       : undefined,
   };
 }
@@ -195,37 +206,6 @@ function EngineGroup({
   );
 }
 
-// ─── Small engine pair (Genset): side-by-side in a 2-col grid ────────────────
-
-function GensetGroup({
-  engine,
-  label,
-  className,
-  onClick,
-}: {
-  engine: EngineMonitorData | undefined;
-  label: string;
-  className?: string;
-  onClick?: () => void;
-}) {
-  return (
-    <div
-      className={cn(className, onClick && 'group cursor-pointer')}
-      onClick={onClick}
-    >
-      <h6
-        className={cn(
-          'col-span-full mt-auto text-center text-sm font-semibold',
-          onClick && 'transition-colors group-hover:text-primary'
-        )}
-      >
-        {label}
-      </h6>
-      <EngineGroup engine={engine} size="sm" layout="horizontal" />
-    </div>
-  );
-}
-
 // ─── Layout ──────────────────────────────────────────────────────────────────
 
 export const RealTimeDataLayout = () => {
@@ -247,11 +227,11 @@ const RealTimeDataContent = () => {
   const [selectedEngine, setSelectedEngine] = useAtom(selectedEngineAtom);
   const { data: session } = useSession();
   const token = (session as any)?.accessToken ?? null;
-  const { latestME, latestAE } = useSocketData(selectedShip.id, token);
+  const { latestME, latestAE, latestDG } = useSocketData(selectedShip.id, token);
 
   // Fetch engine data from API (falls back to mock)
   const vesselId = selectedShip.id;
-  const { mainEngines, gensets } = useVesselEngineData(vesselId);
+  const { mainEngines } = useVesselEngineData(vesselId);
 
   // Fetch alarm data from API (falls back to mock), filtered by engine
   const alarmEngine =
@@ -266,136 +246,48 @@ const RealTimeDataContent = () => {
   }, [rawAlarms]);
 
   // Lookup engine data for the selected vessel, overlaid with live socket data
-  const mePort = applyLiveData(
-    mainEngines.find((e) => e.id === 'me1'),
-    latestME,
-    latestAE,
-    vesselId
-  );
-  const meStbd = applyLiveData(
-    mainEngines.find((e) => e.id === 'me2'),
-    latestME,
-    latestAE,
-    vesselId
-  );
-  const meCenter = applyLiveData(
-    mainEngines.find((e) => e.id === 'me3'),
-    latestME,
-    latestAE,
-    vesselId
-  );
-  const genset1 = applyLiveData(
-    gensets.find((e) => e.id === 'ae1'),
-    latestME,
-    latestAE,
-    vesselId
-  );
-  const genset2 = applyLiveData(
-    gensets.find((e) => e.id === 'ae2'),
-    latestME,
-    latestAE,
-    vesselId
+  const enginesData = mainEngines.map((engine) =>
+    applyLiveData(engine, latestME, latestAE, latestDG, vesselId)
   );
 
   return (
     <>
       {/* main grid */}
-      <div className="mt-4 grid grid-cols-4 shadow-lg">
+      <div className="grid grid-cols-4 shadow-lg">
         <div className="col-span-3 mt-2">
           {selectedEngine.value === 'all' ? (
-            /* ── All Engine: 10-meter layout (DO NOT MODIFY LAYOUT) ── */
-            <div className="grid grid-cols-12">
-              {/* Labels */}
-              <div className="col-span-full flex justify-around uppercase">
-                <h6
-                  className="cursor-pointer font-semibold transition-colors hover:text-primary"
-                  onClick={() =>
-                    setSelectedEngine({ label: 'ME Port', value: 'me1' })
-                  }
+            /* ── All Engine: 2x3 grid layout ── */
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 px-4">
+              {enginesData.map((engine) => (
+                <div
+                  key={engine?.id}
+                  className="rounded-xl border p-4 shadow-sm"
                 >
-                  ME Port
-                </h6>
-                <h6
-                  className="cursor-pointer font-semibold transition-colors hover:text-primary"
-                  onClick={() =>
-                    setSelectedEngine({ label: 'ME Stbd', value: 'me2' })
-                  }
-                >
-                  ME STBD
-                </h6>
-              </div>
-
-              {/* Row 1: ME PORT (RPM + Fuel) | ME STBD (RPM + Fuel) */}
-              <EngineGroup
-                engine={mePort}
-                className="col-span-6"
-                onClick={() =>
-                  setSelectedEngine({ label: 'ME Port', value: 'me1' })
-                }
-              />
-              <EngineGroup
-                engine={meStbd}
-                className="col-span-6"
-                onClick={() =>
-                  setSelectedEngine({ label: 'ME Stbd', value: 'me2' })
-                }
-              />
-
-              {/* Row 2: Genset 1 | ME CENTER | Genset 2 */}
-              <GensetGroup
-                engine={genset1}
-                label="Genset 1"
-                className="z-0 col-span-4 my-auto"
-                onClick={() =>
-                  setSelectedEngine({ label: 'AE1', value: 'ae1' })
-                }
-              />
-              <div className="relative col-span-4 m-0 -mt-10 p-0">
-                {/* Half-height border lines */}
-                <div className="absolute bottom-1/4 left-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
-                <div className="absolute bottom-1/4 right-0 top-1/4 w-0.5 bg-gray-300 dark:bg-gray-600" />
-                <h6
-                  className={cn(
-                    'text-center text-sm font-semibold uppercase',
-                    meCenter &&
-                      'cursor-pointer transition-colors hover:text-primary'
-                  )}
-                  onClick={
-                    meCenter
-                      ? () =>
-                          setSelectedEngine({
-                            label: 'ME Center',
-                            value: 'me3',
-                          })
-                      : undefined
-                  }
-                >
-                  ME Center
-                </h6>
-                <EngineGroup
-                  engine={meCenter}
-                  layout="vertical"
-                  className2="-mt-20"
-                  className3="-mt-10"
-                  onClick={
-                    meCenter
-                      ? () =>
-                          setSelectedEngine({
-                            label: 'ME Center',
-                            value: 'me3',
-                          })
-                      : undefined
-                  }
-                />
-              </div>
-              <GensetGroup
-                engine={genset2}
-                label="Genset 2"
-                className="z-0 col-span-4 my-auto"
-                onClick={() =>
-                  setSelectedEngine({ label: 'AE2', value: 'ae2' })
-                }
-              />
+                  <h6
+                    className="mb-4 cursor-pointer text-center text-sm font-semibold uppercase transition-colors hover:text-primary"
+                    onClick={() =>
+                      engine &&
+                      setSelectedEngine({
+                        label: engine.label,
+                        value: engine.id,
+                      })
+                    }
+                  >
+                    {engine?.label}
+                  </h6>
+                  <EngineGroup
+                    engine={engine}
+                    layout="horizontal"
+                    onClick={() =>
+                      engine &&
+                      setSelectedEngine({
+                        label: engine.label,
+                        value: engine.id,
+                      })
+                    }
+                  />
+                </div>
+              ))}
             </div>
           ) : (
             /* ── Individual Engine: lube oil / coolant view ── */
@@ -404,6 +296,7 @@ const RealTimeDataContent = () => {
               engineId={selectedEngine.value}
               latestME={latestME}
               latestAE={latestAE}
+              latestDG={latestDG}
             />
           )}
         </div>

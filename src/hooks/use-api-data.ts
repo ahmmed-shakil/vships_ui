@@ -202,27 +202,24 @@ export function useVesselEngineData(vesselId: number) {
     if (!token) return;
 
     api
-      .fetchEngineOptions(vesselId)
-      .then((options) => {
-        // Filter out "all" option, build EngineMonitorData with zeroed values
-        const engines = options
-          .filter((o) => o.value !== 'all')
-          .map(
-            (o): EngineMonitorData => ({
-              id: o.value,
-              label: o.label,
-              flowMeter: { fm_in: 0, fm_cons: 0, fm_out: 0 },
-              gauge: { engine_rpm: 0, engine_load: 0, fuel_cons: 0 },
-              totals: { total_fuel: 0, running_hours: 0 },
-              detail: undefined,
-            })
-          );
+      .fetchVesselEngines(vesselId)
+      .then((res) => {
+        const allEngines = [...(res.main_engines || []), ...(res.gensets || [])];
 
-        // Separate by prefix: me* → main engines, ae* → gensets
-        setMainEngines(engines.filter((e) => e.id.startsWith('me')));
-        setGensets(engines.filter((e) => e.id.startsWith('ae')));
+        // Separate by prefix: me* or dg* → main engines, ae* → gensets
+        setMainEngines(
+          allEngines.filter(
+            (e) =>
+              e.id.toLowerCase().startsWith('me') ||
+              e.id.toLowerCase().startsWith('dg')
+          )
+        );
+        setGensets(
+          allEngines.filter((e) => e.id.toLowerCase().startsWith('ae'))
+        );
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to fetch vessel engines:', err);
         // If API fails, show no data instead of mock data
         setMainEngines([]);
         setGensets([]);
