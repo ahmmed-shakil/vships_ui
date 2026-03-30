@@ -226,6 +226,7 @@ export interface SensorDataPoint {
   eg_temp_6: number | null;
   eg_temp_7: number | null;
   eg_temp_8: number | null;
+  eg_temp_9: number | null;
   eg_temp_mean: number | null;
   max_eg_temp_mean: number | null;
   exh_gas_temp: number | null;
