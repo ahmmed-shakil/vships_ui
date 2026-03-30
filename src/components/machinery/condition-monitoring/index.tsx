@@ -10,6 +10,7 @@ import {
   useSensorDataApi,
   useSfocScatter,
   useSpareParts,
+  useLatestSensorValues,
 } from '@/hooks/use-machinery-data';
 import {
   selectedEngineAtom,
@@ -89,6 +90,7 @@ const SENSOR_CHART_ROWS: {
       { dataKey: 'eg_temp_6', label: 'Cyl 6', color: '#EC4899' },
       { dataKey: 'eg_temp_7', label: 'Cyl 7', color: '#06B6D4' },
       { dataKey: 'eg_temp_8', label: 'Cyl 8', color: '#F97316' },
+      { dataKey: 'eg_temp_9', label: 'Cyl 9', color: '#14B8A6' },
       { dataKey: 'eg_temp_mean', label: 'Mean', color: '#FFFFFF' },
     ],
     thresholds: { min: 100, max: 350 },
@@ -146,6 +148,8 @@ export default function ConditionMonitoringLayout() {
   const { response: fuelResponse, isLoading: fuelLoading } = useFuelRate();
   const { scores: healthScores, isLoading: healthLoading } = useHealthScores();
   const { parts: spareParts, isLoading: partsLoading } = useSpareParts();
+  const { response: latestSensorResponse, isLoading: latestSensorLoading } =
+    useLatestSensorValues();
 
   if (!selectedShip) {
     return (
@@ -158,6 +162,10 @@ export default function ConditionMonitoringLayout() {
   const engineSpecs = selectedEngine.value.startsWith('ae')
     ? { make: 'CAT 3408', built: '2005', rating: '--' }
     : { make: 'MAK 8M25C', built: '2005', rating: '2550 kW' };
+
+  const engineLatestData = latestSensorResponse?.data.find(
+    (d) => d.asset_id.toLowerCase() === selectedEngine.value.toLowerCase()
+  );
 
   return (
     <>
@@ -240,28 +248,28 @@ export default function ConditionMonitoringLayout() {
         >
           <div className="flex flex-1 flex-col justify-center gap-1">
             <DottedRow
-              label="Last overhaul"
-              value="12 Nov 2025"
+              label="Engine Speed"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.rpm ?? '--'} RPM`}
               className="py-1"
             />
             <DottedRow
-              label="Total running hours"
-              value="5403 hrs"
+              label="Current Load"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.load_kw ?? '--'} kW`}
               className="py-1"
             />
             <DottedRow
-              label="Period running hours"
-              value="251 hrs"
+              label="Fuel Flow (Inlet)"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.fo_flow_inlet ?? '--'} L/h`}
               className="py-1"
             />
             <DottedRow
-              label="Duration fuel consumption"
-              value="-- kg"
+              label="Charge Air Temp"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.chargeair_temp ?? '--'} °C`}
               className="py-1"
             />
             <DottedRow
-              label="Duration average load"
-              value="-- %"
+              label="Lube Oil Temp"
+              value={latestSensorLoading ? '...' : `${engineLatestData?.lo_temp ?? '--'} °C`}
               className="py-1"
             />
           </div>

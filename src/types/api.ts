@@ -371,3 +371,98 @@ export interface AlarmsWithSummaryResponse {
   alarms: AlarmWithUnit[];
   summary: AlarmSummary;
 }
+
+// ─── Latest Sensor Values API ────────────────────────────────────────────────
+
+export interface LatestSensorDataPoint {
+  timestamp: string;
+  asset_id: string;
+  device_id: number;
+  rpm: number | null;
+  max_rpm: number | null;
+  min_rpm: number | null;
+  tc_rpm: number | null;
+  fpi: number | null;
+  eg_temp_1: number | null;
+  eg_temp_2: number | null;
+  eg_temp_3: number | null;
+  eg_temp_4: number | null;
+  eg_temp_5: number | null;
+  eg_temp_6: number | null;
+  eg_temp_7: number | null;
+  eg_temp_8: number | null;
+  eg_temp_9: number | null;
+  eg_temp_mean: number | null;
+  max_eg_temp_mean: number | null;
+  eg_temp_compensator: number | null;
+  eg_temp_out_turbo: number | null;
+  eg_temp_tc_in: number | null;
+  eg_temp_tc_out: number | null;
+  exh_gas_limit: number | null;
+  exh_gas_temp: number | null;
+  exhaust_gas_temp_diff: number | null;
+  fo_press_inlet: number | null;
+  fo_press_filter_in: number | null;
+  fo_temp_in: number | null;
+  fo_flow_inlet: number | null;
+  fo_flow_outlet: number | null;
+  lo_press: number | null;
+  lo_press_in: number | null;
+  lo_press_filter_in: number | null;
+  lo_press_tc: number | null;
+  lo_temp: number | null;
+  lo_temp_in: number | null;
+  lo_tc_temp: number | null;
+  ht_cw_press: number | null;
+  ht_cw_temp: number | null;
+  ht_cw_inlet_temp: number | null;
+  ht_cw_temp_out: number | null;
+  lt_cw_press: number | null;
+  lt_cw_temp: number | null;
+  lt_cw_temp_in: number | null;
+  startair_press: number | null;
+  startair_temp_out: number | null;
+  chargeair_press: number | null;
+  chargeair_temp: number | null;
+  chargeair_press_ac_out: number | null;
+  chargeair_temp_ac_out: number | null;
+  air_temp: number | null;
+  rh: number | null;
+  gen_voltage: number | null;
+  gen_freq: number | null;
+  bus_voltage: number | null;
+  bus_freq: number | null;
+  phase_diff: number | null;
+  cos_phi: number | null;
+  load_kw: number | null;
+  kva: number | null;
+  kvar: number | null;
+  i_u: number | null;
+  i_v: number | null;
+  i_w: number | null;
+  v_uv: number | null;
+  v_vw: number | null;
+  v_uw: number | null;
+  wind_u_temp_diff: number | null;
+  wind_v_temp_diff: number | null;
+  wind_w_temp_diff: number | null;
+  pw_flow: number | null;
+  cargo_fo_flow: number | null;
+  thrust_current: number | null;
+  thrust_servo_press: number | null;
+  cpp_servo_press: number | null;
+  gearbox_servo_temp: number | null;
+  gearbox_servo_press: number | null;
+  d_bear_temp: number | null;
+  n_bear_temp: number | null;
+  nu: number | null;
+  standby_sequence: number | null;
+  [key: string]: string | number | null;
+}
+
+export interface LatestSensorDataResponse {
+  vessel: { id: number; name: string };
+  count: number;
+  data: LatestSensorDataPoint[];
+}
+
