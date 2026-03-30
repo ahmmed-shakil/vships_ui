@@ -84,12 +84,9 @@ export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
     key: 'engine',
     width: 100,
     render: (engine: string) => {
-      // Map internal engine codes to display labels
-      const displayLabel =
-        engine === 'AE1' ? 'Genset 1' : engine === 'AE2' ? 'Genset 2' : engine;
       return (
-        <Badge variant="outline" className="text-xs font-medium">
-          {displayLabel}
+        <Badge variant="outline" className="text-xs font-medium uppercase">
+          {engine}
         </Badge>
       );
     },

@@ -42,6 +42,7 @@ interface EngineDetailViewProps {
   engineId: string;
   latestME?: Record<string, any>;
   latestAE?: Record<string, any>;
+  latestDG?: Record<string, any>;
 }
 
 export default function EngineDetailView({
@@ -49,6 +50,7 @@ export default function EngineDetailView({
   engineId,
   latestME = {},
   latestAE = {},
+  latestDG = {},
 }: EngineDetailViewProps) {
   // Use API data only - no fallback to mock data
   const { mainEngines, gensets } = useVesselEngineData(vesselId);
@@ -68,7 +70,7 @@ export default function EngineDetailView({
 
   // Overlay live socket data
   const socketKey = engine.id.toUpperCase();
-  const live = latestME[socketKey] ?? latestAE[socketKey];
+  const live = latestDG[socketKey] ?? latestME[socketKey] ?? latestAE[socketKey];
   if (live) {
     engine = {
       ...engine,
