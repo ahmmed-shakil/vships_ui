@@ -160,8 +160,8 @@ export default function ConditionMonitoringLayout() {
   }
 
   const engineSpecs = selectedEngine.value.startsWith('ae')
-    ? { make: 'CAT 3408', built: '2005', rating: '--' }
-    : { make: 'MAK 8M25C', built: '2005', rating: '2550 kW' };
+    ? { make: 'MAN 9l32/40', built: '2024', rating: '3450 ekW' }
+    : { make: 'MAN 9l32/40', built: '2024', rating: '3450 ekW' };
 
   const engineLatestData = latestSensorResponse?.data.find(
     (d) => d.asset_id.toLowerCase() === selectedEngine.value.toLowerCase()
