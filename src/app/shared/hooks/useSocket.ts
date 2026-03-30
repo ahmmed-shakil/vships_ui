@@ -8,8 +8,9 @@ import io from 'socket.io-client';
 type Socket = any; // v2 types are different, using any for simplicity in this hook
 
 const SOCKET_URL =
+  process.env.NEXT_PUBLIC_WS_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  'https://ocean-pact-api.perfomax.tech';
+  'https://vship-api.perfomax.tech';
 
 export function useSocketData(vesselId: number | null, token: string | null) {
   const [latestME, setLatestME] = useState<Record<string, any>>({});
@@ -35,11 +36,13 @@ export function useSocketData(vesselId: number | null, token: string | null) {
 
     const socket = io(SOCKET_URL, {
       transports: ['websocket'],
-      reconnectionAttempts: 5,
-      query: {
-        token,
-        vessel_id: String(vesselId),
-      },
+      // Prefer socket.io auth payload over query token when supported.
+      auth: { token },
+      query: { vessel_id: String(vesselId) },
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     });
 
     socketRef.current = socket;
@@ -48,10 +51,13 @@ export function useSocketData(vesselId: number | null, token: string | null) {
     socket.on('connect', () => {
       console.log('Connected:', socket.id);
       setConnected(true);
+      // Some backends expect an explicit room join; safe no-op if not used.
+      socket.emit('join', String(vesselId));
     });
 
     socket.on('connect_error', (err: any) => {
       console.log('Connection error:', err.message);
+      setConnected(false);
     });
 
     socket.on('disconnect', (reason: any) => {
@@ -84,6 +90,7 @@ export function useSocketData(vesselId: number | null, token: string | null) {
     });
 
     return () => {
+      socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;
     };
