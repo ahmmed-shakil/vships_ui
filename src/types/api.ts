@@ -85,6 +85,9 @@ export interface EngineDetailData {
   lubeoil_temp: number;
   coolant_press: number;
   coolant_temp: number;
+  lt_coolant_press: number;
+  fuel_oil_press: number;
+  start_air_press: number;
   batt_volt: number;
   exhgas_temp_left: number;
   exhgas_temp_right: number;

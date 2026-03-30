@@ -161,7 +161,7 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
       </div>
 
       {/* FM data */}
-      <div className="mx-auto mt-3 max-w-[300px] space-y-1.5 rounded-lg bg-transparent p-3 shadow-2xl">
+      {/* <div className="mx-auto mt-3 max-w-[300px] space-y-1.5 rounded-lg bg-transparent p-3 shadow-2xl">
         <FlowMeterRow
           label="FM in"
           value={engine.flowMeter.fm_in}
@@ -172,13 +172,13 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
           value={engine.flowMeter.fm_cons}
           unit="kg/h"
         />
-        {/* <FlowMeterRow label="FM out" value={engine.flowMeter.fm_out} unit="kg/h" /> */}
+        {/* <FlowMeterRow label="FM out" value={engine.flowMeter.fm_out} unit="kg/h" /> *
         <FlowMeterRow
           label="FM out"
           value={engine.flowMeter.fm_in - engine.flowMeter.fm_cons}
           unit="kg/h"
         />
-      </div>
+      </div> */}
     </WidgetCard>
   );
 }

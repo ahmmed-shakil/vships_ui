@@ -121,11 +121,13 @@
     "@types/react-dom": "^19.0.4",
     "@types/react-scroll": "^1.8.10",
     "autoprefixer": "^10.4.21",
+    "bufferutil": "^4.1.0",
     "postcss": "^8.5.3",
     "prettier": "3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "rimraf": "^6.0.1",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "utf-8-validate": "^6.0.6"
   },
   "engines": {
     "node": ">=18"

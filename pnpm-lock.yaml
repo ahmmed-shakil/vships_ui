@@ -208,7 +208,7 @@ importers:
         version: 14.3.8(react@19.0.0)
       react-email:
         specifier: 3.0.7
-        version: 3.0.7(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 3.0.7(bufferutil@4.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(utf-8-validate@6.0.6)
       react-hook-form:
         specifier: ^7.54.2
         version: 7.71.1(react@19.0.0)
@@ -262,7 +262,7 @@ importers:
         version: 3.3.2(react@19.0.0)
       socket.io-client:
         specifier: ^2.3.0
-        version: 2.3.0
+        version: 2.3.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       swiper:
         specifier: ^11.2.6
         version: 11.2.10
@@ -324,6 +324,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.21
         version: 10.4.23(postcss@8.5.6)
+      bufferutil:
+        specifier: ^4.1.0
+        version: 4.1.0
       postcss:
         specifier: ^8.5.3
         version: 8.5.6
@@ -339,6 +342,9 @@ importers:
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.19
+      utf-8-validate:
+        specifier: ^6.0.6
+        version: 6.0.6
 
 packages:
 
@@ -2308,6 +2314,10 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
+  bufferutil@4.1.0:
+    resolution: {integrity: sha512-ZMANVnAixE6AWWnPzlW2KpUrxhm9woycYvPOo67jWHyFowASTEd9s+QN1EIMsSDtwhIxN4sWE1jotpuDUIgyIw==}
+    engines: {node: '>=6.14.2'}
+
   busboy@1.6.0:
     resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
     engines: {node: '>=10.16.0'}
@@ -3693,6 +3703,10 @@ packages:
     resolution: {integrity: sha512-s+w+rBWnpTMwSFbaE0UXsRlg7hU4FjekKU4eyAih5T8nJuNZT1nNsskXpxmeqSK9UzkBl6UgRlnKc8hz8IEqOw==}
     hasBin: true
 
+  node-gyp-build@4.8.4:
+    resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
+    hasBin: true
+
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
 
@@ -4763,6 +4777,10 @@ packages:
     engines: {node: '>=10', npm: '>=6'}
     peerDependencies:
       react: '>=16.13'
+
+  utf-8-validate@6.0.6:
+    resolution: {integrity: sha512-q3l3P9UtEEiAHcsgsqTgf9PPjctrDWoIXW3NpOHFdRDbLvu4DLIcxHangJ4RLrWkBcKjmcs/6NkerI8T/rE4LA==}
+    engines: {node: '>=6.14.2'}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -7018,6 +7036,10 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
+  bufferutil@4.1.0:
+    dependencies:
+      node-gyp-build: 4.8.4
+
   busboy@1.6.0:
     dependencies:
       streamsearch: 1.1.0
@@ -7342,7 +7364,7 @@ snapshots:
 
   emoji-regex@9.2.2: {}
 
-  engine.io-client@3.4.4:
+  engine.io-client@3.4.4(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       component-emitter: 1.3.1
       component-inherit: 0.0.3
@@ -7352,7 +7374,7 @@ snapshots:
       indexof: 0.0.1
       parseqs: 0.0.6
       parseuri: 0.0.6
-      ws: 6.1.4
+      ws: 6.1.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       xmlhttprequest-ssl: 1.5.5
       yeast: 0.1.2
     transitivePeerDependencies:
@@ -7370,7 +7392,7 @@ snapshots:
 
   engine.io-parser@5.2.3: {}
 
-  engine.io@6.6.5:
+  engine.io@6.6.5(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       '@types/cors': 2.8.19
       '@types/node': 22.13.13
@@ -7380,7 +7402,7 @@ snapshots:
       cors: 2.8.5
       debug: 4.4.3
       engine.io-parser: 5.2.3
-      ws: 8.18.3
+      ws: 8.18.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -8538,6 +8560,8 @@ snapshots:
       detect-libc: 2.1.2
     optional: true
 
+  node-gyp-build@4.8.4: {}
+
   node-releases@2.0.27: {}
 
   nodemailer@6.10.1: {}
@@ -8944,7 +8968,7 @@ snapshots:
       prop-types: 15.8.1
       react: 19.0.0
 
-  react-email@3.0.7(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  react-email@3.0.7(bufferutil@4.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(utf-8-validate@6.0.6):
     dependencies:
       '@babel/core': 7.24.5
       '@babel/parser': 7.24.5
@@ -8959,7 +8983,7 @@ snapshots:
       next: 15.1.2(@babel/core@7.24.5)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       normalize-path: 3.0.0
       ora: 5.4.1
-      socket.io: 4.8.1
+      socket.io: 4.8.1(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - '@opentelemetry/api'
       - '@playwright/test'
@@ -9405,23 +9429,23 @@ snapshots:
       react: 19.0.0
       simplebar-core: 1.3.2
 
-  socket.io-adapter@2.5.6:
+  socket.io-adapter@2.5.6(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       debug: 4.4.3
-      ws: 8.18.3
+      ws: 8.18.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
       - utf-8-validate
 
-  socket.io-client@2.3.0:
+  socket.io-client@2.3.0(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       backo2: 1.0.2
       base64-arraybuffer: 0.1.5
       component-bind: 1.0.0
       component-emitter: 1.2.1
       debug: 4.1.1
-      engine.io-client: 3.4.4
+      engine.io-client: 3.4.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       has-binary2: 1.0.3
       has-cors: 1.1.0
       indexof: 0.0.1
@@ -9450,14 +9474,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  socket.io@4.8.1:
+  socket.io@4.8.1(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       accepts: 1.3.8
       base64id: 2.0.0
       cors: 2.8.5
       debug: 4.3.7
-      engine.io: 6.6.5
-      socket.io-adapter: 2.5.6
+      engine.io: 6.6.5(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      socket.io-adapter: 2.5.6(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       socket.io-parser: 4.2.5
     transitivePeerDependencies:
       - bufferutil
@@ -9796,6 +9820,10 @@ snapshots:
       dequal: 2.0.3
       react: 19.0.0
 
+  utf-8-validate@6.0.6:
+    dependencies:
+      node-gyp-build: 4.8.4
+
   util-deprecate@1.0.2: {}
 
   uuid@8.3.2: {}
@@ -9886,11 +9914,17 @@ snapshots:
       string-width: 5.1.2
       strip-ansi: 7.1.2
 
-  ws@6.1.4:
+  ws@6.1.4(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       async-limiter: 1.0.1
+    optionalDependencies:
+      bufferutil: 4.1.0
+      utf-8-validate: 6.0.6
 
-  ws@8.18.3: {}
+  ws@8.18.3(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+    optionalDependencies:
+      bufferutil: 4.1.0
+      utf-8-validate: 6.0.6
 
   xmlhttprequest-ssl@1.5.5: {}
 

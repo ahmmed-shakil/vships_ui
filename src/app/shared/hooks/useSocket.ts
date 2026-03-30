@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+// @ts-expect-error - socket.io-client v2 types are no longer available in the latest registry version correctly
 import io from 'socket.io-client';
+
 
 type Socket = any; // v2 types are different, using any for simplicity in this hook
 
@@ -48,16 +50,16 @@ export function useSocketData(vesselId: number | null, token: string | null) {
       setConnected(true);
     });
 
-    socket.on('connect_error', (err) => {
+    socket.on('connect_error', (err: any) => {
       console.log('Connection error:', err.message);
     });
 
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', (reason: any) => {
       console.log('Disconnected:', reason);
       setConnected(false);
     });
 
-    socket.on('ME', (data) => {
+    socket.on('ME', (data: any) => {
       setLatestME((prev) => ({
         ...prev,
         [data.engineId]: { ...data, _receivedAt: Date.now() },
@@ -65,7 +67,7 @@ export function useSocketData(vesselId: number | null, token: string | null) {
       setMeTotalCount((prev) => prev + 1);
     });
 
-    socket.on('AE', (data) => {
+    socket.on('AE', (data: any) => {
       setLatestAE((prev) => ({
         ...prev,
         [data.engineId]: { ...data, _receivedAt: Date.now() },
@@ -73,7 +75,7 @@ export function useSocketData(vesselId: number | null, token: string | null) {
       setAeTotalCount((prev) => prev + 1);
     });
 
-    socket.on('DG', (data) => {
+    socket.on('DG', (data: any) => {
       setLatestDG((prev) => ({
         ...prev,
         [data.engineId]: { ...data, _receivedAt: Date.now() },
