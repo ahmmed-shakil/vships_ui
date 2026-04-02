@@ -1,19 +1,19 @@
-import { Toaster } from 'react-hot-toast';
-import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth-options';
 import AuthProvider from '@/app/api/auth/[...nextauth]/auth-provider';
+import { inter, lexendDeca } from '@/app/fonts';
 import GlobalDrawer from '@/app/shared/drawer-views/container';
 import GlobalModal from '@/app/shared/modal-views/container';
 import { JotaiProvider, ThemeProvider } from '@/app/shared/theme-provider';
-import { siteConfig } from '@/config/site.config';
-import { inter, lexendDeca } from '@/app/fonts';
-import cn from '@/utils/class-names';
 import NextProgress from '@/components/next-progress';
+import { siteConfig } from '@/config/site.config';
+import cn from '@/utils/class-names';
+import { getServerSession } from 'next-auth/next';
+import { Toaster } from 'react-hot-toast';
 
 // styles
+import '@/app/globals.css';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import '@/app/globals.css';
 
 export const metadata = {
   title: siteConfig.title,
@@ -37,6 +37,7 @@ export default async function RootLayout({
         // to prevent any warning that is caused by third party extensions like Grammarly
         suppressHydrationWarning
         className={cn(inter.variable, lexendDeca.variable, 'font-inter')}
+      // style={{ zoom: 0.75 }}
       >
         <AuthProvider session={session}>
           <ThemeProvider>
