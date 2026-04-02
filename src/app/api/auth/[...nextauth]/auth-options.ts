@@ -3,10 +3,62 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { pagesOptions } from './pages-options';
 import { loginUser } from '@/services/api';
 
+const COOKIE_DOMAIN = 'vships.perfomax.io';
+
+function buildCookies(): NextAuthOptions['cookies'] {
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (!isProduction) {
+    // Development: no secure prefix, no explicit domain (defaults to localhost)
+    return {
+      sessionToken: {
+        name: 'next-auth.session-token',
+        options: { httpOnly: true, sameSite: 'lax', path: '/', secure: false },
+      },
+      callbackUrl: {
+        name: 'next-auth.callback-url',
+        options: { httpOnly: true, sameSite: 'lax', path: '/', secure: false },
+      },
+      csrfToken: {
+        name: 'next-auth.csrf-token',
+        options: { httpOnly: true, sameSite: 'lax', path: '/', secure: false },
+      },
+    };
+  }
+
+  // Production: lock cookies to this subdomain only
+  return {
+    sessionToken: {
+      name: '__Secure-next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: COOKIE_DOMAIN,
+      },
+    },
+    callbackUrl: {
+      name: '__Secure-next-auth.callback-url',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: COOKIE_DOMAIN,
+      },
+    },
+    csrfToken: {
+      name: '__Host-next-auth.csrf-token',
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: true },
+    },
+  };
+}
+
 export const authOptions: NextAuthOptions = {
   pages: {
     ...pagesOptions,
   },
+  cookies: buildCookies(),
   session: {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 24 hours (matches backend access token TTL)
