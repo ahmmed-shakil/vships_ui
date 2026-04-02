@@ -8,11 +8,11 @@ import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
-  ReferenceArea,
 } from 'recharts';
 
 /** Custom X-axis tick — date on top, time below */
@@ -70,6 +70,7 @@ interface SensorLineChartProps {
   isLoading?: boolean;
   className?: string;
   thresholds?: { min?: number; max?: number };
+  tooltipColumns?: number;
 }
 
 export default function SensorLineChart({
@@ -80,13 +81,16 @@ export default function SensorLineChart({
   isLoading,
   className,
   thresholds,
+  tooltipColumns,
 }: SensorLineChartProps) {
   const formatVal = (v: number) => v.toFixed(2);
 
   // Round numeric values to 2 decimal places and convert nulls to 0
   const dataKeys = series.map((s) => s.dataKey);
 
-  const hasThresholds = thresholds && (thresholds.min !== undefined || thresholds.max !== undefined);
+  const hasThresholds =
+    thresholds &&
+    (thresholds.min !== undefined || thresholds.max !== undefined);
   const { min: tMin, max: tMax } = thresholds || {};
 
   let overallMin = Infinity;
@@ -123,13 +127,15 @@ export default function SensorLineChart({
   const domainRange = domainMax - domainMin || 1;
 
   // Gradient offset percentages (top of chart = 0%, bottom = 100%)
-  const topOffset = hasThresholds && tMax !== undefined
-    ? Math.max(0, Math.min(1, (domainMax - tMax) / domainRange))
-    : 0;
+  const topOffset =
+    hasThresholds && tMax !== undefined
+      ? Math.max(0, Math.min(1, (domainMax - tMax) / domainRange))
+      : 0;
 
-  const bottomOffset = hasThresholds && tMin !== undefined
-    ? Math.max(0, Math.min(1, (domainMax - tMin) / domainRange))
-    : 1;
+  const bottomOffset =
+    hasThresholds && tMin !== undefined
+      ? Math.max(0, Math.min(1, (domainMax - tMin) / domainRange))
+      : 1;
 
   return (
     <PerfomaxCard
@@ -295,7 +301,7 @@ export default function SensorLineChart({
                   tickLine={false}
                   tickFormatter={formatVal}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip columns={tooltipColumns} />} />
                 {tMax !== undefined && (
                   <ReferenceArea
                     y1={tMax}

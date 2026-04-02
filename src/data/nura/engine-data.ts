@@ -18,6 +18,8 @@ export interface EngineGaugeData {
   engine_load: number;
   /** Fuel consumption raw value (L/H) */
   fuel_cons: number;
+  /** Electrical load in kW (from socket) */
+  load_kw?: number;
 }
 
 export interface EngineTotals {
@@ -34,6 +36,7 @@ export interface EngineDetailData {
   coolant_temp: number; // °C
   lt_coolant_press: number; // bar
   fuel_oil_press: number; // bar
+  fuel_oil_temp?: number; // °C
   start_air_press: number; // bar
   batt_volt: number; // VDC
   exhgas_temp_left: number; // °C
@@ -475,6 +478,7 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     batt_volt: 24.8,
     exhgas_temp_left: 340,
     exhgas_temp_right: 345,
+    fuel_oil_temp: 45,
   },
   '1:me2': {
     lt_coolant_press: 0,
@@ -487,6 +491,7 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     batt_volt: 24.6,
     exhgas_temp_left: 335,
     exhgas_temp_right: 340,
+    fuel_oil_temp: 42,
   },
   '1:me3': {
     lt_coolant_press: 0,
@@ -499,6 +504,7 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     batt_volt: 24.2,
     exhgas_temp_left: 0,
     exhgas_temp_right: 0,
+    fuel_oil_temp: 0,
   },
   '1:ae1': {
     lt_coolant_press: 0,
@@ -511,6 +517,7 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     batt_volt: 24.5,
     exhgas_temp_left: 280,
     exhgas_temp_right: 285,
+    fuel_oil_temp: 38,
   },
   '1:ae2': {
     lt_coolant_press: 0,
@@ -523,6 +530,7 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     batt_volt: 24.4,
     exhgas_temp_left: 275,
     exhgas_temp_right: 280,
+    fuel_oil_temp: 36,
   },
 
   // Sea Explorer
@@ -537,6 +545,7 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     batt_volt: 25.0,
     exhgas_temp_left: 380,
     exhgas_temp_right: 385,
+    fuel_oil_temp: 50,
   },
   '2:me2': {
     lt_coolant_press: 0,
@@ -549,6 +558,7 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     batt_volt: 24.9,
     exhgas_temp_left: 375,
     exhgas_temp_right: 378,
+    fuel_oil_temp: 48,
   },
   '2:ae1': {
     lt_coolant_press: 0,
@@ -561,6 +571,7 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     batt_volt: 24.7,
     exhgas_temp_left: 290,
     exhgas_temp_right: 292,
+    fuel_oil_temp: 40,
   },
   '2:ae2': {
     lt_coolant_press: 0,
@@ -573,6 +584,7 @@ const engineDetailMap: Record<string, EngineDetailData> = {
     batt_volt: 24.6,
     exhgas_temp_left: 288,
     exhgas_temp_right: 290,
+    fuel_oil_temp: 39,
   },
 
   // Wave Rider

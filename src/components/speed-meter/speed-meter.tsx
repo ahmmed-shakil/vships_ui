@@ -164,11 +164,11 @@ function DynamicTickSvg({
   // Convert to standard math angles for positioning
   const svgW = 211;
   const svgH = 163;
-  const cx = svgW / 2;   // center X
+  const cx = svgW / 2; // center X
   const cy = svgH * 0.67; // center Y (visually centered on the arc)
-  const tickR = 80;       // radius for tick marks
-  const labelR = 97;      // radius for labels (further out)
-  const tickInner = 72;   // inner end of tick line
+  const tickR = 80; // radius for tick marks
+  const labelR = 97; // radius for labels (further out)
+  const tickInner = 72; // inner end of tick line
 
   // Generate tick angles: from ~220° (bottom-left) to ~-40°≡320° (bottom-right)
   // In standard math: 0° = right, 90° = up, 180° = left
@@ -306,29 +306,29 @@ export default function SpeedMeter({
     : value !== undefined
       ? reverseFill
         ? [
-          {
-            name: 'remaining',
-            value: Math.max(range - (value - min), 0),
-            color: 'transparent',
-          },
-          {
-            name: 'value',
-            value: Math.min(Math.max(value - min, 0), range),
-            color: fillColor,
-          },
-        ]
+            {
+              name: 'remaining',
+              value: Math.max(range - (value - min), 0),
+              color: 'transparent',
+            },
+            {
+              name: 'value',
+              value: Math.min(Math.max(value - min, 0), range),
+              color: fillColor,
+            },
+          ]
         : [
-          {
-            name: 'value',
-            value: Math.min(Math.max(value - min, 0), range),
-            color: fillColor,
-          },
-          {
-            name: 'remaining',
-            value: Math.max(range - (value - min), 0),
-            color: 'transparent',
-          },
-        ]
+            {
+              name: 'value',
+              value: Math.min(Math.max(value - min, 0), range),
+              color: fillColor,
+            },
+            {
+              name: 'remaining',
+              value: Math.max(range - (value - min), 0),
+              color: 'transparent',
+            },
+          ]
       : [{ name: 'value', value: range, color: fillColor }];
 
   // The track (background) data is always 100 %
@@ -398,7 +398,11 @@ export default function SpeedMeter({
         </ResponsiveContainer>
 
         {/* Tick marks overlay */}
-        <DynamicTickSvg scaleClass={sizeConfig.tickScale} min={min} max={max} />
+        <DynamicTickSvg
+          scaleClass={sizeConfig.tickScale}
+          min={reverseFill ? max : min}
+          max={reverseFill ? min : max}
+        />
       </div>
 
       {/* ── Legend / bottom info ────────────────────────────────────────── */}

@@ -169,6 +169,24 @@
     z-index: 9999 !important;
   }
 
+  /* Ensure Leaflet elements stay below the header */
+  .leaflet-container {
+    z-index: 1 !important;
+  }
+  .leaflet-pane {
+    z-index: 1 !important;
+  }
+  .leaflet-top,
+  .leaflet-bottom {
+    z-index: 2 !important;
+  }
+  .leaflet-control {
+    z-index: 2 !important;
+  }
+  .leaflet-popup {
+    z-index: 1000 !important;
+  }
+
   /* base style */
   html {
     @apply h-full antialiased;

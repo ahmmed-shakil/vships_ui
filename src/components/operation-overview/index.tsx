@@ -3,13 +3,7 @@
 import { useSocketData } from '@/app/shared/hooks/useSocket';
 import WidgetCard from '@/components/cards/widget-card';
 import SpeedMeter from '@/components/speed-meter/speed-meter';
-import {
-  computeGKWH,
-  computeKW,
-  FUEL_GAUGE_MAX,
-  RPM_GAUGE_MAX,
-  type EngineMonitorData,
-} from '@/data/nura/engine-data';
+import { RPM_GAUGE_MAX, type EngineMonitorData } from '@/data/nura/engine-data';
 import type { Ship } from '@/data/nura/ships';
 import { useChartData, useVesselEngineData } from '@/hooks/use-api-data';
 import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
@@ -77,9 +71,10 @@ function StatBadge({
 
 // ─── Engine Monitor Card ─────────────────────────────────────────────────────
 
+const LOAD_KW_MAX = 3000;
+
 function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
-  const kw = computeKW(engine.gauge.engine_load);
-  const gkwh = computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
+  const loadKw = engine.gauge.load_kw ?? 0;
 
   return (
     <WidgetCard
@@ -99,46 +94,31 @@ function EngineMonitorCard({ engine }: { engine: EngineMonitorData }) {
           unit="RPM"
           gaugeHeight={220}
         />
-        {/* <div className="-mt-20 flex items-center justify-center gap-6">
-          <div className="text-center">
-            <span className="text-xs text-muted-foreground">
-              {engine.label}
-            </span>
-          </div>
-        </div> */}
         <div className="mt-1 flex items-center justify-center">
           <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
-            {kw}
+            {engine.gauge.engine_rpm.toFixed(0)}
           </span>
-          <span className="ml-2 text-xs text-muted-foreground">kw</span>
+          <span className="ml-2 text-xs text-muted-foreground">RPM</span>
         </div>
       </div>
 
-      {/* Fuel Gauge */}
+      {/* Load kW Gauge */}
       <div className="mt-4">
         <SpeedMeter
           bare
           title={engine.label}
-          value={gkwh}
-          max={FUEL_GAUGE_MAX}
-          min={140}
-          centerLabel={`${gkwh}`}
-          unit="g/Kwh"
+          value={loadKw}
+          max={LOAD_KW_MAX}
+          centerLabel={`${loadKw.toFixed(0)}`}
+          unit="kW"
           fillColor="#00858D"
           gaugeHeight={220}
         />
-        {/* <div className="-mt-20 flex items-center justify-center gap-6">
-          <div className="text-center">
-            <span className="text-xs text-muted-foreground">
-              {engine.label}
-            </span>
-          </div>
-        </div> */}
         <div className="mt-1 flex items-center justify-center">
           <span className="inline-block rounded bg-primary/10 px-3 py-0.5 font-mono text-sm font-semibold text-primary">
-            {engine.gauge.fuel_cons.toFixed(1)}
+            {loadKw.toFixed(0)}
           </span>
-          <span className="ml-2 text-xs text-muted-foreground">L/H</span>
+          <span className="ml-2 text-xs text-muted-foreground">kW</span>
         </div>
       </div>
 
@@ -319,8 +299,9 @@ function LiveSocketCard({
         <div className="flex items-center gap-2">
           <span>Live Socket Data</span>
           <span
-            className={`inline-block h-2.5 w-2.5 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'
-              }`}
+            className={`inline-block h-2.5 w-2.5 rounded-full ${
+              connected ? 'bg-green-500' : 'bg-red-500'
+            }`}
           />
           <span className="text-xs font-normal text-muted-foreground">
             {hasData
@@ -369,8 +350,15 @@ const OperationOverviewLayout = () => {
 const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
   const { data: session } = useSession();
   const token = (session as any)?.accessToken ?? null;
-  const { latestME, latestAE, latestDG, meTotalCount, aeTotalCount, dgTotalCount, connected } =
-    useSocketData(vessel.id, token);
+  const {
+    latestME,
+    latestAE,
+    latestDG,
+    meTotalCount,
+    aeTotalCount,
+    dgTotalCount,
+    connected,
+  } = useSocketData(vessel.id, token);
 
   // Engine data for the selected vessel from API (falls back to mock)
   const { mainEngines: baseEngines } = useVesselEngineData(vessel.id);
@@ -379,41 +367,21 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
     const live = latestDG?.[socketKey] || latestME?.[socketKey];
     if (!live) return engine;
 
-    // For Ocean Voyager (ID 1), we want to keep the demo values for fuel consumption and load
-    const shouldKeepDemoValues =
-      vessel.id === 1 && (engine.id === 'me1' || engine.id === 'me2');
-
-    const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
-    const liveLoad = shouldKeepDemoValues
-      ? engine.gauge.engine_load
-      : (live.engine_load ?? engine.gauge.engine_load);
-    const liveFuelCons = shouldKeepDemoValues
-      ? engine.gauge.fuel_cons
-      : (live.fuel_cons ?? engine.gauge.fuel_cons);
-
-    const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
-    const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
-
     // FM Cons (kg/h) = fuel_cons (L/h) × 0.85, FM In = FM Cons + FM Out
-    const fmCons = liveFuelCons * 0.85;
+    const fmCons = engine.gauge.fuel_cons * 0.85;
     const fmOut = engine.flowMeter.fm_out;
     const fmIn = fmCons + fmOut;
 
     return {
       ...engine,
       gauge: {
-        engine_rpm: liveRpm,
-        engine_load: liveLoad,
-        fuel_cons: liveFuelCons,
+        ...engine.gauge,
+        load_kw: live.load_kw ?? engine.gauge.load_kw,
       },
       flowMeter: {
         fm_in: fmIn,
         fm_cons: fmCons,
         fm_out: fmOut,
-      },
-      totals: {
-        total_fuel: liveTotalFuel,
-        running_hours: liveRunHrs,
       },
     };
   });
@@ -424,7 +392,11 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
   // Consumption vs Speed: scale chart data close to socket ME values, last row = exact socket value
   const consumptionVsSpeedData = useMemo(() => {
     const baseData = baseChartData;
-    if (Object.keys(latestME).length === 0 && Object.keys(latestDG).length === 0) return baseData;
+    if (
+      Object.keys(latestME).length === 0 &&
+      Object.keys(latestDG).length === 0
+    )
+      return baseData;
 
     const engineKeys = baseEngines.map((e) => e.id);
     const socketFuelCons: Record<string, number> = {};
@@ -512,7 +484,6 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
             engineCount={engines.length}
           />
         </Box>
-
       </Box>
     </>
   );

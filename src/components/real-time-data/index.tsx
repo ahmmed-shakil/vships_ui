@@ -1,12 +1,7 @@
 'use client';
 
 import { useSocketData } from '@/app/shared/hooks/useSocket';
-import {
-  computeGKWH,
-  FUEL_GAUGE_MAX,
-  RPM_GAUGE_MAX,
-  type EngineMonitorData,
-} from '@/data/nura/engine-data';
+import { RPM_GAUGE_MAX, type EngineMonitorData } from '@/data/nura/engine-data';
 import { useVesselAlarmData, useVesselEngineData } from '@/hooks/use-api-data';
 import {
   selectedEngineAtom,
@@ -30,14 +25,14 @@ function applyLiveData(
 ): EngineMonitorData | undefined {
   if (!engine) return undefined;
   const socketKey = engine.id.toUpperCase(); // "me1" → "ME1"
-  const live = latestDG[socketKey] ?? latestME[socketKey] ?? latestAE[socketKey];
+  const live =
+    latestDG[socketKey] ?? latestME[socketKey] ?? latestAE[socketKey];
   if (!live) return engine;
 
   const liveRpm = live.engine_rpm ?? engine.gauge.engine_rpm;
   const liveLoad = live.engine_load ?? engine.gauge.engine_load;
   const liveFuelCons = live.fuel_cons ?? engine.gauge.fuel_cons;
-  const liveRunHrs = live.run_hrs_counter ?? engine.totals.running_hours;
-  const liveTotalFuel = live.total_fuel ?? engine.totals.total_fuel;
+  const liveLoadKw = live.load_kw ?? engine.gauge.load_kw;
 
   // FM Cons (kg/h) = fuel_cons (L/h) × 0.85, FM In = FM Cons + FM Out
   const fmCons = liveFuelCons * 0.85;
@@ -50,44 +45,44 @@ function applyLiveData(
       engine_rpm: liveRpm,
       engine_load: liveLoad,
       fuel_cons: liveFuelCons,
+      load_kw: liveLoadKw,
     },
     flowMeter: {
       fm_in: fmIn,
       fm_cons: fmCons,
       fm_out: fmOut,
     },
-    totals: {
-      running_hours: liveRunHrs,
-      total_fuel: liveTotalFuel,
-    },
+    totals: engine.totals,
     detail: engine.detail
       ? {
-        ...engine.detail,
-        lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-        lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-        coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-        coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-        lt_coolant_press: live.lt_coolant_press ?? engine.detail.lt_coolant_press,
-        fuel_oil_press: live.fuel_oil_press ?? engine.detail.fuel_oil_press,
-        start_air_press: live.start_air_press ?? engine.detail.start_air_press,
-        batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-        exhgas_temp_left:
-          live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-        exhgas_temp_right:
-          live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-      }
+          ...engine.detail,
+          lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+          lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+          coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+          coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+          lt_coolant_press:
+            live.lt_coolant_press ?? engine.detail.lt_coolant_press,
+          fuel_oil_press: live.fuel_oil_press ?? engine.detail.fuel_oil_press,
+          start_air_press:
+            live.start_air_press ?? engine.detail.start_air_press,
+          batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+          exhgas_temp_left:
+            live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+          exhgas_temp_right:
+            live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+        }
       : {
-        lubeoil_press: live.lubeoil_press ?? 0,
-        lubeoil_temp: live.lubeoil_temp ?? 0,
-        coolant_press: live.coolant_press ?? 0,
-        coolant_temp: live.coolant_temp ?? 0,
-        lt_coolant_press: live.lt_coolant_press ?? 0,
-        fuel_oil_press: live.fuel_oil_press ?? 0,
-        start_air_press: live.start_air_press ?? 0,
-        batt_volt: live.Batt_volt ?? 0,
-        exhgas_temp_left: live.exhgas_temp_left ?? 0,
-        exhgas_temp_right: live.exhgas_temp_right ?? 0,
-      },
+          lubeoil_press: live.lubeoil_press ?? 0,
+          lubeoil_temp: live.lubeoil_temp ?? 0,
+          coolant_press: live.coolant_press ?? 0,
+          coolant_temp: live.coolant_temp ?? 0,
+          lt_coolant_press: live.lt_coolant_press ?? 0,
+          fuel_oil_press: live.fuel_oil_press ?? 0,
+          start_air_press: live.start_air_press ?? 0,
+          batt_volt: live.Batt_volt ?? 0,
+          exhgas_temp_left: live.exhgas_temp_left ?? 0,
+          exhgas_temp_right: live.exhgas_temp_right ?? 0,
+        },
   };
 }
 
@@ -155,7 +150,8 @@ function EngineGroup({
     );
   }
 
-  const gkwh = computeGKWH(engine.gauge.fuel_cons, engine.gauge.engine_load);
+  const loadKw = engine.gauge.load_kw ?? 0;
+  const LOAD_KW_MAX = 3000;
 
   return (
     <div
@@ -180,15 +176,14 @@ function EngineGroup({
           unit="RPM"
           className="border-0"
         />
-        {/* Fuel meter */}
+        {/* Load kW meter */}
         <SpeedMeter
           bare
           size={size}
-          value={gkwh}
-          max={FUEL_GAUGE_MAX}
-          min={140}
-          centerLabel={`${gkwh}`}
-          unit="g/Kwh"
+          value={loadKw}
+          max={LOAD_KW_MAX}
+          centerLabel={`${loadKw.toFixed(0)}`}
+          unit="kW"
           fillColor="#00858D"
           className={cn('border-0', className2)}
         />
@@ -241,7 +236,10 @@ const RealTimeDataContent = () => {
   const [selectedEngine, setSelectedEngine] = useAtom(selectedEngineAtom);
   const { data: session } = useSession();
   const token = (session as any)?.accessToken ?? null;
-  const { latestME, latestAE, latestDG } = useSocketData(selectedShip.id, token);
+  const { latestME, latestAE, latestDG } = useSocketData(
+    selectedShip.id,
+    token
+  );
 
   // Fetch engine data from API (falls back to mock)
   const vesselId = selectedShip.id;
@@ -271,7 +269,7 @@ const RealTimeDataContent = () => {
         <div className="col-span-3 mt-2">
           {selectedEngine.value === 'all' ? (
             /* ── All Engine: 2x3 grid layout ── */
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 px-4">
+            <div className="grid grid-cols-1 gap-6 px-4 lg:grid-cols-2">
               {enginesData.map((engine) => (
                 <div
                   key={engine?.id}

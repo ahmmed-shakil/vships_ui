@@ -28,7 +28,7 @@ export default function AlarmOverviewHeaderSelectors() {
         options={vesselOptions}
         value={selectedShip}
         onChange={(v: Ship) => setSelectedShip(v)}
-        className="w-44"
+        className="w-52"
         selectClassName="h-9 text-sm"
         dropdownClassName="text-gray-900"
         placeholder="Select Vessel"

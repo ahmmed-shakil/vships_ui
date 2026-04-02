@@ -164,6 +164,10 @@ export default function ConditionBasedAnalysisTable({
   parts = [],
   isLoading,
 }: ConditionBasedAnalysisTableProps) {
+  if (!parts || parts.length === 0) {
+    return null;
+  }
+
   return (
     <BasicTableWidget
       title="Condition Based Analysis"
