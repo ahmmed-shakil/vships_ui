@@ -15,7 +15,7 @@ export const selectedShipAtom = atom<Ship>(null as unknown as Ship);
 export const selectedEngineAtom = atom(engineData[0]);
 
 /** Selected time range preset */
-export const selectedTimeAtom = atom<string>('3m');
+export const selectedTimeAtom = atom<string>('7d');
 
 /** Custom date range (only used when selectedTime === 'Custom Time') */
 export const dateRangeAtom = atom<[Date | null, Date | null]>([null, null]);
