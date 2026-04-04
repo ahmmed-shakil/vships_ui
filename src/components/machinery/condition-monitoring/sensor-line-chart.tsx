@@ -292,15 +292,13 @@ export default function SensorLineChart({
                   tickLine={false}
                   padding={{ left: 10, right: 10 }}
                 />
-                <YAxis
-                  domain={
-                    hasThresholds ? [domainMin, domainMax] : ['auto', 'auto']
-                  }
-                  tick={{ fontSize: 10, fill: '#9FA6B5' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={formatVal}
-                />
+          <YAxis
+            domain={[0, hasThresholds ? domainMax : 'auto']}
+            tick={{ fontSize: 10, fill: '#9FA6B5' }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={formatVal}
+          />
                 <Tooltip content={<CustomTooltip columns={tooltipColumns} />} />
                 {tMax !== undefined && (
                   <ReferenceArea
