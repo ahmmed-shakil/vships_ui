@@ -132,16 +132,15 @@ export default function SfocScatterCard({
                     cursor={{ strokeDasharray: '3 3' }}
                   />
 
-                  {modes.map((s) => (
-                    <Scatter
-                      key={s.mode}
-                      name={s.mode}
-                      data={s.data}
-                      fill={s.color}
-                      shape={s.shape as any}
-                      opacity={0.7}
-                    />
-                  ))}
+{modes.map((s) => (
+            <Scatter
+              key={s.mode}
+              name={s.mode}
+              data={s.data}
+              fill={s.color}
+              opacity={0.7}
+            />
+          ))}
                 </ScatterChart>
               </ResponsiveContainer>
             )}
