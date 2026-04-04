@@ -230,19 +230,20 @@ export default function ConditionMonitoringLayout() {
             </div>
           }
           headerFooter={
-            <div className="relative overflow-hidden px-5 pb-1">
-              <div className="animate-marquee-scroll text-sm font-medium">
-                <span className="mr-1 text-amber-500 underline decoration-amber-500">
-                  Check
-                </span>
-                <span className="text-foreground">Exh Gas Manifold Temp</span>
-                <span className="ml-1 text-amber-500">@ 68 %</span>
-                <span className="text-foreground">, Lube Oil Press </span>
-                <span className="text-amber-500">@ 65%</span>
-                <span className="text-foreground">, Coolant Temp </span>
-                <span className="text-amber-500">@ 60%</span>
-              </div>
-            </div>
+            // <div className="relative overflow-hidden px-5 pb-1">
+            //   <div className="animate-marquee-scroll text-sm font-medium">
+            //     <span className="mr-1 text-amber-500 underline decoration-amber-500">
+            //       Check
+            //     </span>
+            //     <span className="text-foreground">Exh Gas Manifold Temp</span>
+            //     <span className="ml-1 text-amber-500">@ 68 %</span>
+            //     <span className="text-foreground">, Lube Oil Press </span>
+            //     <span className="text-amber-500">@ 65%</span>
+            //     <span className="text-foreground">, Coolant Temp </span>
+            //     <span className="text-amber-500">@ 60%</span>
+            //   </div>
+            // </div>
+            <div className="h-6" />
           }
         >
           <div className="flex flex-1 flex-col justify-center gap-1">
