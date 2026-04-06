@@ -81,7 +81,8 @@ export default function HealthScoreCard({
   entry?: HealthScoreEntry;
   isLoading?: boolean;
 }) {
-  const score = entry?.score ?? 0;
+  // TODO: hardcoded for now
+  const score = 100;
   const delta = entry?.delta ?? 0;
   const alarmCount = entry?.alarm_count ?? 0;
   const peakValue = entry?.peak_value ?? 0;
