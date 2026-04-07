@@ -2,7 +2,10 @@
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
-import type { ParameterScatterResponse } from '@/types/api';
+import type {
+  ParameterScatterPoint,
+  ParameterScatterResponse,
+} from '@/types/api';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -21,14 +24,17 @@ import {
  */
 // Map parameter title to the actual field name in ParameterScatterPoint
 const PARAMETER_FIELD_MAP: Record<string, keyof ParameterScatterPoint> = {
-  'Turbocharger RPM': 'engine_rpm', // TC RPM vs engine RPM
-  'Engine RPM': 'engine_rpm',
-  'Fuel Performance Index': 'fuel_consumption',
-  'Exhaust Gas Temperatures (Cylinders)': 'exhaust_temp',
-  'Exhaust Gas Temp (Turbo Out / Manifold)': 'exhaust_temp',
-  'Charge Air Pressure': 'charge_air_pressure',
-  'HT Cooling Water Temperature': 'coolant_temp',
-  'Lube Oil Temperature': 'lube_oil_pressure',
+  'Turbocharger RPM': 'tc_rpm',
+  'Engine RPM': 'rpm',
+  'Fuel Performance Index': 'fpi',
+  'Fuel Consumption': 'fuel_consumption',
+  'Exhaust Gas Temperatures (Cylinders)': 'eg_temp_mean',
+  'Exhaust Gas Temp (Turbo Out / Manifold)': 'eg_temp_out_turbo',
+  'Charge Air Pressure': 'chargeair_press',
+  'HT Cooling Water Temperature': 'ht_cw_inlet_temp',
+  'Lube Oil Temperature': 'lo_temp',
+  'Lube Oil Pressure': 'lo_press',
+  'Engine Load': 'load_kw',
 };
 
 export default function ParameterVsRpmChart({
@@ -53,7 +59,7 @@ export default function ParameterVsRpmChart({
     const yField = PARAMETER_FIELD_MAP[parameterName] ?? 'engine_rpm';
 
     response.data.forEach((p, i) => {
-      const xVal = p.engine_rpm as number;
+      const xVal = p.rpm as number;
       const yVal = p[yField] as number;
       if (xVal == null || yVal == null) return;
       const pt = { x: xVal, y: yVal };
