@@ -1,7 +1,6 @@
 'use client';
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
-import { CustomTooltip } from '@/components/charts/custom-tooltip';
 import type {
   ParameterScatterPoint,
   ParameterScatterResponse,
@@ -137,7 +136,28 @@ export default function ParameterVsRpmChart({
                     domain={[0, 'auto']}
                   />
                   <Tooltip
-                    content={<CustomTooltip />}
+                    content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      return (
+                        <div className="border-border rounded-md border bg-background px-3 py-2 text-xs shadow-md">
+                          {payload.map((item: any, i: number) => (
+                            <div
+                              key={i}
+                              className="flex items-center gap-1.5 py-0.5"
+                            >
+                              <span
+                                className="inline-block h-2 w-2 flex-shrink-0 rounded-full"
+                                style={{ backgroundColor: item.fill }}
+                              />
+                              <span className="text-muted-foreground">
+                                {item.name}:
+                              </span>
+                              <span className="font-medium">{item.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }}
                     cursor={{ strokeDasharray: '3 3' }}
                   />
                   <Scatter
