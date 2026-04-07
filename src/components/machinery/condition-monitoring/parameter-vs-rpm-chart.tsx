@@ -55,7 +55,8 @@ export default function ParameterVsRpmChart({
   if (response?.data?.length) {
     const normalSet = new Set(response.operating_modes?.normal ?? []);
     const abnormalSet = new Set(response.operating_modes?.abnormal ?? []);
-    const yField = PARAMETER_FIELD_MAP[parameterName] ?? 'engine_rpm';
+    const yField =
+      PARAMETER_FIELD_MAP[parameterName] ?? ('rpm' as keyof ParameterScatterPoint);
 
     response.data.forEach((p, i) => {
       const xVal = p.rpm as number;
@@ -107,10 +108,10 @@ export default function ParameterVsRpmChart({
           </span>
         </div>
 
-        <div className="flex flex-1 flex-col">
-          <div className="w-full">
+        <div className="flex min-h-[250px] flex-1 flex-col">
+          <div className="h-[250px] w-full shrink-0">
             {isLoading ? (
-              <div className="flex h-full items-center justify-center">
+              <div className="flex h-full min-h-[250px] items-center justify-center">
                 <span className="animate-pulse text-sm text-muted-foreground">
                   Loading…
                 </span>
