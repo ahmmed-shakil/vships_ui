@@ -24,7 +24,7 @@ import ConditionBasedAnalysisTable from './condition-based-analysis-table';
 import DeltaDeviationTrendline from './delta-deviation-trendline';
 import HealthScoreCard from './health-score-card';
 import ParameterScatterChart from './parameter-scatter-chart';
-import ParameterVsPchargeChart from './parameter-vs-pcharge-chart';
+import ParameterVsRpmChart from './parameter-vs-rpm-chart';
 import SensorLineChart, { type SensorSeries } from './sensor-line-chart';
 import SfocScatterCard from './sfoc-scatter-card';
 
@@ -336,35 +336,41 @@ export default function ConditionMonitoringLayout() {
       </div> */}
 
       {/* ─── Sensor Chart Rows (8 rows: chart + health score + pcharge) ──── */}
-      {SENSOR_CHART_ROWS.map((row, idx) => {
-        // Match health score entry by a key derived from the chart title
-        const scoreEntry = healthScores.find(
-          (s) => s.label === row.title || s.parameter === row.title
-        );
-        return (
-          <div
-            key={row.title}
-            className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11"
-          >
-            <SensorLineChart
-              title={row.title}
-              yAxisLabel={row.yAxisLabel}
-              series={row.series}
-              data={sensorData}
-              isLoading={isLoading}
-              className="col-span-5"
-              thresholds={row.thresholds}
-              tooltipColumns={row.series.length > 5 ? 2 : undefined}
-            />
-            <HealthScoreCard
-              className="col-span-3"
-              entry={scoreEntry}
-              isLoading={healthLoading}
-            />
-            <ParameterVsPchargeChart className="col-span-3" />
-          </div>
-        );
-      })}
+{SENSOR_CHART_ROWS.map((row, idx) => {
+    // Match health score entry by a key derived from the chart title
+    const scoreEntry = healthScores.find(
+      (s) => s.label === row.title || s.parameter === row.title
+    );
+    return (
+      <div
+        key={row.title}
+        className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11"
+      >
+        <SensorLineChart
+          title={row.title}
+          yAxisLabel={row.yAxisLabel}
+          series={row.series}
+          data={sensorData}
+          isLoading={isLoading}
+          className="col-span-5"
+          thresholds={row.thresholds}
+          tooltipColumns={row.series.length > 5 ? 2 : undefined}
+        />
+        <HealthScoreCard
+          className="col-span-3"
+          entry={scoreEntry}
+          isLoading={healthLoading}
+        />
+        <ParameterVsRpmChart
+          className="col-span-3"
+          parameterName={row.title}
+          yAxisLabel={row.yAxisLabel}
+          response={scatterResponse}
+          isLoading={scatterLoading}
+        />
+      </div>
+    );
+  })}
     </>
   );
 }

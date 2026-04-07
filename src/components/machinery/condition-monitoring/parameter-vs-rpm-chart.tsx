@@ -1,0 +1,164 @@
+'use client';
+
+import PerfomaxCard from '@/components/cards/perfomax-card';
+import { CustomTooltip } from '@/components/charts/custom-tooltip';
+import type { ParameterScatterResponse } from '@/types/api';
+import {
+  CartesianGrid,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+
+/**
+ * Parameter vs RPM
+ *
+ * Scatter chart showing a parameter (y) vs RPM (x).
+ * Two series with inline legend in the widget header.
+ */
+// Map parameter title to the actual field name in ParameterScatterPoint
+const PARAMETER_FIELD_MAP: Record<string, keyof ParameterScatterPoint> = {
+  'Turbocharger RPM': 'engine_rpm', // TC RPM vs engine RPM
+  'Engine RPM': 'engine_rpm',
+  'Fuel Performance Index': 'fuel_consumption',
+  'Exhaust Gas Temperatures (Cylinders)': 'exhaust_temp',
+  'Exhaust Gas Temp (Turbo Out / Manifold)': 'exhaust_temp',
+  'Charge Air Pressure': 'charge_air_pressure',
+  'HT Cooling Water Temperature': 'coolant_temp',
+  'Lube Oil Temperature': 'lube_oil_pressure',
+};
+
+export default function ParameterVsRpmChart({
+  className,
+  parameterName,
+  yAxisLabel,
+  response,
+  isLoading,
+}: {
+  className?: string;
+  parameterName: string;
+  yAxisLabel: string;
+  response?: ParameterScatterResponse | null;
+  isLoading?: boolean;
+}) {
+  const normalData: { x: number; y: number }[] = [];
+  const abnormalData: { x: number; y: number }[] = [];
+
+  if (response?.data?.length) {
+    const normalSet = new Set(response.operating_modes?.normal ?? []);
+    const abnormalSet = new Set(response.operating_modes?.abnormal ?? []);
+    const yField = PARAMETER_FIELD_MAP[parameterName] ?? 'engine_rpm';
+
+    response.data.forEach((p, i) => {
+      const xVal = p.engine_rpm as number;
+      const yVal = p[yField] as number;
+      if (xVal == null || yVal == null) return;
+      const pt = { x: xVal, y: yVal };
+      if (abnormalSet.has(i)) {
+        abnormalData.push(pt);
+      } else {
+        normalData.push(pt);
+      }
+    });
+  }
+
+  return (
+    <PerfomaxCard
+      title="Scatter"
+      headerFooter="Parameter vs RPM"
+      headerFooterClassName="px-4"
+      className={className}
+      bodyClassName="px-2 py-2"
+      action={
+        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <span
+              className="inline-block h-0.5 w-4"
+              style={{ backgroundColor: '#22C55E' }}
+            />
+            Normal
+          </span>
+          <span className="flex items-center gap-1">
+            <span
+              className="inline-block h-2 w-2 rounded-full"
+              style={{ backgroundColor: '#A855F7' }}
+            />
+            Abnormal
+          </span>
+        </div>
+      }
+    >
+      <div className="flex h-full pt-2">
+        {/* Y-axis label */}
+        <div className="flex flex-col items-center justify-center gap-1 pr-1">
+          <span
+            className="text-[10px] font-medium text-muted-foreground"
+            style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+          >
+            {yAxisLabel}
+          </span>
+        </div>
+
+        <div className="flex flex-1 flex-col">
+          <div className="w-full">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <span className="animate-pulse text-sm text-muted-foreground">
+                  Loading…
+                </span>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%" className="">
+                <ScatterChart
+                  margin={{ top: 5, right: 10, left: -15, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    type="number"
+                    dataKey="x"
+                    name="RPM"
+                    tick={{ fontSize: 10, fill: '#9FA6B5' }}
+                    domain={[0, 'auto']}
+                  />
+                  <YAxis
+                    type="number"
+                    dataKey="y"
+                    name={yAxisLabel}
+                    tick={{ fontSize: 10, fill: '#9FA6B5' }}
+                    domain={[0, 'auto']}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ strokeDasharray: '3 3' }}
+                  />
+                  <Scatter
+                    name="Normal"
+                    data={normalData}
+                    fill="#22C55E"
+                    shape="circle"
+                  />
+                  <Scatter
+                    name="Abnormal"
+                    data={abnormalData}
+                    fill="#A855F7"
+                    shape="circle"
+                  />
+                </ScatterChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* X-axis label */}
+          <div className="mt-1 flex items-center justify-center">
+            <span className="text-[10px] font-medium text-muted-foreground">
+              RPM
+            </span>
+          </div>
+        </div>
+      </div>
+    </PerfomaxCard>
+  );
+}

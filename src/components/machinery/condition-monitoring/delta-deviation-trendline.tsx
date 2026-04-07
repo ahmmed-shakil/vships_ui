@@ -111,7 +111,10 @@ export default function DeltaDeviationTrendline({
                   data={chartData}
                   margin={{ top: 5, right: 20, left: -10, bottom: 20 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
 
                   {/* Orange overlay band for reference range */}
                   <ReferenceArea
@@ -129,8 +132,10 @@ export default function DeltaDeviationTrendline({
                     height={40}
                   />
                   <YAxis
+                    domain={[0, 'auto']}
                     tick={{ fontSize: 11, fill: '#9FA6B5' }}
-                    tickCount={11}
+                    tickCount={6}
+                    allowDataOverflow
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend
