@@ -85,13 +85,16 @@ function toCardProps(card: EngineOverviewCard): Omit<
   'alarms'
 > & {
   engineValue: string;
+  hasHealthData: boolean;
   alarms: MachineryCardProps['alarms'];
 } {
+  const hasHealthData = Object.values(card.metrics).some((v) => v != null);
   return {
     id: card.engine_id.charCodeAt(0),
     title: card.label,
     engineValue: card.engine_id,
     healthScore: card.health_score,
+    hasHealthData,
     status: card.status,
     metrics: toMetrics(card),
     alarms: card.alarms,
@@ -158,7 +161,15 @@ export default function MachineryOverviewPage() {
       title={item.title}
       accentColor={getHealthColor(item.healthScore)}
       headerRight={<StatusGauge status={item.status} />}
-      action={<HealthScoreHeader score={item.healthScore} />}
+      action={
+        item.hasHealthData ? (
+          <HealthScoreHeader score={item.healthScore} />
+        ) : (
+          <div className="rounded bg-muted px-3 py-2 text-sm font-semibold text-muted-foreground">
+            N/A
+          </div>
+        )
+      }
       onClick={() => handleCardClick(item)}
       className="cursor-pointer transition-opacity hover:opacity-90"
     >

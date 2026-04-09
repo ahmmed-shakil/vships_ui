@@ -18,7 +18,7 @@ import {
 /**
  * Parameter vs RPM
  *
- * Scatter chart showing a parameter (y) vs RPM (x).
+ * Scatter chart showing a parameter (y) vs TC RPM (x).
  * Two series with inline legend in the widget header.
  */
 // Map parameter title to the actual field name in ParameterScatterPoint
@@ -59,7 +59,7 @@ export default function ParameterVsRpmChart({
       PARAMETER_FIELD_MAP[parameterName] ?? ('rpm' as keyof ParameterScatterPoint);
 
     response.data.forEach((p, i) => {
-      const xVal = p.rpm as number;
+      const xVal = p.tc_rpm as number;
       const yVal = p[yField] as number;
       if (xVal == null || yVal == null) return;
       const pt = { x: xVal, y: yVal };
@@ -125,7 +125,7 @@ export default function ParameterVsRpmChart({
                   <XAxis
                     type="number"
                     dataKey="x"
-                    name="RPM"
+                    name="TC RPM"
                     tick={{ fontSize: 10, fill: '#9FA6B5' }}
                     domain={[0, 'auto']}
                   />
@@ -181,7 +181,7 @@ export default function ParameterVsRpmChart({
           {/* X-axis label */}
           <div className="mt-1 flex items-center justify-center">
             <span className="text-[10px] font-medium text-muted-foreground">
-              RPM
+              TC RPM
             </span>
           </div>
         </div>

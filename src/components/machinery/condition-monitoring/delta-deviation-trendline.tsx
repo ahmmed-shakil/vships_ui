@@ -80,6 +80,10 @@ export default function DeltaDeviationTrendline({
 
   const band = response?.reference_band ?? { upper: 24, lower: 12 };
 
+  // Show at most ~11 X-axis ticks regardless of data density (matches ocean pact)
+  const xAxisInterval =
+    chartData.length > 11 ? Math.ceil(chartData.length / 11) - 1 : 0;
+
   return (
     <PerfomaxCard
       title="Delta Deviation Trendline"
@@ -128,7 +132,7 @@ export default function DeltaDeviationTrendline({
                   <XAxis
                     dataKey="date"
                     tick={<DateTimeTick />}
-                    interval={0}
+                    interval={xAxisInterval}
                     height={40}
                   />
                   <YAxis
