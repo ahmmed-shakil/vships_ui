@@ -21,6 +21,11 @@ import {
  * Scatter chart showing a parameter (y) vs TC RPM (x).
  * Two series with inline legend in the widget header.
  */
+function formatScatterValue(v: unknown): string {
+  if (typeof v === 'number' && !Number.isNaN(v)) return v.toFixed(2);
+  return String(v ?? '');
+}
+
 // Map parameter title to the actual field name in ParameterScatterPoint
 const PARAMETER_FIELD_MAP: Record<string, keyof ParameterScatterPoint> = {
   'Turbocharger RPM': 'tc_rpm',
@@ -127,6 +132,7 @@ export default function ParameterVsRpmChart({
                     dataKey="x"
                     name="TC RPM"
                     tick={{ fontSize: 10, fill: '#9FA6B5' }}
+                    tickFormatter={formatScatterValue}
                     domain={[0, 'auto']}
                   />
                   <YAxis
@@ -134,6 +140,7 @@ export default function ParameterVsRpmChart({
                     dataKey="y"
                     name={yAxisLabel}
                     tick={{ fontSize: 10, fill: '#9FA6B5' }}
+                    tickFormatter={formatScatterValue}
                     domain={[0, 'auto']}
                   />
                   <Tooltip
@@ -153,7 +160,9 @@ export default function ParameterVsRpmChart({
                               <span className="text-muted-foreground">
                                 {item.name}:
                               </span>
-                              <span className="font-medium">{item.value}</span>
+                              <span className="font-medium">
+                                {formatScatterValue(item.value)}
+                              </span>
                             </div>
                           ))}
                         </div>
