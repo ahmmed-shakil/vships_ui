@@ -123,12 +123,12 @@ export default function ParameterVsRpmChart({
     >
       <div className="flex h-full pt-2">
         {/* Y-axis label */}
-        <div className="flex flex-col items-center justify-center gap-1 pr-1">
+        <div className="flex max-w-[4.5rem] flex-col items-center justify-center gap-1 pr-1">
           <span
-            className="text-[10px] font-medium text-muted-foreground"
+            className="text-center text-[10px] font-medium leading-tight text-muted-foreground"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
-            {yAxisLabel}
+            {parameterName}
           </span>
         </div>
 
@@ -157,7 +157,7 @@ export default function ParameterVsRpmChart({
                   <YAxis
                     type="number"
                     dataKey="y"
-                    name={yAxisLabel}
+                    name={parameterName}
                     tick={{ fontSize: 10, fill: '#9FA6B5' }}
                     tickFormatter={formatScatterValue}
                     domain={[0, 'auto']}

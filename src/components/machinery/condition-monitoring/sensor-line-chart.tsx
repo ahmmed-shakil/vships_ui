@@ -15,6 +15,29 @@ import {
   YAxis,
 } from 'recharts';
 
+/** Tooltip header: parse API UTC / ISO timestamps into local, human-readable text */
+function formatTooltipTimestampLabel(label: unknown): string {
+  if (label == null) return '';
+  if (typeof label === 'number' && !Number.isNaN(label)) {
+    const d = new Date(label);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+    }
+  }
+  const s = String(label);
+  const d = new Date(s);
+  if (!Number.isNaN(d.getTime())) {
+    return d.toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  }
+  return s;
+}
+
 /** Custom X-axis tick — date on top, time below */
 function DateTimeTick({ x, y, payload }: any) {
   const raw = payload.value as string;
@@ -299,7 +322,15 @@ export default function SensorLineChart({
             tickLine={false}
             tickFormatter={formatVal}
           />
-                <Tooltip content={<CustomTooltip columns={tooltipColumns} />} />
+                <Tooltip
+                  content={(props) => (
+                    <CustomTooltip
+                      {...props}
+                      label={formatTooltipTimestampLabel(props.label)}
+                      columns={tooltipColumns}
+                    />
+                  )}
+                />
                 {tMax !== undefined && (
                   <ReferenceArea
                     y1={tMax}
