@@ -105,11 +105,7 @@ function colorByRecency(timestampMs: number): string {
 
 // ─── Vessel marker icon (divIcon) ────────────────────────────────────────────
 
-function createVesselIcon(
-  name: string,
-  direction: number,
-  onlineMs: number
-) {
+function createVesselIcon(name: string, direction: number, onlineMs: number) {
   const color = colorByRecency(onlineMs);
   const diff = Date.now() - onlineMs;
   const shouldPulse = diff < 3 * 60 * 60 * 1000;
@@ -457,7 +453,7 @@ export default function VesselMap({
             <Marker
               key={idx}
               position={v.position}
-              icon={createVesselIcon(v.name, v.direction, v.online)}
+              icon={createVesselIcon(v.name, v.direction, v.timestamp)}
               eventHandlers={{
                 mouseover: (e) => e.target.openPopup(),
               }}
@@ -549,9 +545,9 @@ export default function VesselMap({
                       <div
                         className="relative flex h-10 w-10 items-center justify-center rounded-full border"
                         style={{
-                          backgroundColor: colorByRecency(v.online),
-                          borderColor: colorByRecency(v.online),
-                          boxShadow: `0 0 10px ${colorByRecency(v.online)}50`,
+                          backgroundColor: colorByRecency(v.timestamp),
+                          borderColor: colorByRecency(v.timestamp),
+                          boxShadow: `0 0 10px ${colorByRecency(v.timestamp)}50`,
                         }}
                       >
                         <PiNavigationArrow
