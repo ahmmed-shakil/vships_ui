@@ -81,9 +81,8 @@ export default function HealthScoreCard({
   entry?: HealthScoreEntry;
   isLoading?: boolean;
 }) {
-  // TODO: hardcoded for now
-  const score = 100;
-  const delta = entry?.delta ?? 0;
+  const score = entry?.score;
+  const delta = entry?.delta;
   const alarmCount = entry?.alarm_count ?? 0;
   const peakValue = entry?.peak_value ?? 0;
   const peakUnit = entry?.peak_unit ?? '';
@@ -97,7 +96,7 @@ export default function HealthScoreCard({
             Score
           </span>
           <span className="text-4xl font-bold text-primary">
-            {isLoading ? '…' : `${score}%`}
+            {isLoading ? '…' : score == null ? 'N/A' : `${score}%`}
           </span>
         </div>
         <div className="flex items-baseline gap-2">
@@ -105,7 +104,7 @@ export default function HealthScoreCard({
             Delta
           </span>
           <span className="text-4xl font-bold text-foreground">
-            {isLoading ? '…' : `${delta}%`}
+            {isLoading ? '…' : delta == null ? 'N/A' : `${delta}%`}
           </span>
         </div>
       </div>
@@ -133,9 +132,15 @@ export default function HealthScoreCard({
         <StatCard
           title="Stats"
           rows={[
-            { label: 'Avg', value: isLoading ? '…' : String(score) },
+            {
+              label: 'Avg',
+              value: isLoading ? '…' : score == null ? 'N/A' : String(score),
+            },
             { label: 'Mov Avg', value: isLoading ? '…' : '--' },
-            { label: 'Dev', value: isLoading ? '…' : String(delta) },
+            {
+              label: 'Dev',
+              value: isLoading ? '…' : delta == null ? 'N/A' : String(delta),
+            },
           ]}
         />
         <StatCard
@@ -160,7 +165,7 @@ export default function HealthScoreCard({
               label: 'Status',
               value: (
                 <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                  {entry
+                  {score != null
                     ? score >= 70
                       ? 'OK'
                       : score >= 40

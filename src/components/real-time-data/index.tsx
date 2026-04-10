@@ -2,7 +2,11 @@
 
 import { useSocketData } from '@/app/shared/hooks/useSocket';
 import { RPM_GAUGE_MAX, type EngineMonitorData } from '@/data/nura/engine-data';
-import { useVesselAlarmData, useVesselEngineData } from '@/hooks/use-api-data';
+import {
+  useVesselAlarmData,
+  useVesselEngineData,
+  useVesselPosition,
+} from '@/hooks/use-api-data';
 import {
   selectedEngineAtom,
   selectedShipAtom,
@@ -243,6 +247,8 @@ const RealTimeDataContent = () => {
 
   // Fetch engine data from API (falls back to mock)
   const vesselId = selectedShip.id;
+  const livePosition = useVesselPosition(vesselId);
+  const mapPosition = livePosition ?? selectedShip.position;
   const { mainEngines } = useVesselEngineData(vesselId);
 
   // Fetch alarm data from API (falls back to mock), filtered by engine
@@ -316,10 +322,10 @@ const RealTimeDataContent = () => {
         {/* Map */}
         <RealTimeDataMap
           name={selectedShip.label}
-          lat={selectedShip.position?.lat ?? 0}
-          long={selectedShip.position?.long ?? 0}
-          direction={selectedShip.position?.direction ?? 0}
-          timestamp={selectedShip.position?.timestamp ?? 0}
+          lat={mapPosition.lat ?? 0}
+          long={mapPosition.long ?? 0}
+          direction={mapPosition.direction ?? 0}
+          timestamp={mapPosition.timestamp ?? 0}
           minHeight={500}
         />
       </div>

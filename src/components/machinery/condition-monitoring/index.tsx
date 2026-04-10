@@ -149,6 +149,16 @@ export default function ConditionMonitoringLayout() {
   const { parts: spareParts, isLoading: partsLoading } = useSpareParts();
   const { response: latestSensorResponse, isLoading: latestSensorLoading } =
     useLatestSensorValues();
+  const validScores = healthScores
+    .map((item) => item.score)
+    .filter((score) => typeof score === 'number' && !Number.isNaN(score));
+  const overallHealthScore =
+    validScores.length > 0
+      ? Math.round(
+          validScores.reduce((sum, score) => sum + score, 0) /
+            validScores.length
+        )
+      : null;
 
   if (!selectedShip) {
     return (
@@ -226,7 +236,7 @@ export default function ConditionMonitoringLayout() {
           headerClassName="items-start"
           action={
             <div className="flex flex-col items-end gap-2">
-              <HealthScoreHeader score={80} />
+              <HealthScoreHeader score={overallHealthScore} />
             </div>
           }
           headerFooter={

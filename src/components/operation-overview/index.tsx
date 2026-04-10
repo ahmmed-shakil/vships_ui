@@ -5,7 +5,11 @@ import WidgetCard from '@/components/cards/widget-card';
 import SpeedMeter from '@/components/speed-meter/speed-meter';
 import { RPM_GAUGE_MAX, type EngineMonitorData } from '@/data/nura/engine-data';
 import type { Ship } from '@/data/nura/ships';
-import { useChartData, useVesselEngineData } from '@/hooks/use-api-data';
+import {
+  useChartData,
+  useVesselEngineData,
+  useVesselPosition,
+} from '@/hooks/use-api-data';
 import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
 import { useAtomValue } from 'jotai';
 import { useSession } from 'next-auth/react';
@@ -350,6 +354,8 @@ const OperationOverviewLayout = () => {
 const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
   const { data: session } = useSession();
   const token = (session as any)?.accessToken ?? null;
+  const livePosition = useVesselPosition(vessel.id);
+  const mapPosition = livePosition ?? vessel.position;
   const {
     latestME,
     latestAE,
@@ -468,10 +474,10 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
           <Box className="col-span-10 lg:col-span-3">
             <RealTimeDataMap
               name={vessel.label}
-              lat={vessel.position?.lat ?? 0}
-              long={vessel.position?.long ?? 0}
-              direction={vessel.position?.direction ?? 0}
-              timestamp={vessel.position?.timestamp ?? 0}
+              lat={mapPosition.lat ?? 0}
+              long={mapPosition.long ?? 0}
+              direction={mapPosition.direction ?? 0}
+              timestamp={mapPosition.timestamp ?? 0}
               minHeight={600}
             />
           </Box>

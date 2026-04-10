@@ -67,6 +67,7 @@ export default function SfocScatterCard({
   isLoading: boolean;
 }) {
   const modes = response?.modes ?? [];
+  const hasSfocData = modes.some((mode) => (mode.data?.length ?? 0) > 0);
   return (
     <PerfomaxCard
       className={className}
@@ -105,7 +106,7 @@ export default function SfocScatterCard({
                   Loading…
                 </span>
               </div>
-            ) : (
+            ) : hasSfocData ? (
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart
                   margin={{ top: 5, right: 10, left: -15, bottom: 5 }}
@@ -143,6 +144,12 @@ export default function SfocScatterCard({
           ))}
                 </ScatterChart>
               </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <span className="text-sm font-semibold text-muted-foreground">
+                  N/A
+                </span>
+              </div>
             )}
           </div>
 

@@ -133,10 +133,16 @@ export default function ParameterScatterChart({
   isLoading: boolean;
 }) {
   const [opt1, setOpt1] = useState(
-    () => paramOptions.find((o) => o.value === 'rpm') ?? paramOptions[0]
+    () =>
+      paramOptions.find((o) => o.value === 'eg_temp_1') ??
+      paramOptions.find((o) => o.value === 'rpm') ??
+      paramOptions[0]
   );
   const [opt2, setOpt2] = useState(
-    () => paramOptions.find((o) => o.value === 'load_kw') ?? paramOptions[1]
+    () =>
+      paramOptions.find((o) => o.value === 'eg_temp_2') ??
+      paramOptions.find((o) => o.value === 'load_kw') ??
+      paramOptions[1]
   );
 
   // Exclude selected param from the other dropdown
