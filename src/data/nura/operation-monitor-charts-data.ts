@@ -54,16 +54,12 @@ const ALL_HOURS = [
 ];
 
 /**
- * Filter hours to only include those ≤ the current Singapore time (UTC+8).
- * This ensures charts don't show "future" data points during demos.
+ * Filter hours to only include those ≤ the current local time.
+ * Backend timestamps are UTC; display uses the browser locale (local timezone).
  */
 function getFilteredHours(): string[] {
-  const now = new Date();
-  // Get current hour in Singapore timezone (UTC+8)
-  const sgtHour = new Date(
-    now.toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
-  ).getHours();
-  const currentTimeStr = `${String(sgtHour).padStart(2, '0')}:00`;
+  const localHour = new Date().getHours();
+  const currentTimeStr = `${String(localHour).padStart(2, '0')}:00`;
   return ALL_HOURS.filter((h) => h <= currentTimeStr);
 }
 
