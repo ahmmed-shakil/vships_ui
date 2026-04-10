@@ -21,8 +21,9 @@ import {
  * Scatter chart showing a parameter (y) vs TC RPM (x).
  * Two series with inline legend in the widget header.
  */
+/** Axis ticks + tooltip: one decimal place (e.g. 2.345 → 2.3) */
 function formatScatterValue(v: unknown): string {
-  if (typeof v === 'number' && !Number.isNaN(v)) return v.toFixed(2);
+  if (typeof v === 'number' && !Number.isNaN(v)) return v.toFixed(1);
   return String(v ?? '');
 }
 
