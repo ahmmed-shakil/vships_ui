@@ -355,7 +355,10 @@ const OperationOverviewContent = ({ vessel }: { vessel: Ship }) => {
   const { data: session } = useSession();
   const token = (session as any)?.accessToken ?? null;
   const livePosition = useVesselPosition(vessel.id);
-  const mapPosition = livePosition ?? vessel.position;
+  const mapPosition =
+    livePosition ??
+    vessel.position ??
+    ({ lat: 0, long: 0, direction: 0, timestamp: 0 } as const);
   const {
     latestME,
     latestAE,

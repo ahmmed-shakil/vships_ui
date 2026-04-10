@@ -248,7 +248,10 @@ const RealTimeDataContent = () => {
   // Fetch engine data from API (falls back to mock)
   const vesselId = selectedShip.id;
   const livePosition = useVesselPosition(vesselId);
-  const mapPosition = livePosition ?? selectedShip.position;
+  const mapPosition =
+    livePosition ??
+    selectedShip.position ??
+    ({ lat: 0, long: 0, direction: 0, timestamp: 0 } as const);
   const { mainEngines } = useVesselEngineData(vesselId);
 
   // Fetch alarm data from API (falls back to mock), filtered by engine
