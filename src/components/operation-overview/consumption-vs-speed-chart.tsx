@@ -16,6 +16,76 @@ import {
 } from 'recharts';
 import { Badge } from 'rizzui';
 
+/** Parse API ISO/UTC or legacy mock "HH:00" bucket labels */
+function parsePointTime(raw: string): Date | null {
+  if (!raw) return null;
+  const iso = new Date(raw);
+  if (!Number.isNaN(iso.getTime())) return iso;
+  const m = /^(\d{1,2}):(\d{2})$/.exec(raw.trim());
+  if (!m) return null;
+  const d = new Date();
+  d.setHours(parseInt(m[1], 10), parseInt(m[2], 10), 0, 0);
+  return d;
+}
+
+/** Tooltip header — matches sensor line / delta trendline (local display) */
+function formatTooltipTimestampLabel(label: unknown): string {
+  if (label == null) return '';
+  if (typeof label === 'number' && !Number.isNaN(label)) {
+    const d = new Date(label);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+    }
+  }
+  const s = String(label);
+  const d = parsePointTime(s) ?? new Date(s);
+  if (!Number.isNaN(d.getTime())) {
+    return d.toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  }
+  return s;
+}
+
+/** X-axis tick — date on top, time below (matches sensor line chart) */
+function DateTimeTick({ x, y, payload }: any) {
+  const raw = String(payload?.value ?? '');
+  const d = parsePointTime(raw) ?? new Date(raw);
+  if (!raw || Number.isNaN(d.getTime())) {
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text x={0} y={0} dy={14} textAnchor="middle" fontSize={8} fill="#9FA6B5">
+          {raw || '—'}
+        </text>
+      </g>
+    );
+  }
+  const datePart = d.toLocaleDateString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  const timePart = d.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} dy={10} textAnchor="middle" fontSize={8} fill="#9FA6B5">
+        {datePart}
+      </text>
+      <text x={0} y={0} dy={20} textAnchor="middle" fontSize={8} fill="#9FA6B5">
+        {timePart}
+      </text>
+    </g>
+  );
+}
+
 const ENGINE_COLORS: Record<string, string> = {
   me1: '#5a5fd7',
   me2: '#10b981',
@@ -131,7 +201,14 @@ export default function ConsumptionVsSpeedChart({
                   <stop offset="95%" stopColor="#dc3545" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="time" axisLine={false} tickLine={false} />
+              <XAxis
+                dataKey="time"
+                tick={<DateTimeTick />}
+                interval="preserveStartEnd"
+                height={36}
+                axisLine={false}
+                tickLine={false}
+              />
               <YAxis
                 yAxisId="left"
                 axisLine={false}
@@ -159,7 +236,14 @@ export default function ConsumptionVsSpeedChart({
                   style: { fontSize: 11, fill: '#888' },
                 }}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip
+                content={(props) => (
+                  <CustomTooltip
+                    {...props}
+                    label={formatTooltipTimestampLabel(props.label)}
+                  />
+                )}
+              />
               {engineKeys.map((key, idx) => (
                 <Bar
                   key={key}
