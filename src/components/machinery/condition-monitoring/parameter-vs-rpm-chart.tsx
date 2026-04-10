@@ -27,29 +27,13 @@ function formatScatterValue(v: unknown): string {
   return String(v ?? '');
 }
 
-function firstNumericFromPoint(
-  p: ParameterScatterPoint,
-  keys: (keyof ParameterScatterPoint)[]
-): number | null {
-  for (const k of keys) {
-    const v = p[k];
-    if (typeof v === 'number' && !Number.isNaN(v)) return v;
-  }
-  return null;
-}
-
-/** Cyl 1 first (matches first line on sensor chart); mean sometimes missing */
-const EXHAUST_CYLINDERS_Y_KEYS: (keyof ParameterScatterPoint)[] = [
-  'eg_temp_1',
-  'eg_temp_mean',
-];
-
-// Map parameter title to the actual field name in ParameterScatterPoint
+// Map sensor row title → single Y-axis field
 const PARAMETER_FIELD_MAP: Record<string, keyof ParameterScatterPoint> = {
   'Turbocharger RPM': 'tc_rpm',
   'Engine RPM': 'rpm',
   'Fuel Performance Index': 'fpi',
   'Fuel Consumption': 'fuel_consumption',
+  'Exhaust Gas Temperatures (Cylinders)': 'eg_temp_1',
   'Exhaust Gas Temp (Turbo Out / Manifold)': 'eg_temp_out_turbo',
   'Charge Air Pressure': 'chargeair_press',
   'HT Cooling Water Temperature': 'ht_cw_inlet_temp',
@@ -78,14 +62,12 @@ export default function ParameterVsRpmChart({
     const normalSet = new Set(response.operating_modes?.normal ?? []);
     const abnormalSet = new Set(response.operating_modes?.abnormal ?? []);
     const yField =
-      PARAMETER_FIELD_MAP[parameterName] ?? ('rpm' as keyof ParameterScatterPoint);
+      PARAMETER_FIELD_MAP[parameterName] ??
+      ('rpm' as keyof ParameterScatterPoint);
 
     response.data.forEach((p, i) => {
       const xVal = p.tc_rpm as number;
-      const yVal =
-        parameterName === 'Exhaust Gas Temperatures (Cylinders)'
-          ? firstNumericFromPoint(p, EXHAUST_CYLINDERS_Y_KEYS)
-          : (p[yField] as number | null);
+      const yVal = p[yField] as number | null;
       if (xVal == null || yVal == null) return;
       const pt = { x: xVal, y: yVal };
       if (abnormalSet.has(i)) {
