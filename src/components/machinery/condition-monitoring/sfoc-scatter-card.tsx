@@ -1,6 +1,5 @@
 'use client';
 
-import HealthScoreHeader from '@/components/cards/health-score-header';
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import type { SfocResponse } from '@/types/api';
 import {

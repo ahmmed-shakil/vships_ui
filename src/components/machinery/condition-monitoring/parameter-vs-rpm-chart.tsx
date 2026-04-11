@@ -92,14 +92,14 @@ export default function ParameterVsRpmChart({
               className="inline-block h-0.5 w-4"
               style={{ backgroundColor: '#22C55E' }}
             />
-            Baseline
+            Normal
           </span>
           <span className="flex items-center gap-1">
             <span
               className="inline-block h-2 w-2 rounded-full"
               style={{ backgroundColor: '#A855F7' }}
             />
-            Trendline
+            Abnormal
           </span>
         </div>
       }

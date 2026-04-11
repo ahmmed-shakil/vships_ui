@@ -24,6 +24,7 @@ import type {
   SparePartEntry,
   AlarmWithUnit,
   LatestSensorDataResponse,
+  ParameterDefinition,
 } from '@/types/api';
 
 // ─── Internal: sync NextAuth token to api-client ─────────────────────────────
@@ -274,6 +275,48 @@ export function useParameterScatter() {
   }, [token, vesselId, engineValue, from, to]);
 
   return { response, isLoading };
+}
+
+// ─── Parameters (for Scatter dropdowns) ───────────────────────────────────────
+
+export function useParameters() {
+  const token = useApiToken();
+  const selectedShip = useAtomValue(selectedShipAtom);
+  const selectedEngine = useAtomValue(selectedEngineAtom);
+
+  const [parameters, setParameters] = useState<ParameterDefinition[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const vesselId = selectedShip?.id;
+  const engineValue = selectedEngine?.value;
+
+  useEffect(() => {
+    setParameters([]);
+    setIsLoading(true);
+    if (!token || !vesselId) {
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    api
+      .fetchParameters(vesselId, engineValue)
+      .then((res) => {
+        if (!cancelled) setParameters(res.parameters ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setParameters([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, vesselId, engineValue]);
+
+  return { parameters, isLoading };
 }
 
 // ─── SFOC Scatter ────────────────────────────────────────────────────────────

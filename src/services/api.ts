@@ -16,6 +16,7 @@ import type {
   LoginResponse,
   MachineryScoreEntry,
   Notification,
+  ParametersResponse,
   ParameterScatterResponse,
   SensorDataResponse,
   SfocResponse,
@@ -235,6 +236,16 @@ export async function fetchParameterScatter(
   return apiFetch<ParameterScatterResponse>(
     `/api/vessels/${vesselId}/condition-monitoring/parameter-scatter?${qs.toString()}`
   );
+}
+
+// ─── Parameters ────────────────────────────────────────────────────────────────
+
+export async function fetchParameters(
+  vesselId: number,
+  engine?: string
+): Promise<ParametersResponse> {
+  const qs = engine && engine !== 'all' ? `?engine=${engine}` : '';
+  return apiFetch<ParametersResponse>(`/api/vessels/${vesselId}/parameters${qs}`);
 }
 
 // ─── SFOC Scatter ─────────────────────────────────────────────────────────────
