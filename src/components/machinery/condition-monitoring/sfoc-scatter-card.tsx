@@ -1,8 +1,9 @@
 'use client';
 
-import HealthScoreHeader from '@/components/cards/health-score-header';
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import type { SfocResponse } from '@/types/api';
+import { useRef } from 'react';
+import ChartExportButton from './chart-export-button';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -67,10 +68,13 @@ export default function SfocScatterCard({
   isLoading: boolean;
 }) {
   const modes = response?.modes ?? [];
+  const cardRef = useRef<HTMLDivElement>(null);
   return (
     <PerfomaxCard
+      ref={cardRef}
       className={className}
       title="SFOC Scatter"
+      action={<ChartExportButton targetRef={cardRef} fileName="sfoc-scatter" />}
       //   action={
       //     <div className="flex flex-col items-end gap-2">
       //       <div className="invisible">
@@ -132,15 +136,15 @@ export default function SfocScatterCard({
                     cursor={{ strokeDasharray: '3 3' }}
                   />
 
-{modes.map((s) => (
-            <Scatter
-              key={s.mode}
-              name={s.mode}
-              data={s.data}
-              fill={s.color}
-              opacity={0.7}
-            />
-          ))}
+                  {modes.map((s) => (
+                    <Scatter
+                      key={s.mode}
+                      name={s.mode}
+                      data={s.data}
+                      fill={s.color}
+                      opacity={0.7}
+                    />
+                  ))}
                 </ScatterChart>
               </ResponsiveContainer>
             )}

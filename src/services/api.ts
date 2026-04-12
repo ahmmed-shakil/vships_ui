@@ -1,4 +1,4 @@
-import { apiFetch, serverApiFetch } from './api-client';
+import { apiFetch, serverApiFetch, apiFetchRaw } from './api-client';
 import type {
   AlarmEntry,
   AlarmsWithSummaryResponse,
@@ -299,4 +299,30 @@ export async function fetchLatestSensorValues(
   return apiFetch<LatestSensorDataResponse>(
     `/api/vessels/${vesselId}/latest-sensor-values`
   );
+}
+
+// ─── Sensor Data CSV Export ───────────────────────────────────────────────────
+
+export async function exportSensorDataCSV(
+  vesselId: number,
+  from: string,
+  to: string,
+  engine?: string
+): Promise<void> {
+  const qs = new URLSearchParams({ from, to });
+  if (engine && engine !== 'all') qs.set('engine', engine);
+  const res = await apiFetchRaw(
+    `/api/vessels/${vesselId}/sensor-data/export?${qs.toString()}`
+  );
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  const disposition = res.headers.get('content-disposition');
+  const match = disposition?.match(/filename="?(.+?)"?$/);
+  link.download = match?.[1] ?? `sensor-data-export-${vesselId}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }

@@ -10,9 +10,52 @@ import {
   selectedTimeAtom,
 } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
+import { toPng } from 'html-to-image';
 import { useAtom } from 'jotai';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { PiCameraBold, PiFileCsvBold } from 'react-icons/pi';
 import { Select } from 'rizzui/select';
+import { Tooltip } from 'rizzui';
+import { exportSensorDataCSV } from '@/services/api';
+
+function getDateRange(
+  preset: string,
+  customRange: [Date | null, Date | null]
+): { from: string; to: string } {
+  const now = new Date();
+  let from: Date;
+  switch (preset) {
+    case '1h':
+      from = new Date(now.getTime() - 60 * 60 * 1000);
+      break;
+    case '1d':
+      from = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      break;
+    case '7d':
+      from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case '1m':
+      from = new Date(now);
+      from.setMonth(from.getMonth() - 1);
+      break;
+    case '3m':
+      from = new Date(now);
+      from.setMonth(from.getMonth() - 3);
+      break;
+    case 'Custom Time':
+      if (customRange[0] && customRange[1]) {
+        return {
+          from: customRange[0].toISOString(),
+          to: customRange[1].toISOString(),
+        };
+      }
+      from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  }
+  return { from: from.toISOString(), to: now.toISOString() };
+}
 
 const timeOptions = ['1h', '1d', '7d', '1m', '3m', 'Custom Time'];
 
@@ -63,6 +106,51 @@ export default function ConditionMonitoringHeaderSelectors() {
       return () => clearTimeout(timer);
     }
   }, [selectedTime]);
+
+  const [snapshotting, setSnapshotting] = useState(false);
+  const [csvExporting, setCsvExporting] = useState(false);
+
+  const handlePageSnapshot = useCallback(async () => {
+    if (snapshotting) return;
+    setSnapshotting(true);
+    try {
+      const pageContent = document.getElementById(
+        'condition-monitoring-content'
+      );
+      if (!pageContent) return;
+      const dataUrl = await toPng(pageContent, {
+        cacheBust: true,
+        backgroundColor: '#ffffff',
+        pixelRatio: 2,
+      });
+      const link = document.createElement('a');
+      link.download = 'condition-monitoring-snapshot.png';
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Page snapshot failed:', err);
+    } finally {
+      setSnapshotting(false);
+    }
+  }, [snapshotting]);
+
+  const handleCsvExport = useCallback(async () => {
+    if (csvExporting || !selectedShip?.id) return;
+    setCsvExporting(true);
+    try {
+      const { from, to } = getDateRange(selectedTime, dateRange);
+      await exportSensorDataCSV(
+        selectedShip.id,
+        from,
+        to,
+        selectedEngine?.value
+      );
+    } catch (err) {
+      console.error('CSV export failed:', err);
+    } finally {
+      setCsvExporting(false);
+    }
+  }, [csvExporting, selectedShip, selectedEngine, selectedTime, dateRange]);
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -116,6 +204,28 @@ export default function ConditionMonitoringHeaderSelectors() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Page Snapshot & CSV Export */}
+      <div className="flex items-center gap-1">
+        <Tooltip content="Download page snapshot" placement="bottom">
+          <button
+            onClick={handlePageSnapshot}
+            disabled={snapshotting}
+            className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-50"
+          >
+            <PiCameraBold className="h-5 w-5" />
+          </button>
+        </Tooltip>
+        <Tooltip content="Export sensor data CSV" placement="bottom">
+          <button
+            onClick={handleCsvExport}
+            disabled={csvExporting}
+            className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-50"
+          >
+            <PiFileCsvBold className="h-5 w-5" />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

@@ -5,6 +5,8 @@ import type {
   ParameterScatterPoint,
   ParameterScatterResponse,
 } from '@/types/api';
+import { useRef } from 'react';
+import ChartExportButton from './chart-export-button';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -72,12 +74,14 @@ export default function ParameterVsRpmChart({
 }) {
   const normalData: { x: number; y: number }[] = [];
   const abnormalData: { x: number; y: number }[] = [];
+  const cardRef = useRef<HTMLDivElement>(null);
 
   if (response?.data?.length) {
     const normalSet = new Set(response.operating_modes?.normal ?? []);
     const abnormalSet = new Set(response.operating_modes?.abnormal ?? []);
     const yField =
-      PARAMETER_FIELD_MAP[parameterName] ?? ('rpm' as keyof ParameterScatterPoint);
+      PARAMETER_FIELD_MAP[parameterName] ??
+      ('rpm' as keyof ParameterScatterPoint);
 
     response.data.forEach((p, i) => {
       const xVal = p.tc_rpm as number;
@@ -97,6 +101,7 @@ export default function ParameterVsRpmChart({
 
   return (
     <PerfomaxCard
+      ref={cardRef}
       title="Scatter"
       headerFooter="Parameter vs RPM"
       headerFooterClassName="px-4"
@@ -118,6 +123,10 @@ export default function ParameterVsRpmChart({
             />
             Abnormal
           </span>
+          <ChartExportButton
+            targetRef={cardRef}
+            fileName={`${parameterName.toLowerCase().replace(/\s+/g, '-')}-vs-rpm`}
+          />
         </div>
       }
     >

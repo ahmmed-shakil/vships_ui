@@ -162,6 +162,58 @@ export async function apiFetch<T>(
   return res.json() as Promise<T>;
 }
 
+/** Fetch that returns a raw Response (for blob/stream downloads). Handles auth + refresh. */
+export async function apiFetchRaw(
+  path: string,
+  options: FetchOptions = {}
+): Promise<Response> {
+  const { body, skipAuth, ...init } = options;
+
+  const headers: Record<string, string> = {
+    ...(init.headers as Record<string, string>),
+  };
+
+  if (!skipAuth) {
+    const token = getAccessToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  const url = `${API_BASE_URL}${path}`;
+
+  let res = await fetch(url, {
+    ...init,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (res.status === 401 && !skipAuth) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      const newToken = getAccessToken();
+      if (newToken) headers['Authorization'] = `Bearer ${newToken}`;
+      res = await fetch(url, {
+        ...init,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    }
+
+    if (res.status === 401) {
+      await forceSignOut();
+      throw new Error('Session expired');
+    }
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `API error: ${res.status}`);
+  }
+
+  return res;
+}
+
 /** Server-side only fetch using the server env var (not exposed to client) */
 export async function serverApiFetch<T>(
   path: string,

@@ -2,7 +2,8 @@
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import type { ParameterScatterResponse } from '@/types/api';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import ChartExportButton from './chart-export-button';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -132,6 +133,7 @@ export default function ParameterScatterChart({
   response: ParameterScatterResponse | null;
   isLoading: boolean;
 }) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const [opt1, setOpt1] = useState(
     () => paramOptions.find((o) => o.value === 'rpm') ?? paramOptions[0]
   );
@@ -175,6 +177,7 @@ export default function ParameterScatterChart({
 
   return (
     <PerfomaxCard
+      ref={cardRef}
       className={className}
       title="Scatter"
       // titleClassName="text-lg font-bold"
@@ -194,6 +197,7 @@ export default function ParameterScatterChart({
             />
             <span className="text-foreground">{opt2.label}</span>
           </span>
+          <ChartExportButton targetRef={cardRef} fileName="parameter-scatter" />
         </div>
       }
       headerFooter={
