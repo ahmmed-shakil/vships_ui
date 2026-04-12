@@ -23,34 +23,19 @@ import {
  * Scatter chart showing a parameter (y) vs TC RPM (x).
  * Two series with inline legend in the widget header.
  */
+/** Axis ticks + tooltip: one decimal place (e.g. 2.345 → 2.3) */
 function formatScatterValue(v: unknown): string {
-  if (typeof v === 'number' && !Number.isNaN(v)) return v.toFixed(2);
+  if (typeof v === 'number' && !Number.isNaN(v)) return v.toFixed(1);
   return String(v ?? '');
 }
 
-function firstNumericFromPoint(
-  p: ParameterScatterPoint,
-  keys: (keyof ParameterScatterPoint)[]
-): number | null {
-  for (const k of keys) {
-    const v = p[k];
-    if (typeof v === 'number' && !Number.isNaN(v)) return v;
-  }
-  return null;
-}
-
-/** Cyl 1 first (matches first line on sensor chart); mean sometimes missing */
-const EXHAUST_CYLINDERS_Y_KEYS: (keyof ParameterScatterPoint)[] = [
-  'eg_temp_1',
-  'eg_temp_mean',
-];
-
-// Map parameter title to the actual field name in ParameterScatterPoint
+// Map sensor row title → single Y-axis field
 const PARAMETER_FIELD_MAP: Record<string, keyof ParameterScatterPoint> = {
   'Turbocharger RPM': 'tc_rpm',
   'Engine RPM': 'rpm',
   'Fuel Performance Index': 'fpi',
   'Fuel Consumption': 'fuel_consumption',
+  'Exhaust Gas Temperatures (Cylinders)': 'eg_temp_1',
   'Exhaust Gas Temp (Turbo Out / Manifold)': 'eg_temp_out_turbo',
   'Charge Air Pressure': 'chargeair_press',
   'HT Cooling Water Temperature': 'ht_cw_inlet_temp',
@@ -85,10 +70,7 @@ export default function ParameterVsRpmChart({
 
     response.data.forEach((p, i) => {
       const xVal = p.tc_rpm as number;
-      const yVal =
-        parameterName === 'Exhaust Gas Temperatures (Cylinders)'
-          ? firstNumericFromPoint(p, EXHAUST_CYLINDERS_Y_KEYS)
-          : (p[yField] as number | null);
+      const yVal = p[yField] as number | null;
       if (xVal == null || yVal == null) return;
       const pt = { x: xVal, y: yVal };
       if (abnormalSet.has(i)) {
@@ -132,12 +114,12 @@ export default function ParameterVsRpmChart({
     >
       <div className="flex h-full pt-2">
         {/* Y-axis label */}
-        <div className="flex flex-col items-center justify-center gap-1 pr-1">
+        <div className="flex max-w-[4.5rem] flex-col items-center justify-center gap-1 pr-1">
           <span
-            className="text-[10px] font-medium text-muted-foreground"
+            className="text-center text-[10px] font-medium leading-tight text-muted-foreground"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
-            {yAxisLabel}
+            {parameterName}
           </span>
         </div>
 
@@ -166,7 +148,7 @@ export default function ParameterVsRpmChart({
                   <YAxis
                     type="number"
                     dataKey="y"
-                    name={yAxisLabel}
+                    name={parameterName}
                     tick={{ fontSize: 10, fill: '#9FA6B5' }}
                     tickFormatter={formatScatterValue}
                     domain={[0, 'auto']}

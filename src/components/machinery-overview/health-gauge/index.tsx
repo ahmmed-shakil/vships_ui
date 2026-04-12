@@ -1,9 +1,10 @@
 'use client';
 
 interface HealthGaugeProps {
-  value: number; // 0-100 percentage
+  value: number | null; // 0-100 percentage, null for N/A
   size?: number; // overall width of the gauge, default 64
   color?: string; // arc fill color, default '#e8862a'
+  label?: string;
   className?: string;
 }
 
@@ -11,9 +12,11 @@ export default function HealthGauge({
   value,
   size = 64,
   color = '#e8862a',
+  label,
   className,
 }: HealthGaugeProps) {
-  const clampedValue = Math.min(100, Math.max(0, value));
+  const hasValue = typeof value === 'number' && !Number.isNaN(value);
+  const clampedValue = hasValue ? Math.min(100, Math.max(0, value)) : 0;
 
   // Fixed viewBox: 100 wide, 56 tall
   const vbW = 100;
@@ -83,7 +86,7 @@ export default function HealthGauge({
           lineHeight: 1,
         }}
       >
-        {clampedValue}%
+        {label ?? `${clampedValue}%`}
       </span>
     </div>
   );

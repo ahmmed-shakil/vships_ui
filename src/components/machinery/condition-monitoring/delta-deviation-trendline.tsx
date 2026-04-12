@@ -17,16 +17,50 @@ import {
   YAxis,
 } from 'recharts';
 
-/** Custom X-axis tick that renders date on top line, time on bottom line */
+/** Tooltip header: parse API UTC / ISO timestamps into local, human-readable text */
+function formatTooltipTimestampLabel(label: unknown): string {
+  if (label == null) return '';
+  if (typeof label === 'number' && !Number.isNaN(label)) {
+    const d = new Date(label);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+    }
+  }
+  const s = String(label);
+  const d = new Date(s);
+  if (!Number.isNaN(d.getTime())) {
+    return d.toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  }
+  return s;
+}
+
+/** Custom X-axis tick — date on top, time below (matches sensor line chart) */
 function DateTimeTick({ x, y, payload }: any) {
-  const parts = (payload.value as string).split('\n');
+  const raw = payload.value as string;
+  const d = new Date(raw);
+  const datePart = d.toLocaleDateString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  const timePart = d.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
   return (
     <g transform={`translate(${x},${y})`}>
       <text x={0} y={0} dy={10} textAnchor="middle" fontSize={8} fill="#9FA6B5">
-        {parts[0]}
+        {datePart}
       </text>
       <text x={0} y={0} dy={20} textAnchor="middle" fontSize={8} fill="#9FA6B5">
-        {parts[1] ?? ''}
+        {timePart}
       </text>
     </g>
   );
@@ -73,11 +107,7 @@ export default function DeltaDeviationTrendline({
 
   const chartData = useMemo(() => {
     if (!response?.data) return [];
-    return response.data.map((p) => {
-      const d = new Date(p.timestamp);
-      const date = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}\n${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-      return { date, ...p };
-    });
+    return response.data.map((p) => ({ ...p }));
   }, [response]);
 
   const band = response?.reference_band ?? { upper: 24, lower: 12 };
@@ -136,7 +166,7 @@ export default function DeltaDeviationTrendline({
                   />
 
                   <XAxis
-                    dataKey="date"
+                    dataKey="timestamp"
                     tick={<DateTimeTick />}
                     interval={xAxisInterval}
                     height={40}
@@ -147,7 +177,14 @@ export default function DeltaDeviationTrendline({
                     tickCount={6}
                     allowDataOverflow
                   />
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip
+                    content={(props) => (
+                      <CustomTooltip
+                        {...props}
+                        label={formatTooltipTimestampLabel(props.label)}
+                      />
+                    )}
+                  />
                   <Legend
                     verticalAlign="top"
                     onClick={(e: any) => handleLegendClick(e.dataKey)}

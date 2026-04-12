@@ -11,7 +11,7 @@ import cn from '../../utils/class-names';
 
 export interface HealthScoreHeaderProps {
   /** Health percentage 0-100 */
-  score: number;
+  score: number | null;
   /** Override the auto-derived colour */
   color?: string;
   /** Gauge pixel width (default 70) */
@@ -44,7 +44,8 @@ export default function HealthScoreHeader({
   label = 'Health\nscore',
   className,
 }: HealthScoreHeaderProps) {
-  const resolvedColor = color ?? getHealthColor(score);
+  const hasScore = typeof score === 'number' && !Number.isNaN(score);
+  const resolvedColor = color ?? (hasScore ? getHealthColor(score) : '#9CA3AF');
 
   return (
     <div
@@ -62,7 +63,12 @@ export default function HealthScoreHeader({
           </span>
         ))}
       </Text>
-      <HealthGauge value={score} size={size} color={resolvedColor} />
+      <HealthGauge
+        value={score}
+        size={size}
+        color={resolvedColor}
+        label={hasScore ? undefined : 'N/A'}
+      />
     </div>
   );
 }

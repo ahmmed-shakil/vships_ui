@@ -115,6 +115,43 @@ export function useFleetData(pollMs = 10000) {
   return { data, loading };
 }
 
+// ─── Single vessel position (polls like fleet map — default 10s) ──────────────
+
+export function useVesselPosition(vesselId: number, pollMs = 10000) {
+  const token = useApiToken();
+  const [position, setPosition] = useState<Ship['position'] | null>(null);
+
+  useEffect(() => {
+    setPosition(null);
+    if (!token || !vesselId) return;
+
+    let cancelled = false;
+    const load = () => {
+      api
+        .fetchVesselPosition(vesselId)
+        .then((res) => {
+          if (cancelled) return;
+          setPosition({
+            lat: res.lat,
+            long: res.long,
+            direction: res.direction,
+            timestamp: res.timestamp,
+          });
+        })
+        .catch(() => {});
+    };
+
+    load();
+    const id = setInterval(load, pollMs);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [token, vesselId, pollMs]);
+
+  return position;
+}
+
 // ─── All vessel alarms (for fleet map popups) ────────────────────────────────
 
 export function useAllVesselAlarms(vesselIds: number[]) {

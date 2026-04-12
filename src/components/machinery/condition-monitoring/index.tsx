@@ -5,8 +5,6 @@ import PerfomaxCard from '@/components/cards/perfomax-card';
 import {
   useDeltaDeviation,
   useFuelRate,
-  useHealthScores,
-  useLatestSensorValues,
   useParameterScatter,
   useSensorDataApi,
   useSfocScatter,
@@ -27,6 +25,9 @@ import ParameterScatterChart from './parameter-scatter-chart';
 import ParameterVsRpmChart from './parameter-vs-rpm-chart';
 import SensorLineChart, { type SensorSeries } from './sensor-line-chart';
 import SfocScatterCard from './sfoc-scatter-card';
+
+// TODO: Restore health scores from useHealthScores() / API; pass real values to
+// HealthScoreHeader and HealthScoreCard (entry + isLoading).
 
 // ─── Reusable Dotted Row Component ───────────────────────────────────────────
 function DottedRow({
@@ -145,10 +146,7 @@ export default function ConditionMonitoringLayout() {
     useParameterScatter();
   const { response: sfocResponse, isLoading: sfocLoading } = useSfocScatter();
   const { response: fuelResponse, isLoading: fuelLoading } = useFuelRate();
-  const { scores: healthScores, isLoading: healthLoading } = useHealthScores();
   const { parts: spareParts, isLoading: partsLoading } = useSpareParts();
-  const { response: latestSensorResponse, isLoading: latestSensorLoading } =
-    useLatestSensorValues();
 
   if (!selectedShip) {
     return (
@@ -162,10 +160,6 @@ export default function ConditionMonitoringLayout() {
     ? { make: 'MAN 9l32/40', built: '2024', rating: '3450 ekW' }
     : { make: 'MAN 9l32/40', built: '2024', rating: '3450 ekW' };
 
-  const engineLatestData = latestSensorResponse?.data.find(
-    (d) => d.asset_id.toLowerCase() === selectedEngine.value.toLowerCase()
-  );
-
   return (
     <div id="condition-monitoring-content">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -178,7 +172,7 @@ export default function ConditionMonitoringLayout() {
           action={
             <div className="flex flex-col items-end gap-2">
               <div className="invisible">
-                <HealthScoreHeader score={80} />
+                <HealthScoreHeader score={null} />
               </div>
             </div>
           }
@@ -226,7 +220,7 @@ export default function ConditionMonitoringLayout() {
           headerClassName="items-start"
           action={
             <div className="flex flex-col items-end gap-2">
-              <HealthScoreHeader score={80} />
+              <HealthScoreHeader score={null} />
             </div>
           }
           headerFooter={
@@ -248,48 +242,28 @@ export default function ConditionMonitoringLayout() {
         >
           <div className="flex flex-1 flex-col justify-center gap-1">
             <DottedRow
-              label="Engine Speed"
-              value={
-                latestSensorLoading
-                  ? '...'
-                  : `${engineLatestData?.rpm ?? '--'} RPM`
-              }
+              label="Last overhaul"
+              value="12 Nov 2025"
               className="py-1"
             />
             <DottedRow
-              label="Current Load"
-              value={
-                latestSensorLoading
-                  ? '...'
-                  : `${engineLatestData?.load_kw ?? '--'} kW`
-              }
+              label="Total running hours"
+              value="5403 hrs"
               className="py-1"
             />
             <DottedRow
-              label="Fuel Flow (Inlet)"
-              value={
-                latestSensorLoading
-                  ? '...'
-                  : `${engineLatestData?.fo_flow_inlet ?? '--'} L/h`
-              }
+              label="Period running hours"
+              value="251 hrs"
               className="py-1"
             />
             <DottedRow
-              label="Charge Air Temp"
-              value={
-                latestSensorLoading
-                  ? '...'
-                  : `${engineLatestData?.chargeair_temp ?? '--'} °C`
-              }
+              label="Duration fuel consumption"
+              value="-- kg"
               className="py-1"
             />
             <DottedRow
-              label="Lube Oil Temp"
-              value={
-                latestSensorLoading
-                  ? '...'
-                  : `${engineLatestData?.lo_temp ?? '--'} °C`
-              }
+              label="Duration average load"
+              value="-- %"
               className="py-1"
             />
           </div>
@@ -336,41 +310,31 @@ export default function ConditionMonitoringLayout() {
       </div> */}
 
       {/* ─── Sensor Chart Rows (8 rows: chart + health score + pcharge) ──── */}
-      {SENSOR_CHART_ROWS.map((row, idx) => {
-        // Match health score entry by a key derived from the chart title
-        const scoreEntry = healthScores.find(
-          (s) => s.label === row.title || s.parameter === row.title
-        );
-        return (
-          <div
-            key={row.title}
-            className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11"
-          >
-            <SensorLineChart
-              title={row.title}
-              yAxisLabel={row.yAxisLabel}
-              series={row.series}
-              data={sensorData}
-              isLoading={isLoading}
-              className="col-span-5"
-              thresholds={row.thresholds}
-              tooltipColumns={row.series.length > 5 ? 2 : undefined}
-            />
-            <HealthScoreCard
-              className="col-span-3"
-              entry={scoreEntry}
-              isLoading={healthLoading}
-            />
-            <ParameterVsRpmChart
-              className="col-span-3"
-              parameterName={row.title}
-              yAxisLabel={row.yAxisLabel}
-              response={scatterResponse}
-              isLoading={scatterLoading}
-            />
-          </div>
-        );
-      })}
+      {SENSOR_CHART_ROWS.map((row) => (
+        <div
+          key={row.title}
+          className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11"
+        >
+          <SensorLineChart
+            title={row.title}
+            yAxisLabel={row.yAxisLabel}
+            series={row.series}
+            data={sensorData}
+            isLoading={isLoading}
+            className="col-span-5"
+            thresholds={row.thresholds}
+            tooltipColumns={row.series.length > 5 ? 2 : undefined}
+          />
+          <HealthScoreCard className="col-span-3" isLoading={false} />
+          <ParameterVsRpmChart
+            className="col-span-3"
+            parameterName={row.title}
+            yAxisLabel={row.yAxisLabel}
+            response={scatterResponse}
+            isLoading={scatterLoading}
+          />
+        </div>
+      ))}
     </div>
   );
 }

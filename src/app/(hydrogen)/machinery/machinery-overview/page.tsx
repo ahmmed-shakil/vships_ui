@@ -13,11 +13,15 @@ import {
 } from '@/store/condition-monitoring-atoms';
 import type { MachineryCardProps, MachineryMetric } from '@/types';
 import type { EngineOverviewCard } from '@/types/api';
-import { getHealthColor } from '@/utils/get-health-color';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useRouter } from 'next/navigation';
-import { useMemo } from 'react';
 import { Box } from 'rizzui/box';
+
+// TODO: Restore health-score-driven accents: use getHealthColor(card.health_score)
+// for sparklines + PerfomaxCard accentColor, and pass real scores to HealthScoreHeader.
+
+/** Neutral accent while health scores are N/A (matches HealthScoreHeader with no score). */
+const HEALTH_SCORE_NA_ACCENT = '#9CA3AF';
 
 // ─── Convert API engine card to the shape MachineryCardBody expects ──────────
 
@@ -26,7 +30,7 @@ function toMetrics(card: EngineOverviewCard): MachineryMetric[] {
   const s = card.sparklines;
   const toSparkline = (arr: number[]) => arr.map((v) => ({ v }));
   const hasSpark = (arr: number[]) => arr.some((v) => v !== 0);
-  const color = getHealthColor(card.health_score);
+  const color = HEALTH_SCORE_NA_ACCENT;
 
   return [
     {
@@ -85,16 +89,13 @@ function toCardProps(card: EngineOverviewCard): Omit<
   'alarms'
 > & {
   engineValue: string;
-  hasHealthData: boolean;
   alarms: MachineryCardProps['alarms'];
 } {
-  const hasHealthData = Object.values(card.metrics).some((v) => v != null);
   return {
     id: card.engine_id.charCodeAt(0),
     title: card.label,
     engineValue: card.engine_id,
     healthScore: card.health_score,
-    hasHealthData,
     status: card.status,
     metrics: toMetrics(card),
     alarms: card.alarms,
@@ -159,17 +160,9 @@ export default function MachineryOverviewPage() {
     <PerfomaxCard
       key={item.engineValue}
       title={item.title}
-      accentColor={getHealthColor(item.healthScore)}
+      accentColor={HEALTH_SCORE_NA_ACCENT}
       headerRight={<StatusGauge status={item.status} />}
-      action={
-        item.hasHealthData ? (
-          <HealthScoreHeader score={item.healthScore} />
-        ) : (
-          <div className="rounded bg-muted px-3 py-2 text-sm font-semibold text-muted-foreground">
-            N/A
-          </div>
-        )
-      }
+      action={<HealthScoreHeader score={null} />}
       onClick={() => handleCardClick(item)}
       className="cursor-pointer transition-opacity hover:opacity-90"
     >

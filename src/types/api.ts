@@ -277,6 +277,29 @@ export interface DeltaDeviationResponse {
   reference_band: { upper: number; lower: number };
 }
 
+// ─── Parameters (engine-specific dropdown metadata) ───────────────────────────
+
+export interface ParameterDefinition {
+  id: number;
+  client_id?: number;
+  vessel_id?: number;
+  source_name: string;
+  standard_id: string;
+  asset_id: string;
+  unit?: string;
+  description?: string;
+  is_column: boolean;
+  create_datetime: string;
+  update_datetime: string;
+}
+
+export interface ParametersResponse {
+  vessel_id: number;
+  engine: string;
+  count: number;
+  parameters: ParameterDefinition[];
+}
+
 // ─── Parameter Scatter ────────────────────────────────────────────────────────
 
 export interface ParameterScatterPoint {
