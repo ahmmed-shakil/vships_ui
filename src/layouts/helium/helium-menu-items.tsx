@@ -24,10 +24,21 @@ export const menuItems = [
     name: 'Operation Overview',
     href: routes.fleet.operationOverview,
     icon: <PiBellSimpleRinging />,
-  }, {
+  },
+  {
     name: 'Real Time Data',
     href: routes.fleet.realTimeData,
     icon: <PiChartLineUp />,
+    dropdownItems: [
+      {
+        name: 'Gauges & AMS',
+        href: routes.fleet.realTimeData,
+      },
+      {
+        name: 'Trend analysis',
+        href: routes.fleet.trendAnalysis,
+      },
+    ],
   },
   // Machinery section
   {
