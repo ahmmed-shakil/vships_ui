@@ -11,7 +11,7 @@ import {
 } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
 import { useAtom } from 'jotai';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { Select } from 'rizzui/select';
 
 const timeOptions = [
@@ -36,11 +36,16 @@ export default function AlarmMonitoringHeaderSelectors() {
     [selectedShip, setSelectedShip]
   );
   const vesselOptions = useVesselOptions(handleLoaded);
-  const engineOptions = useEngineOptionsList();
+  const allEngineOptions = useEngineOptionsList();
+  const engineOptions = useMemo(
+    () => allEngineOptions.filter((e) => e.value !== 'all'),
+    [allEngineOptions]
+  );
 
   // Keep selected engine aligned with API options by value.
   // This ensures fleet-map picks like DG2 show correctly in header,
   // and labels stay current (e.g. STBD -> Starboard).
+  // No "All Engine" here — default to DG1 (or first real engine) for single-engine API queries.
   useEffect(() => {
     if (engineOptions.length === 0) return;
     const match = engineOptions.find((e) => e.value === selectedEngine?.value);
@@ -48,8 +53,8 @@ export default function AlarmMonitoringHeaderSelectors() {
       if (match.label !== selectedEngine?.label) setSelectedEngine(match);
       return;
     }
-    const allEngine = engineOptions.find((e) => e.value === 'all');
-    setSelectedEngine(allEngine ?? engineOptions[0]);
+    const dg1 = engineOptions.find((e) => e.value.toLowerCase() === 'dg1');
+    setSelectedEngine(dg1 ?? engineOptions[0]);
   }, [engineOptions, selectedEngine, setSelectedEngine]);
 
   useEffect(() => {
