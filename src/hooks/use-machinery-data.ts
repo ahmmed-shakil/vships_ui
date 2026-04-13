@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { setAccessToken } from '@/services/api-client';
 import * as api from '@/services/api';
 import {
@@ -127,7 +127,7 @@ export function useMachineryOverview() {
 
 // ─── Sensor Data (replaces useSensorData with API-key) ───────────────────────
 
-export function useSensorDataApi() {
+export function useSensorDataApi(refreshTrigger = 0) {
   const token = useApiToken();
   const selectedShip = useAtomValue(selectedShipAtom);
   const selectedEngine = useAtomValue(selectedEngineAtom);
@@ -137,6 +137,7 @@ export function useSensorDataApi() {
   const [data, setData] = useState<SensorDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const previousContextKeyRef = useRef<string | null>(null);
 
   const vesselId = selectedShip?.id;
   const engineValue = selectedEngine?.value;
@@ -146,7 +147,15 @@ export function useSensorDataApi() {
   );
 
   useEffect(() => {
-    setData([]);
+    const contextKey = `${vesselId ?? ''}|${engineValue ?? ''}|${from}|${to}`;
+    const isSameContext = previousContextKeyRef.current === contextKey;
+
+    // Keep existing chart data while periodic refresh is in-flight to avoid flicker.
+    if (!isSameContext) {
+      setData([]);
+    }
+    previousContextKeyRef.current = contextKey;
+
     setIsLoading(true);
     setError(null);
 
@@ -174,7 +183,7 @@ export function useSensorDataApi() {
     return () => {
       cancelled = true;
     };
-  }, [token, vesselId, engineValue, from, to]);
+  }, [token, vesselId, engineValue, from, to, refreshTrigger]);
 
   return { data, isLoading, error };
 }
