@@ -8,6 +8,7 @@ import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
 import { useAtomValue } from 'jotai';
 import { useEffect, useState } from 'react';
+import { PiArrowClockwise } from 'react-icons/pi';
 
 const SENSOR_CHART_ROWS: {
   title: string;
@@ -138,7 +139,7 @@ export default function TrendAnalysisLayout() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center justify-end gap-3 text-sm text-muted-foreground">
         <span
           className={cn(
             'inline-block size-4 rounded-full border-2 border-muted border-t-primary',
@@ -147,6 +148,18 @@ export default function TrendAnalysisLayout() {
           aria-hidden
         />
         <span>{isRefreshing ? 'Updating data...' : 'Auto-refresh every 30s'}</span>
+        <button
+          type="button"
+          onClick={() => setRefreshTick((v) => v + 1)}
+          disabled={isLoading}
+          aria-label="Refresh data now"
+          className="inline-flex items-center justify-center rounded-md border border-border bg-background p-1.5 text-foreground transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-50"
+        >
+          <PiArrowClockwise
+            className={cn('size-4', isRefreshing && 'animate-spin')}
+            aria-hidden
+          />
+        </button>
       </div>
 
       {SENSOR_CHART_ROWS.map((row) => (
@@ -159,6 +172,7 @@ export default function TrendAnalysisLayout() {
           isLoading={isInitialLoading}
           thresholds={row.thresholds}
           tooltipColumns={row.series.length > 5 ? 2 : undefined}
+          plainLines
         />
       ))}
     </div>

@@ -48,12 +48,30 @@ function getDateRange(
   let from: Date;
 
   switch (preset) {
+    case '5m':
+    case '5 min':
+      from = new Date(now.getTime() - 5 * 60 * 1000);
+      break;
+    case '30m':
+    case '30 min':
+      from = new Date(now.getTime() - 30 * 60 * 1000);
+      break;
     case '1h':
       from = new Date(now.getTime() - 60 * 60 * 1000);
+      break;
+    case '2h':
+    case '2 hours':
+      from = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+      break;
+    case '12h':
+      from = new Date(now.getTime() - 12 * 60 * 60 * 1000);
       break;
     case '1d':
     case '24h':
       from = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      break;
+    case '48h':
+      from = new Date(now.getTime() - 48 * 60 * 60 * 1000);
       break;
     case '7d':
       from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);

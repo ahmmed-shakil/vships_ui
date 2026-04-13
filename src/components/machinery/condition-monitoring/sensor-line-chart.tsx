@@ -96,6 +96,7 @@ interface SensorLineChartProps {
   className?: string;
   thresholds?: { min?: number; max?: number };
   tooltipColumns?: number;
+  plainLines?: boolean;
 }
 
 export default function SensorLineChart({
@@ -107,6 +108,7 @@ export default function SensorLineChart({
   className,
   thresholds,
   tooltipColumns,
+  plainLines = false,
 }: SensorLineChartProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const formatVal = (v: number) => v.toFixed(2);
@@ -117,6 +119,7 @@ export default function SensorLineChart({
   const hasThresholds =
     thresholds &&
     (thresholds.min !== undefined || thresholds.max !== undefined);
+  const useThresholdStyling = hasThresholds && !plainLines;
   const { min: tMin, max: tMax } = thresholds || {};
 
   let overallMin = Infinity;
@@ -222,7 +225,7 @@ export default function SensorLineChart({
                 margin={{ top: 10, right: 30, left: -15, bottom: 5 }}
               >
                 <defs>
-                  {hasThresholds &&
+                  {useThresholdStyling &&
                     series.map((s, i) => {
                       const color =
                         s.color ?? LINE_COLORS[i % LINE_COLORS.length];
@@ -326,7 +329,7 @@ export default function SensorLineChart({
                   padding={{ left: 10, right: 10 }}
                 />
                 <YAxis
-                  domain={[0, hasThresholds ? domainMax : 'auto']}
+                  domain={[0, useThresholdStyling ? domainMax : 'auto']}
                   tick={{ fontSize: 10, fill: '#9FA6B5' }}
                   axisLine={false}
                   tickLine={false}
@@ -341,7 +344,7 @@ export default function SensorLineChart({
                     />
                   )}
                 />
-                {tMax !== undefined && (
+                {useThresholdStyling && tMax !== undefined && (
                   <ReferenceArea
                     y1={tMax}
                     y2={domainMax}
@@ -349,7 +352,7 @@ export default function SensorLineChart({
                     strokeOpacity={0}
                   />
                 )}
-                {tMin !== undefined && (
+                {useThresholdStyling && tMin !== undefined && (
                   <ReferenceArea
                     y1={domainMin}
                     y2={tMin}
@@ -373,7 +376,9 @@ export default function SensorLineChart({
                   // colors the thickness of the line instead of its height).
                   let stroke = `url(#grad-${s.dataKey})`;
 
-                  if (hasThresholds) {
+                  if (plainLines) {
+                    stroke = color;
+                  } else if (useThresholdStyling) {
                     const isFullySafe =
                       (tMax === undefined || lineMax < tMax) &&
                       (tMin === undefined || lineMin > tMin);
