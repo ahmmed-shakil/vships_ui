@@ -4,9 +4,12 @@ import SensorLineChart, {
   type SensorSeries,
 } from '@/components/machinery/condition-monitoring/sensor-line-chart';
 import { useSensorDataApi } from '@/hooks/use-machinery-data';
-import { selectedShipAtom } from '@/store/condition-monitoring-atoms';
+import {
+  selectedShipAtom,
+  selectedTimeAtom,
+} from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
-import { useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { useEffect, useState } from 'react';
 import { PiArrowClockwise } from 'react-icons/pi';
 
@@ -106,11 +109,29 @@ const SENSOR_CHART_ROWS: {
   },
 ];
 
+/** Must match `timeOptions` in real-time-data header-selectors */
+const TREND_HEADER_TIME_PRESETS = new Set([
+  '5 min',
+  '30 min',
+  '2 hours',
+  '12h',
+  '24h',
+  '48h',
+  'Custom Time',
+]);
+
 export default function TrendAnalysisLayout() {
   const selectedShip = useAtomValue(selectedShipAtom);
+  const [selectedTime, setSelectedTime] = useAtom(selectedTimeAtom);
   const [refreshTick, setRefreshTick] = useState(0);
   const { data: sensorData, isLoading } = useSensorDataApi(refreshTick);
   const [hasLoadedAtLeastOnce, setHasLoadedAtLeastOnce] = useState(false);
+
+  useEffect(() => {
+    if (!TREND_HEADER_TIME_PRESETS.has(selectedTime)) {
+      setSelectedTime('24h');
+    }
+  }, [selectedTime, setSelectedTime]);
 
   useEffect(() => {
     if (!isLoading) {
