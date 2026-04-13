@@ -24,7 +24,7 @@ import {
   selectedEngineAtom,
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
-import { engineData, shipData } from '@/data/nura/ships';
+import { shipData } from '@/data/nura/ships';
 import * as api from '@/services/api';
 
 // Declare global window types for Leaflet and Windy
@@ -149,8 +149,11 @@ export default function WindyMap({
       });
     }
 
-    const engineOpt = engineData.find((e) => e.value === engineValue);
-    if (engineOpt) setEngine(engineOpt);
+    const normalizedValue = engineValue.toLowerCase();
+    setEngine({
+      value: normalizedValue,
+      label: normalizedValue.toUpperCase(),
+    });
     router.push('/real-time-data');
   };
 

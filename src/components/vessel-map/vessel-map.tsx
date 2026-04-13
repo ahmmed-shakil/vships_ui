@@ -8,7 +8,7 @@ import {
 import { formatDistanceToNowStrict } from 'date-fns';
 import { emissionZones as fallbackEmissionZones } from '@/data/nura/emission-zones';
 import type { FleetVessel } from '@/data/nura/fleet-data';
-import { engineData, shipData } from '@/data/nura/ships';
+import { shipData } from '@/data/nura/ships';
 import * as api from '@/services/api';
 import {
   selectedEngineAtom,
@@ -372,8 +372,11 @@ export default function VesselMap({
       });
     }
 
-    const engineOpt = engineData.find((e) => e.value === engineValue);
-    if (engineOpt) setEngine(engineOpt);
+    const normalizedValue = engineValue.toLowerCase();
+    setEngine({
+      value: normalizedValue,
+      label: normalizedValue.toUpperCase(),
+    });
     router.push('/real-time-data');
   };
 

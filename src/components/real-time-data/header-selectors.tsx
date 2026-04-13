@@ -7,7 +7,7 @@ import {
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
 import { useAtom } from 'jotai';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Select } from 'rizzui/select';
 
 export default function AlarmMonitoringHeaderSelectors() {
@@ -21,6 +21,20 @@ export default function AlarmMonitoringHeaderSelectors() {
   );
   const vesselOptions = useVesselOptions(handleLoaded);
   const engineOptions = useEngineOptionsList();
+
+  // Keep selected engine aligned with API options by value.
+  // This ensures fleet-map picks like DG2 show correctly in header,
+  // and labels stay current (e.g. STBD -> Starboard).
+  useEffect(() => {
+    if (engineOptions.length === 0) return;
+    const match = engineOptions.find((e) => e.value === selectedEngine?.value);
+    if (match) {
+      if (match.label !== selectedEngine?.label) setSelectedEngine(match);
+      return;
+    }
+    const allEngine = engineOptions.find((e) => e.value === 'all');
+    setSelectedEngine(allEngine ?? engineOptions[0]);
+  }, [engineOptions, selectedEngine, setSelectedEngine]);
 
   return (
     <div className="flex flex-wrap items-center gap-3">
