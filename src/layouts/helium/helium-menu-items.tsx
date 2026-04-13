@@ -2,6 +2,7 @@ import { routes } from '@/config/routes';
 import {
   PiBellSimpleRinging,
   PiChartLineUp,
+  PiGauge,
   PiGear,
   PiHammer,
   PiShoppingCart,
@@ -25,20 +26,19 @@ export const menuItems = [
     href: routes.fleet.operationOverview,
     icon: <PiBellSimpleRinging />,
   },
+  // Real Time Data section (flat links, same pattern as Machinery)
   {
     name: 'Real Time Data',
+  },
+  {
+    name: 'Gauges & AMS',
     href: routes.fleet.realTimeData,
+    icon: <PiGauge />,
+  },
+  {
+    name: 'Trend analysis',
+    href: routes.fleet.trendAnalysis,
     icon: <PiChartLineUp />,
-    dropdownItems: [
-      {
-        name: 'Gauges & AMS',
-        href: routes.fleet.realTimeData,
-      },
-      {
-        name: 'Trend analysis',
-        href: routes.fleet.trendAnalysis,
-      },
-    ],
   },
   // Machinery section
   {

@@ -2,9 +2,10 @@ import { routes } from '@/config/routes';
 import {
   PiBellSimpleRingingDuotone,
   PiChartLineUpDuotone,
+  PiGaugeDuotone,
   PiGearDuotone,
   PiHammerDuotone,
-  PiShoppingCartDuotone
+  PiShoppingCartDuotone,
 } from 'react-icons/pi';
 
 // Note: do not add href in the label object, it is rendering as label
@@ -25,20 +26,19 @@ export const menuItems = [
     href: routes.fleet.operationOverview,
     icon: <PiBellSimpleRingingDuotone />,
   },
+  // Real Time Data section (flat links, same pattern as Machinery)
   {
     name: 'Real Time Data',
+  },
+  {
+    name: 'Gauges & AMS',
     href: routes.fleet.realTimeData,
+    icon: <PiGaugeDuotone />,
+  },
+  {
+    name: 'Trend analysis',
+    href: routes.fleet.trendAnalysis,
     icon: <PiChartLineUpDuotone />,
-    dropdownItems: [
-      {
-        name: 'Gauges & AMS',
-        href: routes.fleet.realTimeData,
-      },
-      {
-        name: 'Trend analysis',
-        href: routes.fleet.trendAnalysis,
-      },
-    ],
   },
   // Machinery section
   {
