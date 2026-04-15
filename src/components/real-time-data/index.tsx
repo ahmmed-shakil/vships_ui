@@ -237,7 +237,7 @@ export const RealTimeDataLayout = () => {
 
 const RealTimeDataContent = () => {
   const [selectedShip] = useAtom(selectedShipAtom);
-  const [selectedEngine, setSelectedEngine] = useAtom(selectedEngineAtom);
+  const [selectedEngine] = useAtom(selectedEngineAtom);
   const { data: session } = useSession();
   const token = (session as any)?.accessToken ?? null;
   const { latestME, latestAE, latestDG } = useSocketData(
@@ -267,9 +267,17 @@ const RealTimeDataContent = () => {
   }, [rawAlarms]);
 
   // Lookup engine data for the selected vessel, overlaid with live socket data
-  const enginesData = mainEngines.map((engine) =>
-    applyLiveData(engine, latestME, latestAE, latestDG, vesselId)
-  );
+  const engines = mainEngines
+    .map((engine) => applyLiveData(engine, latestME, latestAE, latestDG, vesselId))
+    .filter((engine): engine is EngineMonitorData => Boolean(engine));
+  const gridCols =
+    engines.length >= 6
+      ? 'lg:grid-cols-3'
+      : engines.length > 3
+        ? 'lg:grid-cols-4'
+        : engines.length === 3
+          ? 'lg:grid-cols-3'
+          : 'lg:grid-cols-2';
 
   return (
     <>
@@ -277,36 +285,13 @@ const RealTimeDataContent = () => {
       <div className="grid grid-cols-4 shadow-lg">
         <div className="col-span-3 mt-2">
           {selectedEngine.value === 'all' ? (
-            /* ── All Engine: 2x3 grid layout ── */
-            <div className="grid grid-cols-1 gap-6 px-4 lg:grid-cols-2">
-              {enginesData.map((engine) => (
+            <div className={`grid grid-cols-1 gap-4 px-4 ${gridCols}`}>
+              {engines.map((engine) => (
                 <div
-                  key={engine?.id}
-                  className="rounded-xl border p-4 shadow-sm"
+                  key={engine.id}
+                  className="col-span-3 shadow-lg sm:col-span-1"
                 >
-                  <h6
-                    className="mb-4 cursor-pointer text-center text-sm font-semibold uppercase transition-colors hover:text-primary"
-                    onClick={() =>
-                      engine &&
-                      setSelectedEngine({
-                        label: engine.label,
-                        value: engine.id,
-                      })
-                    }
-                  >
-                    {engine?.label}
-                  </h6>
-                  <EngineGroup
-                    engine={engine}
-                    layout="horizontal"
-                    onClick={() =>
-                      engine &&
-                      setSelectedEngine({
-                        label: engine.label,
-                        value: engine.id,
-                      })
-                    }
-                  />
+                  <EngineMonitorCard engine={engine} />
                 </div>
               ))}
             </div>

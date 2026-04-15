@@ -13,6 +13,9 @@ import { useAtom, useAtomValue } from 'jotai';
 import { useEffect, useState } from 'react';
 import { PiArrowClockwise } from 'react-icons/pi';
 
+const AUTO_REFRESH_INTERVAL_SECONDS = 30;
+const AUTO_REFRESH_INTERVAL_MS = AUTO_REFRESH_INTERVAL_SECONDS * 1000;
+
 const SENSOR_CHART_ROWS: {
   title: string;
   yAxisLabel: string;
@@ -124,6 +127,9 @@ export default function TrendAnalysisLayout() {
   const selectedShip = useAtomValue(selectedShipAtom);
   const [selectedTime, setSelectedTime] = useAtom(selectedTimeAtom);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [countdownSeconds, setCountdownSeconds] = useState(
+    AUTO_REFRESH_INTERVAL_SECONDS
+  );
   const { data: sensorData, isLoading } = useSensorDataApi(refreshTick);
   const [hasLoadedAtLeastOnce, setHasLoadedAtLeastOnce] = useState(false);
 
@@ -142,9 +148,18 @@ export default function TrendAnalysisLayout() {
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       setRefreshTick((value) => value + 1);
-    }, 30_000);
+      setCountdownSeconds(AUTO_REFRESH_INTERVAL_SECONDS);
+    }, AUTO_REFRESH_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    const countdownId = window.setInterval(() => {
+      setCountdownSeconds((value) => (value <= 1 ? 0 : value - 1));
+    }, 1_000);
+
+    return () => window.clearInterval(countdownId);
   }, []);
 
   if (!selectedShip) {
@@ -168,10 +183,17 @@ export default function TrendAnalysisLayout() {
           )}
           aria-hidden
         />
-        <span>{isRefreshing ? 'Updating data...' : 'Auto-refresh every 30s'}</span>
+        <span>
+          {isRefreshing
+            ? 'Updating data...'
+            : `Auto-refresh in ${countdownSeconds}s`}
+        </span>
         <button
           type="button"
-          onClick={() => setRefreshTick((v) => v + 1)}
+          onClick={() => {
+            setRefreshTick((v) => v + 1);
+            setCountdownSeconds(AUTO_REFRESH_INTERVAL_SECONDS);
+          }}
           disabled={isLoading}
           aria-label="Refresh data now"
           className="inline-flex items-center justify-center rounded-md border border-border bg-background p-1.5 text-foreground transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-50"
