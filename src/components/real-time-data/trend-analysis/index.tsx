@@ -215,7 +215,6 @@ export default function TrendAnalysisLayout() {
           isLoading={isInitialLoading}
           thresholds={row.thresholds}
           tooltipColumns={row.series.length > 5 ? 2 : undefined}
-          plainLines
         />
       ))}
     </div>
