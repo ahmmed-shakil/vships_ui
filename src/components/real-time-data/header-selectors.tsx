@@ -84,7 +84,7 @@ export default function AlarmMonitoringHeaderSelectors() {
         placeholder="Select Vessel"
       />
       <Select
-        options={engineOptions}
+        options={allEngineOptions}
         value={selectedEngine}
         onChange={setSelectedEngine}
         className="w-36"
