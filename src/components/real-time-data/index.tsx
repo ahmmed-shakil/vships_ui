@@ -291,7 +291,7 @@ const RealTimeDataContent = () => {
                   key={engine.id}
                   className="col-span-3 shadow-lg sm:col-span-1"
                 >
-                  <EngineMonitorCard engine={engine} />
+                  <EngineGroup engine={engine} />
                 </div>
               ))}
             </div>
