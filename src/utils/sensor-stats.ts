@@ -1,27 +1,28 @@
 import type { SensorDataPoint } from '@/types/api';
 
 export interface ParameterStats {
-  /** Arithmetic mean of all non-null values over the full date range */
+  /** Arithmetic mean — excludes null and zero values, full date range */
   avg: number | null;
   /**
-   * Mean of non-null values whose timestamp falls within the last 24 h of the
-   * selected range (i.e. last data-point timestamp − 24 h).
+   * Mean of valid (non-null, non-zero) values whose timestamp falls within the
+   * last 24 h of the selected range (last data-point timestamp − 24 h).
    *
    * Edge cases:
-   *  - Range shorter than 24 h → movAvg equals avg (all points are in window).
-   *  - Historical custom range not including today → still computes the last
-   *    24 h of *that* range.  See STATS-GUIDE.md for the case where a
-   *    backend endpoint is recommended.
+   *  - Range shorter than 24 h → movAvg equals avg (all points in window).
+   *  - Historical custom range not including today → still computes trailing
+   *    24 h of *that* range.  See STATS-GUIDE.md for the optional backend
+   *    endpoint when a "live" 24 h MA is required.
    */
   movAvg: number | null;
-  /** Sample standard deviation (÷ n−1) of all non-null values */
-  dev: number | null;
+  /** Median — excludes null and zero values, full date range */
+  median: number | null;
 }
 
+/** Extract valid numeric values: rejects null, NaN, and 0. */
 function extractNumbers(data: SensorDataPoint[], key: string): number[] {
   return data
     .map((d) => d[key] as number | null)
-    .filter((v): v is number => v !== null && !Number.isNaN(v));
+    .filter((v): v is number => v !== null && !Number.isNaN(v) && v !== 0);
 }
 
 function mean(values: number[]): number | null {
@@ -29,17 +30,18 @@ function mean(values: number[]): number | null {
   return values.reduce((sum, v) => sum + v, 0) / values.length;
 }
 
-function sampleStdDev(values: number[]): number | null {
-  if (values.length < 2) return null;
-  const avg = mean(values)!;
-  const variance =
-    values.reduce((sum, v) => sum + (v - avg) ** 2, 0) / (values.length - 1);
-  return Math.sqrt(variance);
+function median(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
 }
 
 /**
- * Returns the effective non-null number array for a sensor key, falling back
- * to `fallbackDataKey` when the primary key yields no valid values.
+ * Returns the effective non-null, non-zero number array for a sensor key,
+ * falling back to `fallbackDataKey` when the primary key yields no valid values.
  */
 export function extractParameterValues(
   data: SensorDataPoint[],
@@ -52,21 +54,21 @@ export function extractParameterValues(
 }
 
 /**
- * Computes Average, 24-h Moving Average, and Standard Deviation for a single
- * sensor parameter across an already-fetched SensorDataPoint array.
+ * Computes Average, 24-h Moving Average, and Median for a single sensor
+ * parameter across an already-fetched SensorDataPoint array.
  *
- * Null / NaN values are excluded from every calculation.
+ * Null, NaN, and **zero** values are excluded from every calculation.
  *
  * @param data            - the full SensorDataPoint array returned by the API
- * @param dataKey         - the primary field name to extract (e.g. 'rpm', 'tc_rpm')
- * @param fallbackDataKey - used when `dataKey` yields no non-null values (e.g. 'eg_temp_1')
+ * @param dataKey         - the primary field name to extract (e.g. 'rpm')
+ * @param fallbackDataKey - used when `dataKey` yields no valid values (e.g. 'eg_temp_1')
  */
 export function computeParameterStats(
   data: SensorDataPoint[],
   dataKey: string,
   fallbackDataKey?: string
 ): ParameterStats {
-  if (!data.length) return { avg: null, movAvg: null, dev: null };
+  if (!data.length) return { avg: null, movAvg: null, median: null };
 
   // Resolve effective key: use fallback if primary has no valid data
   const effectiveKey =
@@ -76,18 +78,18 @@ export function computeParameterStats(
 
   const allValues = extractNumbers(data, effectiveKey);
 
-  // Moving average: mean of the last 24 h window relative to the last point
+  // Moving average: mean of valid values within the last 24 h of the range
   const lastTs = new Date(data[data.length - 1].timestamp).getTime();
   const cutoff = lastTs - 24 * 60 * 60 * 1000;
   const last24hValues = data
     .filter((d) => new Date(d.timestamp).getTime() >= cutoff)
     .map((d) => d[effectiveKey] as number | null)
-    .filter((v): v is number => v !== null && !Number.isNaN(v));
+    .filter((v): v is number => v !== null && !Number.isNaN(v) && v !== 0);
 
   return {
     avg: mean(allValues),
     movAvg: mean(last24hValues),
-    dev: sampleStdDev(allValues),
+    median: median(allValues),
   };
 }
 

@@ -5,30 +5,35 @@ import type { HealthScoreEntry } from '@/types/api';
 import cn from '@/utils/class-names';
 import { type ParameterStats, fmtStat } from '@/utils/sensor-stats';
 import {
-  Line,
-  LineChart,
+  Area,
+  AreaChart,
   ReferenceLine,
   ResponsiveContainer,
 } from 'recharts';
 
 /**
- * Mini sparkline — shows the raw sensor values as a red line chart and draws a
- * dashed horizontal line at the computed average.  Fully data-driven; replaces
- * the previous decorative bell-curve SVG.
+ * Deviation-from-median chart.
+ *
+ * Each point is plotted as (value − median) so the zero line represents the
+ * median.  Areas above zero = above-median readings; below zero = below-median.
+ * A dashed red reference line marks zero (= the median baseline).
+ *
+ * Null and zero sensor values are already excluded upstream by
+ * extractParameterValues / computeParameterStats.
  */
-function MiniSparkline({
+function DeviationChart({
   values,
-  avg,
+  median,
 }: {
   values: number[];
-  avg: number | null;
+  median: number | null;
 }) {
-  if (values.length === 0) {
-    // Fallback: static decorative bell curve when no data is available
+  // Fallback decorative bell curve when there is no data yet
+  if (values.length === 0 || median === null) {
     return (
       <svg
         viewBox="0 0 100 60"
-        className="h-12 w-full"
+        className="h-14 w-full"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -51,33 +56,37 @@ function MiniSparkline({
     );
   }
 
-  const chartData = values.map((v, i) => ({ i, v }));
+  const chartData = values.map((v, i) => ({
+    i,
+    /** deviation from median; positive = above, negative = below */
+    d: +(v - median).toFixed(4),
+  }));
 
   return (
     <div className="h-14 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart
+        <AreaChart
           data={chartData}
-          margin={{ top: 4, right: 4, left: 4, bottom: 4 }}
+          margin={{ top: 4, right: 2, left: 2, bottom: 4 }}
         >
-          <Line
+          {/* Zero line = median baseline */}
+          <ReferenceLine
+            y={0}
+            stroke="#EF4444"
+            strokeWidth={1}
+            strokeDasharray="4 2"
+            opacity={0.7}
+          />
+          <Area
             type="monotone"
-            dataKey="v"
+            dataKey="d"
             stroke="#EF4444"
             strokeWidth={1.5}
+            fill="#EF444422"
             dot={false}
             isAnimationActive={false}
           />
-          {avg !== null && (
-            <ReferenceLine
-              y={avg}
-              stroke="#EF4444"
-              strokeWidth={1}
-              strokeDasharray="4 2"
-              opacity={0.5}
-            />
-          )}
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );
@@ -117,7 +126,7 @@ function StatCard({
 /**
  * Health Score Card — info card with:
  * - Header: Health score + Delta percentage
- * - Mini sparkline (data-driven, reflects avg) + Causality badge
+ * - Deviation-from-median chart (data-driven) + Causality badge
  * - 3 stat cards (Stats / Alarms / Peak)
  */
 export default function HealthScoreCard({
@@ -131,7 +140,7 @@ export default function HealthScoreCard({
   entry?: HealthScoreEntry;
   isLoading?: boolean;
   paramStats?: ParameterStats;
-  /** Raw non-null sensor values used to render the mini sparkline */
+  /** Non-null, non-zero sensor values used to render the deviation chart */
   paramValues?: number[];
 }) {
   const score = entry?.score;
@@ -162,13 +171,13 @@ export default function HealthScoreCard({
         </div>
       </div>
 
-      {/* ─── Sparkline + Causality ──────────────────────────────── */}
+      {/* ─── Deviation Chart + Causality ────────────────────────── */}
       <div className="grid grid-cols-3 gap-2">
-        {/* Sparkline spans 2 columns so it has enough room to be readable */}
+        {/* Chart spans 2 columns for readability */}
         <div className="col-span-2 flex items-center">
-          <MiniSparkline
+          <DeviationChart
             values={isLoading ? [] : paramValues}
-            avg={paramStats?.avg ?? null}
+            median={paramStats?.median ?? null}
           />
         </div>
         <div className="col-span-1 flex flex-col items-center justify-center gap-2">
@@ -195,8 +204,8 @@ export default function HealthScoreCard({
               value: isLoading ? '…' : fmtStat(paramStats?.movAvg ?? null),
             },
             {
-              label: 'Dev',
-              value: isLoading ? '…' : fmtStat(paramStats?.dev ?? null),
+              label: 'Med',
+              value: isLoading ? '…' : fmtStat(paramStats?.median ?? null),
             },
           ]}
         />
