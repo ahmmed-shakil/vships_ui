@@ -1,24 +1,18 @@
 'use client';
 
 import AlarmTable from '@/components/real-time-data/alarm-table';
-import DateRangePicker from '@/components/date/date-range';
 import { useAlarmsWithSummary } from '@/hooks/use-machinery-data';
 import {
-  dateRangeAtom,
   selectedEngineAtom,
   selectedShipAtom,
-  selectedTimeAtom,
 } from '@/store/condition-monitoring-atoms';
-import cn from '@/utils/class-names';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtomValue } from 'jotai';
 import { useMemo, useState } from 'react';
 import { PiWarningFill } from 'react-icons/pi';
 import { Select, Text } from 'rizzui';
 import { Box } from 'rizzui/box';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const TIME_PRESETS = ['1h', '1d', '7d', '1m', '3m', 'Custom Time'];
 
 const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
@@ -73,11 +67,7 @@ export default function AlarmOverviewPage() {
   const selectedShip = useAtomValue(selectedShipAtom);
   const selectedEngine = useAtomValue(selectedEngineAtom);
 
-  // Date range — same atoms as condition-monitoring
-  const [selectedTime, setSelectedTime] = useAtom(selectedTimeAtom);
-  const [dateRange, setDateRange] = useAtom(dateRangeAtom);
-
-  // Status filter — local state; 'all' means no status param sent
+  // Status filter — local state; 'all' means no status param sent to the API
   const [statusFilter, setStatusFilter] = useState<{ label: string; value: string }>(
     STATUS_OPTIONS[0]
   );
@@ -117,39 +107,6 @@ export default function AlarmOverviewPage() {
 
   return (
     <Box className="pt-5 @container/pd">
-      {/* ── Date range header ─────────────────────────────────────────────── */}
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="flex shrink-0 overflow-hidden rounded border border-muted">
-          {TIME_PRESETS.map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => setSelectedTime(opt)}
-              className={cn(
-                'border-r border-muted px-4 py-1.5 text-sm transition-all duration-200 last:border-r-0',
-                selectedTime === opt
-                  ? 'bg-primary/10 font-semibold text-primary'
-                  : 'font-medium text-foreground hover:bg-muted/50'
-              )}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-
-        {selectedTime === 'Custom Time' && (
-          <div className="w-52 shrink-0">
-            <DateRangePicker
-              startDate={dateRange[0]}
-              endDate={dateRange[1]}
-              onChange={setDateRange}
-              className="h-9 w-full rounded border border-muted bg-background px-3 text-sm focus:ring-0"
-              placeholder="Select date range"
-            />
-          </div>
-        )}
-      </div>
-
       {/* ── Summary cards ─────────────────────────────────────────────────── */}
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-7">
         <AlarmSummaryCard

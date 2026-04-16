@@ -11,14 +11,16 @@ import { atom } from 'jotai';
 /** Selected vessel — starts null, set to first API vessel on load */
 export const selectedShipAtom = atom<Ship>(null as unknown as Ship);
 
-/** Selected engine option */
-export const selectedEngineAtom = atom(engineData[0]);
+/** Selected engine option — defaults to ME Stbd (me2) */
+export const selectedEngineAtom = atom(
+  engineData.find((e) => e.value === 'me2') ?? engineData[0]
+);
 
 /** Selected time range preset */
-export const selectedTimeAtom = atom<string>('1d');
+export const selectedTimeAtom = atom<string>('7d');
 
 /** Custom date range (only used when selectedTime === 'Custom Time') */
 export const dateRangeAtom = atom<[Date | null, Date | null]>([null, null]);
 
-/** Incremented every 10s to trigger auto-refresh of data hooks */
+/** Refresh trigger counter — increment to force a data reload */
 export const refreshTriggerAtom = atom(0);
