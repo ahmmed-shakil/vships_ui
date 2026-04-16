@@ -4,35 +4,82 @@ import PerfomaxCard from '@/components/cards/perfomax-card';
 import type { HealthScoreEntry } from '@/types/api';
 import cn from '@/utils/class-names';
 import { type ParameterStats, fmtStat } from '@/utils/sensor-stats';
+import {
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+} from 'recharts';
 
 /**
- * SVG bell curve (normal distribution) — decorative illustration.
+ * Mini sparkline — shows the raw sensor values as a red line chart and draws a
+ * dashed horizontal line at the computed average.  Fully data-driven; replaces
+ * the previous decorative bell-curve SVG.
  */
-function BellCurve({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 100 60"
-      className={cn('h-12 w-20', className)}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M5 55 Q 15 55, 25 50 Q 35 40, 45 15 Q 50 5, 55 15 Q 65 40, 75 50 Q 85 55, 95 55"
-        stroke="#EF4444"
-        strokeWidth="2"
+function MiniSparkline({
+  values,
+  avg,
+}: {
+  values: number[];
+  avg: number | null;
+}) {
+  if (values.length === 0) {
+    // Fallback: static decorative bell curve when no data is available
+    return (
+      <svg
+        viewBox="0 0 100 60"
+        className="h-12 w-full"
         fill="none"
-      />
-      {/* Center dashed line */}
-      <line
-        x1="50"
-        y1="5"
-        x2="50"
-        y2="55"
-        stroke="#EF4444"
-        strokeWidth="1"
-        strokeDasharray="3 2"
-      />
-    </svg>
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M5 55 Q 15 55, 25 50 Q 35 40, 45 15 Q 50 5, 55 15 Q 65 40, 75 50 Q 85 55, 95 55"
+          stroke="#EF4444"
+          strokeWidth="2"
+          fill="none"
+        />
+        <line
+          x1="50"
+          y1="5"
+          x2="50"
+          y2="55"
+          stroke="#EF4444"
+          strokeWidth="1"
+          strokeDasharray="3 2"
+        />
+      </svg>
+    );
+  }
+
+  const chartData = values.map((v, i) => ({ i, v }));
+
+  return (
+    <div className="h-14 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart
+          data={chartData}
+          margin={{ top: 4, right: 4, left: 4, bottom: 4 }}
+        >
+          <Line
+            type="monotone"
+            dataKey="v"
+            stroke="#EF4444"
+            strokeWidth={1.5}
+            dot={false}
+            isAnimationActive={false}
+          />
+          {avg !== null && (
+            <ReferenceLine
+              y={avg}
+              stroke="#EF4444"
+              strokeWidth={1}
+              strokeDasharray="4 2"
+              opacity={0.5}
+            />
+          )}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -70,19 +117,22 @@ function StatCard({
 /**
  * Health Score Card — info card with:
  * - Header: Health score + Delta percentage
- * - 2 bell curves + Causality badge
- * - 3 stat cards (Title / Alarms / Peak)
+ * - Mini sparkline (data-driven, reflects avg) + Causality badge
+ * - 3 stat cards (Stats / Alarms / Peak)
  */
 export default function HealthScoreCard({
   className,
   entry,
   isLoading,
   paramStats,
+  paramValues = [],
 }: {
   className?: string;
   entry?: HealthScoreEntry;
   isLoading?: boolean;
   paramStats?: ParameterStats;
+  /** Raw non-null sensor values used to render the mini sparkline */
+  paramValues?: number[];
 }) {
   const score = entry?.score;
   const delta = entry?.delta;
@@ -112,13 +162,14 @@ export default function HealthScoreCard({
         </div>
       </div>
 
-      {/* ─── Bell Curves + Causality ────────────────────────────── */}
+      {/* ─── Sparkline + Causality ──────────────────────────────── */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="col-span-1 flex items-center justify-center">
-          <BellCurve />
-        </div>
-        <div className="col-span-1 flex items-center justify-center">
-          <BellCurve />
+        {/* Sparkline spans 2 columns so it has enough room to be readable */}
+        <div className="col-span-2 flex items-center">
+          <MiniSparkline
+            values={isLoading ? [] : paramValues}
+            avg={paramStats?.avg ?? null}
+          />
         </div>
         <div className="col-span-1 flex flex-col items-center justify-center gap-2">
           <span className="text-sm font-semibold text-foreground">

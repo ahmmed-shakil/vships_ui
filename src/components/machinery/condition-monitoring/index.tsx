@@ -18,7 +18,10 @@ import cn from '@/utils/class-names';
 import { useAtomValue } from 'jotai';
 import Image from 'next/image';
 
-import { computeParameterStats } from '@/utils/sensor-stats';
+import {
+  computeParameterStats,
+  extractParameterValues,
+} from '@/utils/sensor-stats';
 import ConditionBasedAnalysisTable from './condition-based-analysis-table';
 import CoolantPressureChart from './coolant-pressure-chart';
 import DeltaDeviationTrendline from './delta-deviation-trendline';
@@ -61,6 +64,8 @@ const SENSOR_CHART_ROWS: {
   yAxisLabel: string;
   /** Primary key used for Stats calculations (avg / mov-avg / dev) */
   primaryDataKey: string;
+  /** Used when primaryDataKey yields all-null values (e.g. eg_temp_mean → eg_temp_1) */
+  fallbackDataKey?: string;
   series: SensorSeries[];
   thresholds?: { min?: number; max?: number };
 }[] = [
@@ -89,6 +94,7 @@ const SENSOR_CHART_ROWS: {
     title: 'Exhaust Gas Temperatures (Cylinders)',
     yAxisLabel: 'EG Temp (°C)',
     primaryDataKey: 'eg_temp_mean',
+    fallbackDataKey: 'eg_temp_1',
     series: [
       { dataKey: 'eg_temp_1', label: 'Cyl 1', color: '#3B82F6' },
       { dataKey: 'eg_temp_2', label: 'Cyl 2', color: '#EF4444' },
@@ -324,7 +330,13 @@ export default function ConditionMonitoringLayout() {
       {SENSOR_CHART_ROWS.map((row) => {
         const paramStats = computeParameterStats(
           sensorData,
-          row.primaryDataKey
+          row.primaryDataKey,
+          row.fallbackDataKey
+        );
+        const paramValues = extractParameterValues(
+          sensorData,
+          row.primaryDataKey,
+          row.fallbackDataKey
         );
         return (
           <div
@@ -344,6 +356,7 @@ export default function ConditionMonitoringLayout() {
               className="col-span-3"
               isLoading={isLoading}
               paramStats={paramStats}
+              paramValues={paramValues}
             />
             <ParameterVsRpmChart
               className="col-span-3"
