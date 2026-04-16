@@ -21,25 +21,20 @@ export default function AlarmMonitoringHeaderSelectors() {
   );
   const vesselOptions = useVesselOptions(handleLoaded);
   const allEngineOptions = useEngineOptionsList();
-  const engineOptions = useMemo(
-    () => allEngineOptions.filter((e) => e.value !== 'all'),
-    [allEngineOptions]
-  );
+
 
   // Keep selected engine aligned with API options by value.
   // This ensures fleet-map picks like DG2 show correctly in header,
   // and labels stay current (e.g. STBD -> Starboard).
-  // No "All Engine" here — default to DG1 (or first real engine) for single-engine API queries.
   useEffect(() => {
-    if (engineOptions.length === 0) return;
-    const match = engineOptions.find((e) => e.value === selectedEngine?.value);
+    if (allEngineOptions.length === 0) return;
+    const match = allEngineOptions.find((e) => e.value === selectedEngine?.value);
     if (match) {
       if (match.label !== selectedEngine?.label) setSelectedEngine(match);
       return;
     }
-    const dg1 = engineOptions.find((e) => e.value.toLowerCase() === 'dg1');
-    setSelectedEngine(dg1 ?? engineOptions[0]);
-  }, [engineOptions, selectedEngine, setSelectedEngine]);
+    const dg1 = allEngineOptions.find((e) => e.value.toLowerCase() === 'dg1');
+  }, [allEngineOptions, selectedEngine, setSelectedEngine]);
 
   return (
     <div className="flex flex-wrap items-center gap-3">
