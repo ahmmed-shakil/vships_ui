@@ -415,7 +415,7 @@ export default function VesselMap({
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          noWrap={true} // Prevents the map from repeating horizontally
+          noWrap={false}
         />
 
         {/* ── Weather overlay tiles ── */}
@@ -426,7 +426,7 @@ export default function VesselMap({
                 key={wl.id}
                 url={`https://tile.openweathermap.org/map/${wl.layer}/{z}/{x}/{y}.png?appid=${OWM_KEY}`}
                 opacity={0.6}
-                noWrap={true}
+                noWrap={false}
               />
             )
         )}
