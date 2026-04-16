@@ -1,31 +1,29 @@
 'use client';
 
-import type { FleetVessel } from '@/data/nura/fleet-data';
-import { formatDistanceToNowStrict } from 'date-fns';
-import React, { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import {
-  PiNavigationArrow,
-  PiWifiHigh,
-  PiArrowRight,
-  PiBellSimpleRingingFill,
-  PiLightningFill,
-  PiEngine,
-  PiEngineFill,
-} from 'react-icons/pi';
 import {
   engineValueToAlarmEngine,
   vesselAlarmData as fallbackAlarmData,
   type AlarmEntry,
 } from '@/data/nura/alarm-data';
-import { useRouter } from 'next/navigation';
-import { useSetAtom } from 'jotai';
+import type { FleetVessel } from '@/data/nura/fleet-data';
+import * as api from '@/services/api';
 import {
   selectedEngineAtom,
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
-import { engineData, shipData } from '@/data/nura/ships';
-import * as api from '@/services/api';
+import { formatDistanceToNowStrict } from 'date-fns';
+import { useSetAtom } from 'jotai';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import {
+  PiArrowRight,
+  PiBellSimpleRingingFill,
+  PiEngine,
+  PiLightningFill,
+  PiNavigationArrow,
+  PiWifiHigh
+} from 'react-icons/pi';
 
 // Declare global window types for Leaflet and Windy
 declare global {
@@ -149,8 +147,11 @@ export default function WindyMap({
       });
     }
 
-    const engineOpt = engineData.find((e) => e.value === engineValue);
-    if (engineOpt) setEngine(engineOpt);
+    const normalizedValue = engineValue.toLowerCase();
+    setEngine({
+      value: normalizedValue,
+      label: normalizedValue.toUpperCase(),
+    });
     router.push('/real-time-data');
   };
 
@@ -203,6 +204,23 @@ export default function WindyMap({
     }
   }, [selectedOverlay, mapReady]);
 
+  const hasCenteredRef = useRef(false);
+  useEffect(() => {
+    if (!mapRef.current || !mapReady || hasCenteredRef.current) return;
+    if (vessels?.length > 0) {
+      const v = vessels.find(
+        (v) => v.position?.lat != null && v.position?.long != null
+      );
+      if (v) {
+        mapRef.current.setView(
+          [v.position.lat, v.position.long],
+          mapRef.current.getZoom()
+        );
+        hasCenteredRef.current = true;
+      }
+    }
+  }, [mapReady, vessels]);
+
   // Update vessel positions when map moves or zooms
   useEffect(() => {
     if (!mapRef.current || !mapReady) return;
@@ -223,12 +241,17 @@ export default function WindyMap({
       setVesselPositions(newPositions);
     };
 
+    const handleMapClick = () => {
+      setActivePopup(null);
+    };
+
     handleMapMove();
     map.on('move', handleMapMove);
     map.on('zoom', handleMapMove);
     map.on('moveend', handleMapMove);
     map.on('zoomend', handleMapMove);
     map.on('resize', handleMapMove);
+    map.on('click', handleMapClick);
 
     return () => {
       map.off('move', handleMapMove);
@@ -236,6 +259,7 @@ export default function WindyMap({
       map.off('moveend', handleMapMove);
       map.off('zoomend', handleMapMove);
       map.off('resize', handleMapMove);
+      map.off('click', handleMapClick);
     };
   }, [mapReady, vessels]);
 
@@ -310,12 +334,20 @@ export default function WindyMap({
         const checkWindy = setInterval(() => {
           if (typeof window.windyInit !== 'undefined') {
             clearInterval(checkWindy);
+
+            // Determine initial center from first vessel if available
+            const firstVessel = vessels.find(
+              (v) => v.position?.lat != null && v.position?.long != null
+            );
+            const startLat = firstVessel?.position.lat ?? 1.25;
+            const startLon = firstVessel?.position.long ?? 103.85;
+
             window.windyInit(
               {
                 key: apiKey,
-                lat: 1.25,
-                lon: 103.85,
-                zoom: 8,
+                lat: startLat,
+                lon: startLon,
+                zoom: 7,
                 lang: 'en',
                 overlay: 'wind',
               },
@@ -436,8 +468,13 @@ export default function WindyMap({
                     pointerEvents: 'auto',
                     cursor: 'pointer',
                   }}
-                  onMouseEnter={() => setActivePopup(vessel.vessel_id)}
-                  onMouseLeave={() => setActivePopup(null)}
+                  onMouseEnter={() => {
+                    setActivePopup(vessel.vessel_id);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActivePopup(vessel.vessel_id);
+                  }}
                 >
                   {/* Marker Icon */}
                   <div className="relative flex flex-col items-center">
@@ -660,8 +697,8 @@ export default function WindyMap({
                         ).map(({ key, label, objKey, icon: Icon }) => {
                           const engineTimestampSec = objKey.startsWith('dg')
                             ? (vessel.engines?.[
-                                `DG${objKey.replace('dg', '')}`
-                              ] ?? 0)
+                              `DG${objKey.replace('dg', '')}`
+                            ] ?? 0)
                             : ((vessel as any)[objKey] ?? 0);
 
                           const eqEngineId = key;

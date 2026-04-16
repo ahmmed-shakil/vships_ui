@@ -6,12 +6,17 @@ import { setAccessToken, setRefreshToken } from '@/services/api-client';
 import * as api from '@/services/api';
 
 // Mock data fallbacks
-import { shipData, engineData as defaultEngineData } from '@/data/nura/ships';
-import { vesselAlarmData as mockAlarmData } from '@/data/nura/alarm-data';
+import {
+  shipData,
+  engineData as defaultEngineData,
+  type Ship,
+} from '@/data/nura/ships';
+import {
+  vesselAlarmData as mockAlarmData,
+  type AlarmEntry,
+} from '@/data/nura/alarm-data';
 
 // Types
-import type { Ship } from '@/data/nura/ships';
-import type { AlarmEntry } from '@/data/nura/alarm-data';
 import type { FleetVessel } from '@/data/nura/fleet-data';
 import type { EngineMonitorData } from '@/data/nura/engine-data';
 

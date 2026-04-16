@@ -59,34 +59,34 @@ function applyLiveData(
     totals: engine.totals,
     detail: engine.detail
       ? {
-          ...engine.detail,
-          lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
-          lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
-          coolant_press: live.coolant_press ?? engine.detail.coolant_press,
-          coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
-          lt_coolant_press:
-            live.lt_coolant_press ?? engine.detail.lt_coolant_press,
-          fuel_oil_press: live.fuel_oil_press ?? engine.detail.fuel_oil_press,
-          start_air_press:
-            live.start_air_press ?? engine.detail.start_air_press,
-          batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
-          exhgas_temp_left:
-            live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
-          exhgas_temp_right:
-            live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
-        }
+        ...engine.detail,
+        lubeoil_press: live.lubeoil_press ?? engine.detail.lubeoil_press,
+        lubeoil_temp: live.lubeoil_temp ?? engine.detail.lubeoil_temp,
+        coolant_press: live.coolant_press ?? engine.detail.coolant_press,
+        coolant_temp: live.coolant_temp ?? engine.detail.coolant_temp,
+        lt_coolant_press:
+          live.lt_coolant_press ?? engine.detail.lt_coolant_press,
+        fuel_oil_press: live.fuel_oil_press ?? engine.detail.fuel_oil_press,
+        start_air_press:
+          live.start_air_press ?? engine.detail.start_air_press,
+        batt_volt: live.Batt_volt ?? engine.detail.batt_volt,
+        exhgas_temp_left:
+          live.exhgas_temp_left ?? engine.detail.exhgas_temp_left,
+        exhgas_temp_right:
+          live.exhgas_temp_right ?? engine.detail.exhgas_temp_right,
+      }
       : {
-          lubeoil_press: live.lubeoil_press ?? 0,
-          lubeoil_temp: live.lubeoil_temp ?? 0,
-          coolant_press: live.coolant_press ?? 0,
-          coolant_temp: live.coolant_temp ?? 0,
-          lt_coolant_press: live.lt_coolant_press ?? 0,
-          fuel_oil_press: live.fuel_oil_press ?? 0,
-          start_air_press: live.start_air_press ?? 0,
-          batt_volt: live.Batt_volt ?? 0,
-          exhgas_temp_left: live.exhgas_temp_left ?? 0,
-          exhgas_temp_right: live.exhgas_temp_right ?? 0,
-        },
+        lubeoil_press: live.lubeoil_press ?? 0,
+        lubeoil_temp: live.lubeoil_temp ?? 0,
+        coolant_press: live.coolant_press ?? 0,
+        coolant_temp: live.coolant_temp ?? 0,
+        lt_coolant_press: live.lt_coolant_press ?? 0,
+        fuel_oil_press: live.fuel_oil_press ?? 0,
+        start_air_press: live.start_air_press ?? 0,
+        batt_volt: live.Batt_volt ?? 0,
+        exhgas_temp_left: live.exhgas_temp_left ?? 0,
+        exhgas_temp_right: live.exhgas_temp_right ?? 0,
+      },
   };
 }
 
@@ -237,7 +237,7 @@ export const RealTimeDataLayout = () => {
 
 const RealTimeDataContent = () => {
   const [selectedShip] = useAtom(selectedShipAtom);
-  const [selectedEngine, setSelectedEngine] = useAtom(selectedEngineAtom);
+  const [selectedEngine] = useAtom(selectedEngineAtom);
   const { data: session } = useSession();
   const token = (session as any)?.accessToken ?? null;
   const { latestME, latestAE, latestDG } = useSocketData(
@@ -267,9 +267,10 @@ const RealTimeDataContent = () => {
   }, [rawAlarms]);
 
   // Lookup engine data for the selected vessel, overlaid with live socket data
-  const enginesData = mainEngines.map((engine) =>
-    applyLiveData(engine, latestME, latestAE, latestDG, vesselId)
-  );
+  const engines = mainEngines
+    .map((engine) => applyLiveData(engine, latestME, latestAE, latestDG, vesselId))
+    .filter((engine): engine is EngineMonitorData => Boolean(engine));
+  const gridCols = 'md:grid-cols-2 3xl:grid-cols-3';
 
   return (
     <>
@@ -277,36 +278,13 @@ const RealTimeDataContent = () => {
       <div className="grid grid-cols-4 shadow-lg">
         <div className="col-span-3 mt-2">
           {selectedEngine.value === 'all' ? (
-            /* ── All Engine: 2x3 grid layout ── */
-            <div className="grid grid-cols-1 gap-6 px-4 lg:grid-cols-2">
-              {enginesData.map((engine) => (
+            <div className={`grid grid-cols-1 gap-4 px-4 ${gridCols}`}>
+              {engines.map((engine) => (
                 <div
-                  key={engine?.id}
-                  className="rounded-xl border p-4 shadow-sm"
+                  key={engine.id}
+                  className="shadow-lg"
                 >
-                  <h6
-                    className="mb-4 cursor-pointer text-center text-sm font-semibold uppercase transition-colors hover:text-primary"
-                    onClick={() =>
-                      engine &&
-                      setSelectedEngine({
-                        label: engine.label,
-                        value: engine.id,
-                      })
-                    }
-                  >
-                    {engine?.label}
-                  </h6>
-                  <EngineGroup
-                    engine={engine}
-                    layout="horizontal"
-                    onClick={() =>
-                      engine &&
-                      setSelectedEngine({
-                        label: engine.label,
-                        value: engine.id,
-                      })
-                    }
-                  />
+                  <EngineGroup engine={engine} />
                 </div>
               ))}
             </div>

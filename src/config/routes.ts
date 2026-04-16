@@ -3,6 +3,7 @@ export const routes = {
   fleet: {
     overview: '/fleet-overview',
     realTimeData: '/real-time-data',
+    trendAnalysis: '/real-time-data/trend-analysis',
     // alarmMonitoring: '/real-time-data',
     dailyOverview: '/daily-overview',
     operationOverview: '/operation-overview',

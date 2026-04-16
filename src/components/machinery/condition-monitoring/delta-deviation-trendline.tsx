@@ -3,8 +3,7 @@
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
 import type { DeltaDeviationResponse } from '@/types/api';
-import { useCallback, useMemo, useRef, useState } from 'react';
-import ChartExportButton from './chart-export-button';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Area,
   CartesianGrid,
@@ -90,7 +89,6 @@ export default function DeltaDeviationTrendline({
   isLoading: boolean;
 }) {
   // Track which series are hidden (all visible by default)
-  const cardRef = useRef<HTMLDivElement>(null);
   const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 
   const handleLegendClick = useCallback((dataKey: string) => {
@@ -118,16 +116,9 @@ export default function DeltaDeviationTrendline({
 
   return (
     <PerfomaxCard
-      ref={cardRef}
       title="Delta Deviation Trendline"
       className={className}
       bodyClassName="p-5"
-      action={
-        <ChartExportButton
-          targetRef={cardRef}
-          fileName="delta-deviation-trendline"
-        />
-      }
     >
       <div className="flex h-full">
         {/* Y-axis label */}
@@ -154,7 +145,10 @@ export default function DeltaDeviationTrendline({
                   data={chartData}
                   margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
 
                   {/* Orange overlay band for reference range */}
                   <ReferenceArea

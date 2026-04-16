@@ -5,15 +5,15 @@ import {
   vesselAlarmData as fallbackAlarmData,
   type AlarmEntry,
 } from '@/data/nura/alarm-data';
-import { formatDistanceToNowStrict } from 'date-fns';
 import { emissionZones as fallbackEmissionZones } from '@/data/nura/emission-zones';
 import type { FleetVessel } from '@/data/nura/fleet-data';
-import { engineData, shipData } from '@/data/nura/ships';
+import { shipData } from '@/data/nura/ships';
 import * as api from '@/services/api';
 import {
   selectedEngineAtom,
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { useSetAtom } from 'jotai';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -115,9 +115,8 @@ function createVesselIcon(name: string, direction: number, onlineMs: number) {
     html: `
       <div style="display:flex;flex-direction:column;align-items:center;">
         <div style="position:relative;">
-          ${
-            shouldPulse
-              ? `<div style="
+          ${shouldPulse
+        ? `<div style="
                   position:absolute;top:50%;left:50%;
                   transform:translate(-50%,-50%);
                   width:30px;height:30px;
@@ -125,8 +124,8 @@ function createVesselIcon(name: string, direction: number, onlineMs: number) {
                   border-radius:50%;opacity:0;
                   animation:vesselPulse 2s ease-out infinite;
                 "></div>`
-              : ''
-          }
+        : ''
+      }
           <div style="
             position:relative;width:20px;height:20px;
             transform:rotate(${direction}deg);
@@ -154,11 +153,11 @@ function createVesselIcon(name: string, direction: number, onlineMs: number) {
 
 // ─── MapUpdater (runs only on mount to avoid repositioning) ──────────────────
 
-function MapUpdater({ position }: { position: [number, number] }) {
+function MapUpdater({ position }: { position: [number, number] | null }) {
   const map = useMap();
   const hasInitialized = React.useRef(false);
   useEffect(() => {
-    if (!hasInitialized.current && position[0] && position[1]) {
+    if (!hasInitialized.current && position && position[0] && position[1]) {
       map.setView(position, map.getZoom());
       hasInitialized.current = true;
     }
@@ -372,8 +371,11 @@ export default function VesselMap({
       });
     }
 
-    const engineOpt = engineData.find((e) => e.value === engineValue);
-    if (engineOpt) setEngine(engineOpt);
+    const normalizedValue = engineValue.toLowerCase();
+    setEngine({
+      value: normalizedValue,
+      label: normalizedValue.toUpperCase(),
+    });
     router.push('/real-time-data');
   };
 
@@ -392,27 +394,28 @@ export default function VesselMap({
   };
 
   const vessels = toPoints(rawVessels);
-  const center: [number, number] = [20, 0];
+  const initialCenter: [number, number] = [20, 0];
+  const vesselCenter = vessels.length > 0 ? vessels[0].position : null;
 
   return (
     <div id="vessel-map" style={{ position: 'relative' }}>
       <MapContainer
-        center={center}
-        zoom={3}
-        minZoom={3} // Restrict how much the map can be zoomed out
+        center={initialCenter}
+        zoom={6}
+        minZoom={3}
         maxZoom={18}
         scrollWheelZoom
         zoomControl={false}
         style={{ height: minHeight, width: '100%', borderRadius: '0.75rem' }}
       >
         <ZoomControl position="topright" />
-        <MapUpdater position={center} />
+        <MapUpdater position={vesselCenter} />
 
         {/* Base tile layer */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          noWrap={true} // Prevents the map from repeating horizontally
+          noWrap={false}
         />
 
         {/* ── Weather overlay tiles ── */}
@@ -423,7 +426,7 @@ export default function VesselMap({
                 key={wl.id}
                 url={`https://tile.openweathermap.org/map/${wl.layer}/{z}/{x}/{y}.png?appid=${OWM_KEY}`}
                 opacity={0.6}
-                noWrap={true}
+                noWrap={false}
               />
             )
         )}

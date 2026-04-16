@@ -4,8 +4,6 @@ import PerfomaxCard from '@/components/cards/perfomax-card';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
 
 import cn from '@/utils/class-names';
-import { useRef } from 'react';
-import ChartExportButton from './chart-export-button';
 import {
   Area,
   CartesianGrid,
@@ -108,7 +106,6 @@ export default function SensorLineChart({
   thresholds,
   tooltipColumns,
 }: SensorLineChartProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
   const formatVal = (v: number) => v.toFixed(2);
 
   // Round numeric values to 2 decimal places and convert nulls to 0
@@ -165,33 +162,26 @@ export default function SensorLineChart({
 
   return (
     <PerfomaxCard
-      ref={cardRef}
       title={title}
       className={cn('flex flex-col', className)}
       bodyClassName="flex-1"
       action={
-        <div className="flex items-center gap-4 text-xs">
-          <div className="flex flex-wrap items-center gap-4">
-            {series.map((s, i) => (
+        <div className="flex flex-wrap items-center gap-4 text-xs">
+          {series.map((s, i) => (
+            <span
+              key={s.dataKey as string}
+              className="flex items-center gap-1.5"
+            >
               <span
-                key={s.dataKey as string}
-                className="flex items-center gap-1.5"
-              >
-                <span
-                  className="inline-block h-0.5 w-4"
-                  style={{
-                    backgroundColor:
-                      s.color ?? LINE_COLORS[i % LINE_COLORS.length],
-                  }}
-                />
-                {s.label}
-              </span>
-            ))}
-          </div>
-          <ChartExportButton
-            targetRef={cardRef}
-            fileName={title.toLowerCase().replace(/\s+/g, '-')}
-          />
+                className="inline-block h-0.5 w-4"
+                style={{
+                  backgroundColor:
+                    s.color ?? LINE_COLORS[i % LINE_COLORS.length],
+                }}
+              />
+              {s.label}
+            </span>
+          ))}
         </div>
       }
     >
@@ -325,13 +315,13 @@ export default function SensorLineChart({
                   tickLine={false}
                   padding={{ left: 10, right: 10 }}
                 />
-                <YAxis
-                  domain={[0, hasThresholds ? domainMax : 'auto']}
-                  tick={{ fontSize: 10, fill: '#9FA6B5' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={formatVal}
-                />
+          <YAxis
+            domain={[0, hasThresholds ? domainMax : 'auto']}
+            tick={{ fontSize: 10, fill: '#9FA6B5' }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={formatVal}
+          />
                 <Tooltip
                   content={(props) => (
                     <CustomTooltip
