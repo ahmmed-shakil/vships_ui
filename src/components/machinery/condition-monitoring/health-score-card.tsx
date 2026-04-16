@@ -4,95 +4,95 @@ import PerfomaxCard from '@/components/cards/perfomax-card';
 import type { HealthScoreEntry } from '@/types/api';
 import cn from '@/utils/class-names';
 import { type ParameterStats, fmtStat } from '@/utils/sensor-stats';
-import {
-  Area,
-  AreaChart,
-  ReferenceLine,
-  ResponsiveContainer,
-} from 'recharts';
+
+// ─── Decorative bell-curve SVG (placeholder) ─────────────────────────────────
+function BellCurveSvg({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 100 60"
+      className={cn('h-14 w-full', className)}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M5 55 Q 15 55, 25 50 Q 35 40, 45 15 Q 50 5, 55 15 Q 65 40, 75 50 Q 85 55, 95 55"
+        stroke="#EF4444"
+        strokeWidth="2"
+        fill="none"
+      />
+      <line
+        x1="50"
+        y1="5"
+        x2="50"
+        y2="55"
+        stroke="#EF4444"
+        strokeWidth="1"
+        strokeDasharray="3 2"
+      />
+    </svg>
+  );
+}
 
 /**
- * Deviation-from-median chart.
+ * Distribution histogram with a vertical median line.
  *
- * Each point is plotted as (value − median) so the zero line represents the
- * median.  Areas above zero = above-median readings; below zero = below-median.
- * A dashed red reference line marks zero (= the median baseline).
+ * Values are bucketed into N bins; bar heights show the count per bin.
+ * A dashed vertical line marks the median value within the distribution.
+ * All bars and the line are red, matching the card's visual language.
  *
- * Null and zero sensor values are already excluded upstream by
- * extractParameterValues / computeParameterStats.
+ * Falls back to the decorative bell-curve SVG when there is insufficient data.
  */
-function DeviationChart({
+function DistributionChart({
   values,
   median,
 }: {
   values: number[];
   median: number | null;
 }) {
-  // Fallback decorative bell curve when there is no data yet
-  if (values.length === 0 || median === null) {
-    return (
-      <svg
-        viewBox="0 0 100 60"
-        className="h-14 w-full"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M5 55 Q 15 55, 25 50 Q 35 40, 45 15 Q 50 5, 55 15 Q 65 40, 75 50 Q 85 55, 95 55"
-          stroke="#EF4444"
-          strokeWidth="2"
-          fill="none"
-        />
-        <line
-          x1="50"
-          y1="5"
-          x2="50"
-          y2="55"
-          stroke="#EF4444"
-          strokeWidth="1"
-          strokeDasharray="3 2"
-        />
-      </svg>
-    );
+  const N = 8;
+
+  if (values.length < 2 || median === null) {
+    return <BellCurveSvg />;
   }
 
-  const chartData = values.map((v, i) => ({
-    i,
-    /** deviation from median; positive = above, negative = below */
-    d: +(v - median).toFixed(4),
-  }));
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1; // guard against all-same values
+  const binWidth = range / N;
+
+  const bins = Array.from({ length: N }, (_, i) => {
+    const lo = min + i * binWidth;
+    const hi = lo + binWidth;
+    const count = values.filter(
+      (v) => v >= lo && (i === N - 1 ? v <= hi : v < hi)
+    ).length;
+    return count;
+  });
+
+  const maxCount = Math.max(...bins, 1);
+
+  // Percentage position of the median within [min, max]
+  const medianPct = Math.max(0, Math.min(100, ((median - min) / range) * 100));
 
   return (
-    <div className="h-14 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={chartData}
-          margin={{ top: 4, right: 2, left: 2, bottom: 4 }}
-        >
-          {/* Zero line = median baseline */}
-          <ReferenceLine
-            y={0}
-            stroke="#EF4444"
-            strokeWidth={1}
-            strokeDasharray="4 2"
-            opacity={0.7}
-          />
-          <Area
-            type="monotone"
-            dataKey="d"
-            stroke="#EF4444"
-            strokeWidth={1.5}
-            fill="#EF444422"
-            dot={false}
-            isAnimationActive={false}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+    <div className="relative flex h-14 w-full items-end gap-px">
+      {bins.map((count, i) => (
+        <div
+          key={i}
+          className="flex-1 rounded-sm bg-red-500/60"
+          style={{ height: `${(count / maxCount) * 100}%` }}
+        />
+      ))}
+      {/* Vertical median line */}
+      <div
+        className="pointer-events-none absolute inset-y-0 border-l-2 border-dashed border-red-500"
+        style={{ left: `${medianPct}%` }}
+      />
     </div>
   );
 }
 
-/** Stat card — a bordered card section with a title and 3 rows of key-value pairs */
+// ─── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({
   title,
   rows,
@@ -123,11 +123,17 @@ function StatCard({
   );
 }
 
+// ─── Main card ────────────────────────────────────────────────────────────────
 /**
- * Health Score Card — info card with:
- * - Header: Health score + Delta percentage
- * - Deviation-from-median chart (data-driven) + Causality badge
- * - 3 stat cards (Stats / Alarms / Peak)
+ * Health Score Card layout:
+ *
+ *  ┌──────────────────────────────┐
+ *  │ Score  N/A   Delta  N/A      │  ← header
+ *  ├──────────────┬───────┬───────┤
+ *  │ DistChart    │ Bell  │Causal.│  ← mini charts / badge row
+ *  ├──────────────┼───────┼───────┤
+ *  │ Stats        │Alarms │ Peak  │  ← stat cards
+ *  └──────────────┴───────┴───────┘
  */
 export default function HealthScoreCard({
   className,
@@ -140,7 +146,7 @@ export default function HealthScoreCard({
   entry?: HealthScoreEntry;
   isLoading?: boolean;
   paramStats?: ParameterStats;
-  /** Non-null, non-zero sensor values used to render the deviation chart */
+  /** Non-null, non-zero sensor values for the distribution chart */
   paramValues?: number[];
 }) {
   const score = entry?.score;
@@ -151,8 +157,8 @@ export default function HealthScoreCard({
 
   return (
     <PerfomaxCard className={cn('relative', className)} bodyClassName="p-5">
-      {/* ─── Header: Health + Delta ─────────────────────────────── */}
-      <div className="mb-5 flex items-baseline gap-10">
+      {/* ─── Header: Score + Delta ──────────────────────────────────── */}
+      <div className="mb-4 flex items-baseline gap-10">
         <div className="flex items-baseline gap-2">
           <span className="text-[20px] font-bold leading-7 text-foreground">
             Score
@@ -171,16 +177,23 @@ export default function HealthScoreCard({
         </div>
       </div>
 
-      {/* ─── Deviation Chart + Causality ────────────────────────── */}
+      {/* ─── Mini-chart row (aligns 1-to-1 with stat cards below) ──── */}
       <div className="grid grid-cols-3 gap-2">
-        {/* Chart spans 2 columns for readability */}
-        <div className="col-span-2 flex items-center">
-          <DeviationChart
+        {/* Above "Stats" — distribution histogram with vertical median line */}
+        <div className="flex items-end">
+          <DistributionChart
             values={isLoading ? [] : paramValues}
             median={paramStats?.median ?? null}
           />
         </div>
-        <div className="col-span-1 flex flex-col items-center justify-center gap-2">
+
+        {/* Above "Alarms" — decorative bell-curve placeholder */}
+        <div className="flex items-end">
+          <BellCurveSvg />
+        </div>
+
+        {/* Above "Peak" — Causality badge */}
+        <div className="flex flex-col items-center justify-end gap-2 pb-1">
           <span className="text-sm font-semibold text-foreground">
             Causality
           </span>
@@ -190,7 +203,7 @@ export default function HealthScoreCard({
         </div>
       </div>
 
-      {/* ─── Stat Cards ─────────────────────────────────────────── */}
+      {/* ─── Stat cards ─────────────────────────────────────────────── */}
       <div className="mt-4 grid grid-cols-3 gap-2 border-t-2 pt-6">
         <StatCard
           title="Stats"
