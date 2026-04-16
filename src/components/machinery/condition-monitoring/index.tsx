@@ -13,10 +13,12 @@ import {
 import {
   selectedEngineAtom,
   selectedShipAtom,
+  refreshTriggerAtom,
 } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import Image from 'next/image';
+import { useEffect } from 'react';
 
 import ConditionBasedAnalysisTable from './condition-based-analysis-table';
 import DeltaDeviationTrendline from './delta-deviation-trendline';
@@ -147,6 +149,13 @@ export default function ConditionMonitoringLayout() {
   const { response: sfocResponse, isLoading: sfocLoading } = useSfocScatter();
   const { response: fuelResponse, isLoading: fuelLoading } = useFuelRate();
   const { parts: spareParts, isLoading: partsLoading } = useSpareParts();
+
+  // Auto-refresh every 10 seconds
+  const setRefreshTrigger = useSetAtom(refreshTriggerAtom);
+  useEffect(() => {
+    const id = setInterval(() => setRefreshTrigger((c) => c + 1), 10_000);
+    return () => clearInterval(id);
+  }, [setRefreshTrigger]);
 
   if (!selectedShip) {
     return (

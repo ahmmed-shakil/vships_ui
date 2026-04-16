@@ -7,9 +7,9 @@ import cn from '@/utils/class-names';
 import { useRef } from 'react';
 import ChartExportButton from './chart-export-button';
 import {
+  Area,
   CartesianGrid,
-  Line,
-  LineChart,
+  ComposedChart,
   ReferenceArea,
   ResponsiveContainer,
   Tooltip,
@@ -195,7 +195,7 @@ export default function SensorLineChart({
         </div>
       }
     >
-      <div className="relative flex h-full min-h-[250px] w-full pb-2 pl-2 pt-2">
+      <div className="relative flex h-full min-h-[320px] w-full pb-1 pl-1 pt-1">
         {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 backdrop-blur-sm">
             <span className="animate-pulse text-sm font-medium text-muted-foreground">
@@ -217,9 +217,9 @@ export default function SensorLineChart({
         <div className="flex flex-1 flex-col">
           <div className="flex-1">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
+              <ComposedChart
                 data={chartData}
-                margin={{ top: 10, right: 30, left: -15, bottom: 5 }}
+                margin={{ top: 5, right: 20, left: -15, bottom: 0 }}
               >
                 <defs>
                   {hasThresholds &&
@@ -390,20 +390,22 @@ export default function SensorLineChart({
                   }
 
                   return (
-                    <Line
+                    <Area
                       key={s.dataKey as string}
-                      type="monotone"
+                      type="natural"
                       dataKey={s.dataKey as string}
                       name={s.label}
                       stroke={stroke}
-                      strokeWidth={2}
+                      strokeWidth={1.5}
+                      fill={color}
+                      fillOpacity={0.08}
                       dot={false}
                       connectNulls
                       isAnimationActive={false}
                     />
                   );
                 })}
-              </LineChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
           <div className="mt-1 flex items-center justify-center">

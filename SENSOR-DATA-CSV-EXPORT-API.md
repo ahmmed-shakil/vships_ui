@@ -97,6 +97,13 @@ ORDER BY timestamp ASC;
 
 7. **Row limit** — consider adding a safeguard max row limit (e.g. 500,000 rows) to prevent accidental massive exports. Return `413` if exceeded.
 
+8. **`ERR_INCOMPLETE_CHUNKED_ENCODING` fix** — The frontend is currently receiving this error, meaning the streaming response breaks mid-transfer. Common causes and fixes:
+   - **Unhandled exception inside the generator** — wrap the entire `generate()` body in `try/except`. Any uncaught DB error, type-conversion error (e.g. `datetime` not serialised), or `None` handling bug will kill the stream silently.
+   - **Database cursor closed prematurely** — make sure the DB session/connection stays open for the full duration of the generator. If using a dependency-injected session (`Depends(get_db)`), the session may close before the generator finishes. Use `background_tasks` or manage the connection manually inside `generate()`.
+   - **Proxy / reverse-proxy timeout** — if behind Nginx, ensure `proxy_read_timeout` and `proxy_send_timeout` are large enough (e.g. `300s`).
+   - **Missing `yield` for empty results** — if the query returns 0 rows, make sure the generator still yields the header row and terminates cleanly.
+   - **Test with a small date range first** (e.g. 1 hour) to isolate whether it's a data-volume issue vs. a code bug.
+
 ## FastAPI Example
 
 ```python
@@ -105,7 +112,9 @@ from fastapi.responses import StreamingResponse
 from datetime import datetime
 import csv
 import io
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.get("/api/vessels/{vessel_id}/sensor-data/export")
@@ -117,23 +126,41 @@ async def export_sensor_data_csv(
     current_user=Depends(get_current_user),
 ):
     async def generate():
-        # Write CSV header
-        output = io.StringIO()
-        writer = csv.writer(output)
+        # IMPORTANT: manage DB connection inside the generator so it stays
+        # open for the full stream lifetime (not closed by DI after response starts).
+        async with get_async_session() as session:
+            try:
+                output = io.StringIO()
+                writer = csv.writer(output)
 
-        # Get column names from the table
-        columns = [...]  # All sensor_data columns
-        writer.writerow(columns)
-        yield output.getvalue()
-        output.seek(0)
-        output.truncate(0)
+                # Get column names from the table
+                columns = [...]  # All sensor_data columns
+                writer.writerow(columns)
+                yield output.getvalue()
+                output.seek(0)
+                output.truncate(0)
 
-        # Stream rows using server-side cursor
-        async for row in stream_sensor_data(vessel_id, from_dt, to_dt, engine):
-            writer.writerow(row)
-            yield output.getvalue()
-            output.seek(0)
-            output.truncate(0)
+                # Stream rows using server-side cursor
+                result = await session.execute(query)
+                async for row in result:
+                    # Convert None → '' and datetime → ISO string
+                    clean_row = [
+                        v.isoformat() if isinstance(v, datetime) else ('' if v is None else v)
+                        for v in row
+                    ]
+                    writer.writerow(clean_row)
+                    yield output.getvalue()
+                    output.seek(0)
+                    output.truncate(0)
+
+            except Exception:
+                logger.exception(
+                    "CSV export failed for vessel=%s from=%s to=%s engine=%s",
+                    vessel_id, from_dt, to_dt, engine,
+                )
+                # Can't change HTTP status mid-stream, but at least log it.
+                # The client will see ERR_INCOMPLETE_CHUNKED_ENCODING.
+                raise
 
     filename = f"sensor-data-{vessel_id}-{from_dt.date()}-{to_dt.date()}.csv"
     return StreamingResponse(

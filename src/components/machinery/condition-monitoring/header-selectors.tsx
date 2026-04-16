@@ -13,6 +13,7 @@ import cn from '@/utils/class-names';
 import { toPng } from 'html-to-image';
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 import { PiCameraBold, PiFileCsvBold } from 'react-icons/pi';
 import { Select } from 'rizzui/select';
 import { Tooltip } from 'rizzui';
@@ -127,8 +128,10 @@ export default function ConditionMonitoringHeaderSelectors() {
       link.download = 'condition-monitoring-snapshot.png';
       link.href = dataUrl;
       link.click();
+      toast.success('Page snapshot downloaded');
     } catch (err) {
       console.error('Page snapshot failed:', err);
+      toast.error('Page snapshot failed');
     } finally {
       setSnapshotting(false);
     }
@@ -145,8 +148,12 @@ export default function ConditionMonitoringHeaderSelectors() {
         to,
         selectedEngine?.value
       );
+      toast.success('CSV export downloaded');
     } catch (err) {
       console.error('CSV export failed:', err);
+      toast.error(
+        'CSV export failed. The server may have timed out — try a shorter date range.'
+      );
     } finally {
       setCsvExporting(false);
     }

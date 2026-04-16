@@ -6,10 +6,10 @@ import type { DeltaDeviationResponse } from '@/types/api';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import ChartExportButton from './chart-export-button';
 import {
+  Area,
   CartesianGrid,
+  ComposedChart,
   Legend,
-  Line,
-  LineChart,
   ReferenceArea,
   ResponsiveContainer,
   Tooltip,
@@ -141,7 +141,7 @@ export default function DeltaDeviationTrendline({
         </div>
 
         <div className="flex flex-1 flex-col">
-          <div className="h-[400px] w-full">
+          <div className="h-[450px] w-full">
             {isLoading ? (
               <div className="flex h-full items-center justify-center">
                 <span className="animate-pulse text-sm text-muted-foreground">
@@ -150,9 +150,9 @@ export default function DeltaDeviationTrendline({
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+                <ComposedChart
                   data={chartData}
-                  margin={{ top: 5, right: 20, left: -10, bottom: 20 }}
+                  margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
@@ -197,19 +197,21 @@ export default function DeltaDeviationTrendline({
                   />
 
                   {SERIES_DEFS.map((s) => (
-                    <Line
+                    <Area
                       key={s.key}
-                      type="monotone"
+                      type="natural"
                       dataKey={s.key}
                       name={s.label}
                       stroke={s.color}
-                      strokeWidth={2}
+                      strokeWidth={1.5}
+                      fill={s.color}
+                      fillOpacity={0.08}
                       dot={false}
                       hide={hiddenSeries.has(s.key)}
                       activeDot={{ r: 4 }}
                     />
                   ))}
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             )}
           </div>

@@ -131,7 +131,9 @@ export async function fetchVesselAlarmsFiltered(
   vesselId: number,
   engine?: string
 ): Promise<AlarmEntry[]> {
-  const qs = engine && engine !== 'all' ? `?engine=${engine}` : '';
+  const qs = engine && engine !== 'all'
+    ? `?engine=${engine}&status=active`
+    : '?status=active';
   const res = await apiFetch<{ alarms: AlarmEntry[] }>(
     `/api/vessels/${vesselId}/alarms${qs}`
   );

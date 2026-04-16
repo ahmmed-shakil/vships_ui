@@ -183,7 +183,7 @@ export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
       <Badge
         variant="flat"
         className="font-medium capitalize"
-        color={status === 'active' ? 'success' : 'danger'}
+        color={status === 'active' ? 'danger' : 'success'}
       >
         {status}
       </Badge>

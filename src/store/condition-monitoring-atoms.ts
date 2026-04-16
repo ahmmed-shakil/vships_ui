@@ -19,3 +19,6 @@ export const selectedTimeAtom = atom<string>('1d');
 
 /** Custom date range (only used when selectedTime === 'Custom Time') */
 export const dateRangeAtom = atom<[Date | null, Date | null]>([null, null]);
+
+/** Incremented every 10s to trigger auto-refresh of data hooks */
+export const refreshTriggerAtom = atom(0);

@@ -9,6 +9,7 @@ import {
   selectedEngineAtom,
   selectedShipAtom,
   selectedTimeAtom,
+  refreshTriggerAtom,
 } from '@/store/condition-monitoring-atoms';
 import { overviewTimeAtom } from '@/components/machinery/machinery-overview/header-selectors';
 import { useAtomValue } from 'jotai';
@@ -133,6 +134,7 @@ export function useSensorDataApi() {
   const selectedEngine = useAtomValue(selectedEngineAtom);
   const selectedTime = useAtomValue(selectedTimeAtom);
   const dateRange = useAtomValue(dateRangeAtom);
+  const refreshTrigger = useAtomValue(refreshTriggerAtom);
 
   const [data, setData] = useState<SensorDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -174,7 +176,7 @@ export function useSensorDataApi() {
     return () => {
       cancelled = true;
     };
-  }, [token, vesselId, engineValue, from, to]);
+  }, [token, vesselId, engineValue, from, to, refreshTrigger]);
 
   return { data, isLoading, error };
 }
@@ -187,6 +189,7 @@ export function useDeltaDeviation() {
   const selectedEngine = useAtomValue(selectedEngineAtom);
   const selectedTime = useAtomValue(selectedTimeAtom);
   const dateRange = useAtomValue(dateRangeAtom);
+  const refreshTrigger = useAtomValue(refreshTriggerAtom);
 
   const [response, setResponse] = useState<DeltaDeviationResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -222,7 +225,7 @@ export function useDeltaDeviation() {
     return () => {
       cancelled = true;
     };
-  }, [token, vesselId, engineValue, from, to]);
+  }, [token, vesselId, engineValue, from, to, refreshTrigger]);
 
   return { response, isLoading };
 }
@@ -235,6 +238,7 @@ export function useParameterScatter() {
   const selectedEngine = useAtomValue(selectedEngineAtom);
   const selectedTime = useAtomValue(selectedTimeAtom);
   const dateRange = useAtomValue(dateRangeAtom);
+  const refreshTrigger = useAtomValue(refreshTriggerAtom);
 
   const [response, setResponse] = useState<ParameterScatterResponse | null>(
     null
@@ -272,7 +276,7 @@ export function useParameterScatter() {
     return () => {
       cancelled = true;
     };
-  }, [token, vesselId, engineValue, from, to]);
+  }, [token, vesselId, engineValue, from, to, refreshTrigger]);
 
   return { response, isLoading };
 }
@@ -327,6 +331,7 @@ export function useSfocScatter() {
   const selectedEngine = useAtomValue(selectedEngineAtom);
   const selectedTime = useAtomValue(selectedTimeAtom);
   const dateRange = useAtomValue(dateRangeAtom);
+  const refreshTrigger = useAtomValue(refreshTriggerAtom);
 
   const [response, setResponse] = useState<SfocResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -362,7 +367,7 @@ export function useSfocScatter() {
     return () => {
       cancelled = true;
     };
-  }, [token, vesselId, engineValue, from, to]);
+  }, [token, vesselId, engineValue, from, to, refreshTrigger]);
 
   return { response, isLoading };
 }
@@ -375,6 +380,7 @@ export function useFuelRate() {
   const selectedEngine = useAtomValue(selectedEngineAtom);
   const selectedTime = useAtomValue(selectedTimeAtom);
   const dateRange = useAtomValue(dateRangeAtom);
+  const refreshTrigger = useAtomValue(refreshTriggerAtom);
 
   const [response, setResponse] = useState<FuelRateResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -410,7 +416,7 @@ export function useFuelRate() {
     return () => {
       cancelled = true;
     };
-  }, [token, vesselId, engineValue, from, to]);
+  }, [token, vesselId, engineValue, from, to, refreshTrigger]);
 
   return { response, isLoading };
 }
@@ -575,7 +581,9 @@ export function useLatestSensorValues() {
   const token = useApiToken();
   const selectedShip = useAtomValue(selectedShipAtom);
 
-  const [response, setResponse] = useState<LatestSensorDataResponse | null>(null);
+  const [response, setResponse] = useState<LatestSensorDataResponse | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   const vesselId = selectedShip?.id;
