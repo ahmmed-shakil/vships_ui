@@ -5,11 +5,12 @@ import SensorLineChart, {
 } from '@/components/machinery/condition-monitoring/sensor-line-chart';
 import { useSensorDataApi } from '@/hooks/use-machinery-data';
 import {
+  refreshTriggerAtom,
   selectedShipAtom,
   selectedTimeAtom,
 } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 import { PiArrowClockwise } from 'react-icons/pi';
 
@@ -126,11 +127,11 @@ const TREND_HEADER_TIME_PRESETS = new Set([
 export default function TrendAnalysisLayout() {
   const selectedShip = useAtomValue(selectedShipAtom);
   const [selectedTime, setSelectedTime] = useAtom(selectedTimeAtom);
-  const [refreshTick, setRefreshTick] = useState(0);
+  const setRefreshTrigger = useSetAtom(refreshTriggerAtom);
   const [countdownSeconds, setCountdownSeconds] = useState(
     AUTO_REFRESH_INTERVAL_SECONDS
   );
-  const { data: sensorData, isLoading } = useSensorDataApi(refreshTick);
+  const { data: sensorData, isLoading } = useSensorDataApi();
   const [hasLoadedAtLeastOnce, setHasLoadedAtLeastOnce] = useState(false);
 
   useEffect(() => {
@@ -147,7 +148,7 @@ export default function TrendAnalysisLayout() {
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
-      setRefreshTick((value) => value + 1);
+      setRefreshTrigger((value) => value + 1);
       setCountdownSeconds(AUTO_REFRESH_INTERVAL_SECONDS);
     }, AUTO_REFRESH_INTERVAL_MS);
 
@@ -191,7 +192,7 @@ export default function TrendAnalysisLayout() {
         <button
           type="button"
           onClick={() => {
-            setRefreshTick((v) => v + 1);
+            setRefreshTrigger((v) => v + 1);
             setCountdownSeconds(AUTO_REFRESH_INTERVAL_SECONDS);
           }}
           disabled={isLoading}

@@ -146,7 +146,7 @@ export function useMachineryOverview() {
 
 // ─── Sensor Data (replaces useSensorData with API-key) ───────────────────────
 
-export function useSensorDataApi(refreshTrigger = 0) {
+export function useSensorDataApi() {
   const token = useApiToken();
   const selectedShip = useAtomValue(selectedShipAtom);
   const selectedEngine = useAtomValue(selectedEngineAtom);
