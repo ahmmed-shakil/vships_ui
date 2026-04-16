@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import BasicTableWidget from '@/components/controlled-table/basic-table-widget';
 import { HeaderCell } from '@/components/legacy-table';
 import {
@@ -84,9 +85,12 @@ export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
     key: 'engine',
     width: 100,
     render: (engine: string) => {
+      // Map internal engine codes to display labels
+      const displayLabel =
+        engine === 'AE1' ? 'Genset 1' : engine === 'AE2' ? 'Genset 2' : engine;
       return (
-        <Badge variant="outline" className="text-xs font-medium uppercase">
-          {engine}
+        <Badge variant="outline" className="text-xs font-medium">
+          {displayLabel}
         </Badge>
       );
     },
@@ -197,12 +201,14 @@ interface AlarmTableProps {
   data: AlarmEntry[];
   title?: string;
   className?: string;
+  filterElement?: React.ReactNode;
 }
 
 export default function AlarmTable({
   data,
   title = 'Alarms List',
   className,
+  filterElement,
 }: AlarmTableProps) {
   return (
     <BasicTableWidget
@@ -215,6 +221,7 @@ export default function AlarmTable({
       searchPlaceholder="Search alarms..."
       variant="modern"
       scroll={{ x: 1100, y: '50vh' }}
+      filterElement={filterElement}
       className={cn(
         'pb-0 lg:pb-0 [&_.rc-table-row:last-child_td]:border-b-0',
         className

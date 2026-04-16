@@ -24,6 +24,7 @@ type BasicTableWidgetProps = {
   className?: string;
   pageSize?: number;
   setPageSize?: React.Dispatch<React.SetStateAction<number>>;
+  filterElement?: React.ReactNode;
   getColumns: ({
     data,
     sortConfig,
@@ -62,6 +63,7 @@ export default function BasicTableWidget({
   scroll = { x: 1300 },
   className,
   searchPlaceholder = 'Search...',
+  filterElement,
 }: BasicTableWidgetProps) {
   const onHeaderCellClick = (value: string) => ({
     onClick: () => {
@@ -121,15 +123,18 @@ export default function BasicTableWidget({
       headerClassName="widget-card-header flex-col sm:flex-row [&>.ps-2]:ps-0 [&>.ps-2]:w-full sm:[&>.ps-2]:w-auto [&>.ps-2]:mt-3 sm:[&>.ps-2]:mt-0"
       {...(enableSearch && {
         action: (
-          <Input
-            type="search"
-            placeholder={searchPlaceholder}
-            value={searchTerm}
-            onClear={() => handleSearch('')}
-            onChange={(event) => handleSearch(event.target.value)}
-            clearable
-            prefix={<PiMagnifyingGlassBold className="h-4 w-4" />}
-          />
+          <div className="flex items-center gap-2">
+            {filterElement}
+            <Input
+              type="search"
+              placeholder={searchPlaceholder}
+              value={searchTerm}
+              onClear={() => handleSearch('')}
+              onChange={(event) => handleSearch(event.target.value)}
+              clearable
+              prefix={<PiMagnifyingGlassBold className="h-4 w-4" />}
+            />
+          </div>
         ),
       })}
     >

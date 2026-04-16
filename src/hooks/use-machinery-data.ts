@@ -542,6 +542,8 @@ export function useAlarmsWithSummary(params?: {
 }) {
   const token = useApiToken();
   const selectedShip = useAtomValue(selectedShipAtom);
+  const selectedTime = useAtomValue(selectedTimeAtom);
+  const dateRange = useAtomValue(dateRangeAtom);
 
   const [alarms, setAlarms] = useState<AlarmWithUnit[]>([]);
   const [summary, setSummary] = useState<AlarmsWithSummaryResponse['summary']>({
@@ -556,7 +558,11 @@ export function useAlarmsWithSummary(params?: {
   const [isLoading, setIsLoading] = useState(true);
 
   const vesselId = selectedShip?.id;
-  const paramsKey = JSON.stringify(params);
+  const { from, to } = useMemo(
+    () => getDateRange(selectedTime, dateRange),
+    [selectedTime, dateRange]
+  );
+  const paramsKey = JSON.stringify({ ...params, from, to });
 
   useEffect(() => {
     setAlarms([]);
@@ -577,7 +583,7 @@ export function useAlarmsWithSummary(params?: {
 
     let cancelled = false;
     api
-      .fetchAlarmsWithSummary(vesselId, params)
+      .fetchAlarmsWithSummary(vesselId, { ...params, from, to })
       .then((res) => {
         if (!cancelled) {
           setAlarms(res.alarms ?? []);

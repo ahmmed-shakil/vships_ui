@@ -181,6 +181,8 @@ export async function fetchAlarmsWithSummary(
     status?: string;
     category?: string;
     limit?: number;
+    from?: string;
+    to?: string;
   }
 ): Promise<AlarmsWithSummaryResponse> {
   const qs = new URLSearchParams();
@@ -189,6 +191,8 @@ export async function fetchAlarmsWithSummary(
   if (params?.status) qs.set('status', params.status);
   if (params?.category) qs.set('category', params.category);
   if (params?.limit) qs.set('limit', String(params.limit));
+  if (params?.from) qs.set('from', params.from);
+  if (params?.to) qs.set('to', params.to);
   const query = qs.toString();
   return apiFetch<AlarmsWithSummaryResponse>(
     `/api/vessels/${vesselId}/alarms${query ? `?${query}` : ''}`

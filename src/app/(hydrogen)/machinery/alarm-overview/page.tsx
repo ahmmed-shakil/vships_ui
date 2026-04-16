@@ -1,18 +1,33 @@
 'use client';
 
 import AlarmTable from '@/components/real-time-data/alarm-table';
+import DateRangePicker from '@/components/date/date-range';
 import { useAlarmsWithSummary } from '@/hooks/use-machinery-data';
 import {
+  dateRangeAtom,
   selectedEngineAtom,
   selectedShipAtom,
+  selectedTimeAtom,
 } from '@/store/condition-monitoring-atoms';
-import { useAtomValue } from 'jotai';
-import { useMemo } from 'react';
+import cn from '@/utils/class-names';
+import { useAtom, useAtomValue } from 'jotai';
+import { useMemo, useState } from 'react';
 import { PiWarningFill } from 'react-icons/pi';
-import { Text } from 'rizzui';
+import { Select, Text } from 'rizzui';
 import { Box } from 'rizzui/box';
 
-// Severity color config matching machinery-overview cards
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const TIME_PRESETS = ['1h', '1d', '7d', '1m', '3m', 'Custom Time'];
+
+const STATUS_OPTIONS = [
+  { label: 'All', value: 'all' },
+  { label: 'Active', value: 'active' },
+  { label: 'Resolved', value: 'resolved' },
+];
+
+// ─── Severity color config ────────────────────────────────────────────────────
+
 const severityConfig = {
   critical: { color: '#FF7270', bgColor: 'rgba(240,80,110,0.2)' },
   warning: { color: '#E19C4D', bgColor: 'rgba(225,156,77,0.2)' },
@@ -20,7 +35,8 @@ const severityConfig = {
   info: { color: '#2785E0', bgColor: 'rgba(30,135,240,0.2)' },
 };
 
-// Alarm summary card for severity overview
+// ─── Summary card ─────────────────────────────────────────────────────────────
+
 function AlarmSummaryCard({
   title,
   count,
@@ -51,18 +67,31 @@ function AlarmSummaryCard({
   );
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function AlarmOverviewPage() {
   const selectedShip = useAtomValue(selectedShipAtom);
   const selectedEngine = useAtomValue(selectedEngineAtom);
 
-  // Build query params for the API here
+  // Date range — same atoms as condition-monitoring
+  const [selectedTime, setSelectedTime] = useAtom(selectedTimeAtom);
+  const [dateRange, setDateRange] = useAtom(dateRangeAtom);
+
+  // Status filter — local state; 'all' means no status param sent
+  const [statusFilter, setStatusFilter] = useState<{ label: string; value: string }>(
+    STATUS_OPTIONS[0]
+  );
+
   const queryParams = useMemo(() => {
-    const params: { engine?: string } = {};
+    const params: { engine?: string; status?: string } = {};
     if (selectedEngine?.value && selectedEngine.value !== 'all') {
       params.engine = selectedEngine.value;
     }
+    if (statusFilter.value !== 'all') {
+      params.status = statusFilter.value;
+    }
     return params;
-  }, [selectedEngine]);
+  }, [selectedEngine, statusFilter]);
 
   const { alarms, summary, isLoading } = useAlarmsWithSummary(queryParams);
 
@@ -74,9 +103,54 @@ export default function AlarmOverviewPage() {
     );
   }
 
+  // Status dropdown rendered left of the search bar inside AlarmTable
+  const statusDropdown = (
+    <Select
+      options={STATUS_OPTIONS}
+      value={statusFilter}
+      onChange={(v: { label: string; value: string }) => setStatusFilter(v)}
+      className="w-32 shrink-0"
+      selectClassName="h-9 text-sm"
+      dropdownClassName="text-gray-900"
+    />
+  );
+
   return (
     <Box className="pt-5 @container/pd">
-      {/* Alarm Summary Cards */}
+      {/* ── Date range header ─────────────────────────────────────────────── */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="flex shrink-0 overflow-hidden rounded border border-muted">
+          {TIME_PRESETS.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => setSelectedTime(opt)}
+              className={cn(
+                'border-r border-muted px-4 py-1.5 text-sm transition-all duration-200 last:border-r-0',
+                selectedTime === opt
+                  ? 'bg-primary/10 font-semibold text-primary'
+                  : 'font-medium text-foreground hover:bg-muted/50'
+              )}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+
+        {selectedTime === 'Custom Time' && (
+          <div className="w-52 shrink-0">
+            <DateRangePicker
+              startDate={dateRange[0]}
+              endDate={dateRange[1]}
+              onChange={setDateRange}
+              className="h-9 w-full rounded border border-muted bg-background px-3 text-sm focus:ring-0"
+              placeholder="Select date range"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* ── Summary cards ─────────────────────────────────────────────────── */}
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-7">
         <AlarmSummaryCard
           title="Critical"
@@ -122,7 +196,7 @@ export default function AlarmOverviewPage() {
         />
       </div>
 
-      {/* Alarm Table */}
+      {/* ── Alarm table ───────────────────────────────────────────────────── */}
       {isLoading ? (
         <div className="flex h-40 items-center justify-center">
           <span className="animate-pulse text-muted-foreground">
@@ -133,6 +207,7 @@ export default function AlarmOverviewPage() {
         <AlarmTable
           data={alarms}
           title={`Alarms — ${selectedShip.label}${selectedEngine?.value && selectedEngine.value !== 'all' ? ` — ${selectedEngine.label}` : ''}`}
+          filterElement={statusDropdown}
         />
       )}
     </Box>
