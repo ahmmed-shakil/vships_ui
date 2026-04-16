@@ -3,6 +3,7 @@
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import type { HealthScoreEntry } from '@/types/api';
 import cn from '@/utils/class-names';
+import { type ParameterStats, fmtStat } from '@/utils/sensor-stats';
 
 /**
  * SVG bell curve (normal distribution) — decorative illustration.
@@ -76,10 +77,12 @@ export default function HealthScoreCard({
   className,
   entry,
   isLoading,
+  paramStats,
 }: {
   className?: string;
   entry?: HealthScoreEntry;
   isLoading?: boolean;
+  paramStats?: ParameterStats;
 }) {
   const score = entry?.score;
   const delta = entry?.delta;
@@ -134,12 +137,15 @@ export default function HealthScoreCard({
           rows={[
             {
               label: 'Avg',
-              value: isLoading ? '…' : score == null ? 'N/A' : String(score),
+              value: isLoading ? '…' : fmtStat(paramStats?.avg ?? null),
             },
-            { label: 'Mov Avg', value: isLoading ? '…' : '--' },
+            {
+              label: 'Mov Avg',
+              value: isLoading ? '…' : fmtStat(paramStats?.movAvg ?? null),
+            },
             {
               label: 'Dev',
-              value: isLoading ? '…' : delta == null ? 'N/A' : String(delta),
+              value: isLoading ? '…' : fmtStat(paramStats?.dev ?? null),
             },
           ]}
         />
