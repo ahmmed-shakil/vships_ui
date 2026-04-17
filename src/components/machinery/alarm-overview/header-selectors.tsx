@@ -11,7 +11,7 @@ import {
 } from '@/store/condition-monitoring-atoms';
 import cn from '@/utils/class-names';
 import { useAtom } from 'jotai';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Select } from 'rizzui/select';
 
 const timeOptions = ['1h', '1d', '7d', '1m', '3m', 'Custom Time'];
@@ -29,19 +29,31 @@ export default function AlarmOverviewHeaderSelectors() {
     [selectedShip, setSelectedShip]
   );
   const vesselOptions = useVesselOptions(handleLoaded);
-  const allEngineOptions = useEngineOptionsList();
-  const engineOptions = allEngineOptions.filter((e) => e.value !== 'all');
+  // Include the "All Engine" option on this page — alarm-overview supports
+  // fetching alarms across all engines at once.
+  const engineOptions = useEngineOptionsList();
 
-  // Sync engine label from API (e.g. 'ME Stbd' → 'ME Starboard')
+  // On every mount of this page, force the engine selection back to
+  // "All Engine" so the alarm overview loads the full set by default on
+  // reload/navigation, regardless of what another page left in the atom.
+  // Done synchronously via a ref so we don't wait on the engine options API.
+  const hasInitializedRef = useRef(false);
+  if (!hasInitializedRef.current) {
+    hasInitializedRef.current = true;
+    if (selectedEngine?.value !== 'all') {
+      setSelectedEngine({ label: 'All Engine', value: 'all' });
+    }
+  }
+
+  // Keep the label in sync if the API label changes (after initialization).
   useEffect(() => {
-    if (engineOptions.length > 0) {
-      const match = engineOptions.find((e) => e.value === selectedEngine?.value);
-      if (match) {
-        if (match.label !== selectedEngine?.label) setSelectedEngine(match);
-      } else {
-        const me2 = engineOptions.find((e) => e.value === 'me2');
-        setSelectedEngine(me2 ?? engineOptions[0]);
-      }
+    if (engineOptions.length === 0) return;
+    const match = engineOptions.find((e) => e.value === selectedEngine?.value);
+    if (match) {
+      if (match.label !== selectedEngine?.label) setSelectedEngine(match);
+    } else {
+      const allOption = engineOptions.find((e) => e.value === 'all');
+      setSelectedEngine(allOption ?? engineOptions[0]);
     }
   }, [engineOptions, selectedEngine, setSelectedEngine]);
 
