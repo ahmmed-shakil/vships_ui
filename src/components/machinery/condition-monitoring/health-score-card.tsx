@@ -4,6 +4,7 @@ import PerfomaxCard from '@/components/cards/perfomax-card';
 import type { HealthScoreEntry } from '@/types/api';
 import cn from '@/utils/class-names';
 import { type ParameterStats, fmtStat } from '@/utils/sensor-stats';
+import { useState } from 'react';
 
 // ─── Decorative bell-curve SVG (placeholder) ─────────────────────────────────
 function BellCurveSvg({ className }: { className?: string }) {
@@ -40,6 +41,10 @@ function BellCurveSvg({ className }: { className?: string }) {
  * A dashed vertical line marks the median value within the distribution.
  * All bars and the line are red, matching the card's visual language.
  *
+ * Hovering a bar reveals a tooltip explaining the bin range, the count of
+ * sensor samples that fell into it, its share of the dataset, and the
+ * median value marked by the dashed line.
+ *
  * Falls back to the decorative bell-curve SVG when there is insufficient data.
  */
 function DistributionChart({
@@ -49,6 +54,7 @@ function DistributionChart({
   values: number[];
   median: number | null;
 }) {
+  const [hoveredBin, setHoveredBin] = useState<number | null>(null);
   const N = 8;
 
   if (values.length < 2 || median === null) {
@@ -59,6 +65,7 @@ function DistributionChart({
   const max = Math.max(...values);
   const range = max - min || 1; // guard against all-same values
   const binWidth = range / N;
+  const total = values.length;
 
   const bins = Array.from({ length: N }, (_, i) => {
     const lo = min + i * binWidth;
@@ -66,28 +73,81 @@ function DistributionChart({
     const count = values.filter(
       (v) => v >= lo && (i === N - 1 ? v <= hi : v < hi)
     ).length;
-    return count;
+    return { lo, hi, count };
   });
 
-  const maxCount = Math.max(...bins, 1);
+  const maxCount = Math.max(...bins.map((b) => b.count), 1);
 
   // Percentage position of the median within [min, max]
   const medianPct = Math.max(0, Math.min(100, ((median - min) / range) * 100));
 
+  const fmt = (n: number) =>
+    n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+  const hovered = hoveredBin !== null ? bins[hoveredBin] : null;
+
   return (
-    <div className="relative flex h-14 w-full items-end gap-px">
-      {bins.map((count, i) => (
-        <div
-          key={i}
-          className="flex-1 rounded-sm bg-red-500/60"
-          style={{ height: `${(count / maxCount) * 100}%` }}
-        />
-      ))}
+    <div className="relative h-14 w-full">
+      <div
+        className="flex h-full w-full items-end gap-px"
+        onMouseLeave={() => setHoveredBin(null)}
+      >
+        {bins.map((bin, i) => {
+          const pct = ((bin.count / total) * 100).toFixed(1);
+          const ariaLabel = `${fmt(bin.lo)} to ${fmt(bin.hi)}: ${bin.count} ${
+            bin.count === 1 ? 'value' : 'values'
+          } (${pct}%)`;
+          return (
+            <div
+              key={i}
+              role="img"
+              aria-label={ariaLabel}
+              title={ariaLabel}
+              onMouseEnter={() => setHoveredBin(i)}
+              className={cn(
+                'flex-1 cursor-pointer rounded-sm bg-red-500/60 transition-colors hover:bg-red-500',
+                hoveredBin === i && 'bg-red-500'
+              )}
+              style={{ height: `${(bin.count / maxCount) * 100}%` }}
+            />
+          );
+        })}
+      </div>
       {/* Vertical median line */}
       <div
         className="pointer-events-none absolute inset-y-0 border-l-2 border-dashed border-red-500"
         style={{ left: `${medianPct}%` }}
+        aria-hidden
       />
+      {/* Hover tooltip — always anchored to the right side of the hovered
+          bar so the tooltip consistently grows rightward, including for the
+          rightmost bar. Sits on top of neighboring grid cells via z-20. */}
+      {hovered && hoveredBin !== null && (
+        <div
+          role="tooltip"
+          className="border-border pointer-events-none absolute z-20 min-w-[150px] rounded-md border bg-background px-2.5 py-1.5 text-[11px] leading-tight shadow-md"
+          style={{
+            left: `${((hoveredBin + 1) / N) * 100}%`,
+            top: -6,
+            marginLeft: 4,
+            transform: 'translateY(-100%)',
+          }}
+        >
+          <div className="font-semibold text-foreground">
+            {fmt(hovered.lo)} – {fmt(hovered.hi)}
+          </div>
+          <div className="mt-0.5 flex items-center justify-between gap-3 text-muted-foreground">
+            <span>Count</span>
+            <span className="font-semibold text-foreground">
+              {hovered.count} ({((hovered.count / total) * 100).toFixed(1)}%)
+            </span>
+          </div>
+          <div className="mt-0.5 flex items-center justify-between gap-3 text-muted-foreground">
+            <span>Median</span>
+            <span className="font-semibold text-foreground">{fmt(median)}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
