@@ -15,8 +15,9 @@ import cn from '@/utils/class-names';
 import { useAtom } from 'jotai';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Text } from 'rizzui/typography';
+import AutoRefreshCountdown from '@/components/auto-refresh-countdown';
 
 // ─── Helper: overlay live socket data onto an engine ─────────────────────────
 
@@ -260,10 +261,21 @@ const RealTimeDataContent = () => {
     ({ lat: 0, long: 0, direction: 0, timestamp: 0 } as const);
   const { mainEngines } = useVesselEngineData(vesselId);
 
-  // Fetch alarm data from API (falls back to mock), filtered by engine
+  // Fetch alarm data from API (falls back to mock), filtered by engine.
+  // `alarmRefreshTick` bumps every time the countdown elapses or the user
+  // clicks the manual refresh button.
   const alarmEngine =
     selectedEngine.value !== 'all' ? selectedEngine.value : undefined;
-  const rawAlarms = useVesselAlarmData(vesselId, alarmEngine);
+  const [alarmRefreshTick, setAlarmRefreshTick] = useState(0);
+  const handleAlarmRefresh = useCallback(
+    () => setAlarmRefreshTick((v) => v + 1),
+    []
+  );
+  const { data: rawAlarms, isLoading: isAlarmsLoading } = useVesselAlarmData(
+    vesselId,
+    alarmEngine,
+    alarmRefreshTick
+  );
   const alarms = useMemo(() => {
     return rawAlarms.map((a) => ({
       ...a,
@@ -319,11 +331,20 @@ const RealTimeDataContent = () => {
 
       {/* Alarm table + Machinery score */}
       <div className="mt-4 grid grid-cols-4 gap-4">
-        <AlarmTable
-          data={alarms}
-          title={`Alarms — ${selectedShip.label}`}
-          className="col-span-full"
-        />
+        <div className="col-span-full">
+          <AutoRefreshCountdown
+            isRefreshing={isAlarmsLoading}
+            onRefresh={handleAlarmRefresh}
+            className="mb-2"
+          />
+          <AlarmTable
+            data={alarms}
+            title={`Alarms — ${selectedShip.label}`}
+            downloadFileName={`alarms-${selectedShip.label}${
+              selectedEngine.value !== 'all' ? `-${selectedEngine.value}` : ''
+            }`}
+          />
+        </div>
         {/* <MachineryScoreTable vesselId={vesselId} className="col-span-1" /> */}
       </div>
     </>

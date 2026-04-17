@@ -1,13 +1,14 @@
 'use client';
 
 import AlarmTable from '@/components/real-time-data/alarm-table';
+import AutoRefreshCountdown from '@/components/auto-refresh-countdown';
 import { useAlarmsWithSummary } from '@/hooks/use-machinery-data';
 import {
   selectedEngineAtom,
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
 import { useAtomValue } from 'jotai';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PiWarningFill } from 'react-icons/pi';
 import { Select, Text } from 'rizzui';
 import { Box } from 'rizzui/box';
@@ -83,7 +84,20 @@ export default function AlarmOverviewPage() {
     return params;
   }, [selectedEngine, statusFilter]);
 
-  const { alarms, summary, isLoading } = useAlarmsWithSummary(queryParams);
+  const [refreshTick, setRefreshTick] = useState(0);
+  const handleRefresh = useCallback(
+    () => setRefreshTick((v) => v + 1),
+    []
+  );
+  const { alarms, summary, isLoading } = useAlarmsWithSummary(
+    queryParams,
+    refreshTick
+  );
+
+  const [hasLoadedAtLeastOnce, setHasLoadedAtLeastOnce] = useState(false);
+  useEffect(() => {
+    if (!isLoading) setHasLoadedAtLeastOnce(true);
+  }, [isLoading]);
 
   if (!selectedShip) {
     return (
@@ -154,7 +168,12 @@ export default function AlarmOverviewPage() {
       </div>
 
       {/* ── Alarm table ───────────────────────────────────────────────────── */}
-      {isLoading ? (
+      <AutoRefreshCountdown
+        isRefreshing={isLoading}
+        onRefresh={handleRefresh}
+        className="mb-2"
+      />
+      {isLoading && !hasLoadedAtLeastOnce ? (
         <div className="flex h-40 items-center justify-center">
           <span className="animate-pulse text-muted-foreground">
             Loading alarms…
@@ -165,6 +184,11 @@ export default function AlarmOverviewPage() {
           data={alarms}
           title={`Alarms — ${selectedShip.label}${selectedEngine?.value && selectedEngine.value !== 'all' ? ` — ${selectedEngine.label}` : ''}`}
           filterElement={statusDropdown}
+          downloadFileName={`alarms-${selectedShip.label}${
+            selectedEngine?.value && selectedEngine.value !== 'all'
+              ? `-${selectedEngine.value}`
+              : ''
+          }${statusFilter.value !== 'all' ? `-${statusFilter.value}` : ''}`}
         />
       )}
     </Box>

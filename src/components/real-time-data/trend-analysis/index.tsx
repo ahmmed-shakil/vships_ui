@@ -1,5 +1,6 @@
 'use client';
 
+import AutoRefreshCountdown from '@/components/auto-refresh-countdown';
 import SensorLineChart, {
   type SensorSeries,
 } from '@/components/machinery/condition-monitoring/sensor-line-chart';
@@ -9,13 +10,10 @@ import {
   selectedShipAtom,
   selectedTimeAtom,
 } from '@/store/condition-monitoring-atoms';
-import cn from '@/utils/class-names';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { useEffect, useState } from 'react';
-import { PiArrowClockwise } from 'react-icons/pi';
+import { useCallback, useEffect, useState } from 'react';
 
 const AUTO_REFRESH_INTERVAL_SECONDS = 30;
-const AUTO_REFRESH_INTERVAL_MS = AUTO_REFRESH_INTERVAL_SECONDS * 1000;
 
 const SENSOR_CHART_ROWS: {
   title: string;
@@ -128,8 +126,9 @@ export default function TrendAnalysisLayout() {
   const selectedShip = useAtomValue(selectedShipAtom);
   const [selectedTime, setSelectedTime] = useAtom(selectedTimeAtom);
   const setRefreshTrigger = useSetAtom(refreshTriggerAtom);
-  const [countdownSeconds, setCountdownSeconds] = useState(
-    AUTO_REFRESH_INTERVAL_SECONDS
+  const handleRefresh = useCallback(
+    () => setRefreshTrigger((value) => value + 1),
+    [setRefreshTrigger]
   );
   const { data: sensorData, isLoading } = useSensorDataApi();
   const [hasLoadedAtLeastOnce, setHasLoadedAtLeastOnce] = useState(false);
@@ -146,23 +145,6 @@ export default function TrendAnalysisLayout() {
     }
   }, [isLoading]);
 
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setRefreshTrigger((value) => value + 1);
-      setCountdownSeconds(AUTO_REFRESH_INTERVAL_SECONDS);
-    }, AUTO_REFRESH_INTERVAL_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, []);
-
-  useEffect(() => {
-    const countdownId = window.setInterval(() => {
-      setCountdownSeconds((value) => (value <= 1 ? 0 : value - 1));
-    }, 1_000);
-
-    return () => window.clearInterval(countdownId);
-  }, []);
-
   if (!selectedShip) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -176,35 +158,11 @@ export default function TrendAnalysisLayout() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end gap-3 text-sm text-muted-foreground">
-        {/* <span
-          className={cn(
-            'inline-block size-4 rounded-full border-2 border-muted border-t-primary',
-            isRefreshing ? 'animate-spin' : 'opacity-60'
-          )}
-          aria-hidden
-        /> */}
-        <span>
-          {isRefreshing
-            ? 'Updating data...'
-            : `Auto-refresh in ${countdownSeconds}s`}
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            setRefreshTrigger((v) => v + 1);
-            setCountdownSeconds(AUTO_REFRESH_INTERVAL_SECONDS);
-          }}
-          disabled={isLoading}
-          aria-label="Refresh data now"
-          className="inline-flex items-center justify-center rounded-md border border-border bg-background p-1.5 text-foreground transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-50"
-        >
-          <PiArrowClockwise
-            className={cn('size-4', isRefreshing && 'animate-spin')}
-            aria-hidden
-          />
-        </button>
-      </div>
+      <AutoRefreshCountdown
+        isRefreshing={isRefreshing}
+        onRefresh={handleRefresh}
+        intervalSeconds={AUTO_REFRESH_INTERVAL_SECONDS}
+      />
 
       {SENSOR_CHART_ROWS.map((row) => (
         <SensorLineChart

@@ -534,12 +534,15 @@ export function useSpareParts() {
 
 // ─── Alarms with Summary ────────────────────────────────────────────────────
 
-export function useAlarmsWithSummary(params?: {
-  engine?: string;
-  status?: string;
-  category?: string;
-  limit?: number;
-}) {
+export function useAlarmsWithSummary(
+  params?: {
+    engine?: string;
+    status?: string;
+    category?: string;
+    limit?: number;
+  },
+  refreshTrigger = 0
+) {
   const token = useApiToken();
   const selectedShip = useAtomValue(selectedShipAtom);
   const selectedTime = useAtomValue(selectedTimeAtom);
@@ -556,6 +559,7 @@ export function useAlarmsWithSummary(params?: {
     total: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const previousContextKeyRef = useRef<string | null>(null);
 
   const vesselId = selectedShip?.id;
   const { from, to } = useMemo(
@@ -565,16 +569,25 @@ export function useAlarmsWithSummary(params?: {
   const paramsKey = JSON.stringify({ ...params, from, to });
 
   useEffect(() => {
-    setAlarms([]);
-    setSummary({
-      critical: 0,
-      warning: 0,
-      notice: 0,
-      info: 0,
-      active: 0,
-      resolved: 0,
-      total: 0,
-    });
+    const contextKey = `${vesselId ?? ''}|${paramsKey}`;
+    const isSameContext = previousContextKeyRef.current === contextKey;
+    previousContextKeyRef.current = contextKey;
+
+    // Keep existing rows during silent auto-refresh to avoid table flicker;
+    // only clear when the vessel or filter params actually change.
+    if (!isSameContext) {
+      setAlarms([]);
+      setSummary({
+        critical: 0,
+        warning: 0,
+        notice: 0,
+        info: 0,
+        active: 0,
+        resolved: 0,
+        total: 0,
+      });
+    }
+
     setIsLoading(true);
     if (!token || !vesselId) {
       setIsLoading(false);
@@ -603,7 +616,7 @@ export function useAlarmsWithSummary(params?: {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, vesselId, paramsKey]);
+  }, [token, vesselId, paramsKey, refreshTrigger]);
 
   return { alarms, summary, isLoading };
 }

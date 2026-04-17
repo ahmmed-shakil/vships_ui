@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { setAccessToken, setRefreshToken } from '@/services/api-client';
 import * as api from '@/services/api';
 
@@ -273,21 +273,42 @@ export function useVesselEngineData(vesselId: number) {
 
 // ─── Filtered alarms for a vessel ────────────────────────────────────────────
 
-export function useVesselAlarmData(vesselId: number, engine?: string) {
+export function useVesselAlarmData(
+  vesselId: number,
+  engine?: string,
+  refreshTrigger = 0
+) {
   const token = useApiToken();
   const fallback = useMemo(() => {
     return (mockAlarmData as Record<number, AlarmEntry[]>)[vesselId] ?? [];
   }, [vesselId]);
 
   const [data, setData] = useState<AlarmEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const previousContextKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setData([]);
-    if (!token) return;
+    const contextKey = `${vesselId ?? ''}|${engine ?? ''}`;
+    const isSameContext = previousContextKeyRef.current === contextKey;
+    previousContextKeyRef.current = contextKey;
 
+    // Keep existing rows during a silent auto-refresh to avoid flicker; only
+    // clear when the vessel/engine context actually changes.
+    if (!isSameContext) {
+      setData([]);
+    }
+
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    let cancelled = false;
     api
       .fetchVesselAlarmsFiltered(vesselId, engine)
       .then((alarms) => {
+        if (cancelled) return;
         setData(
           (alarms as unknown as AlarmEntry[]).map((a) => ({
             ...a,
@@ -296,10 +317,19 @@ export function useVesselAlarmData(vesselId: number, engine?: string) {
           })) as any
         );
       })
-      .catch(() => setData(fallback));
-  }, [token, vesselId, engine, fallback]);
+      .catch(() => {
+        if (!cancelled) setData(fallback);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
 
-  return data;
+    return () => {
+      cancelled = true;
+    };
+  }, [token, vesselId, engine, fallback, refreshTrigger]);
+
+  return { data, isLoading };
 }
 
 // ─── Chart data (consumption vs speed + engine consumption) ──────────────────
