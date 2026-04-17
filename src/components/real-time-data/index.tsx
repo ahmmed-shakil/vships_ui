@@ -166,6 +166,12 @@ function EngineGroup({
       )}
       onClick={onClick}
     >
+      <div className="-mb-2 flex justify-center mt-2">
+        <span className="rounded bg-background px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary shadow-sm">
+          {engine.id.toUpperCase()}
+        </span>
+      </div>
+
       <div
         className={
           layout === 'horizontal' ? 'grid grid-cols-2' : 'flex flex-col gap-2'
