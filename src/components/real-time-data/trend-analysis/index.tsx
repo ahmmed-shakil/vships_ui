@@ -177,6 +177,43 @@ const RIGHT_PANEL_GAUGES: RightGaugeConfig[] = [
   },
 ];
 
+type RightRowWidget =
+  | { type: 'gauge'; gauge: RightGaugeConfig }
+  | { type: 'stats' }
+  | {
+      type: 'scatter';
+      title: string;
+      xKey: string;
+      xLabel: string;
+      yKey: string;
+      yLabel: string;
+      yScale?: number;
+    };
+
+const RIGHT_ROW_WIDGETS: RightRowWidget[] = [
+  { type: 'gauge', gauge: RIGHT_PANEL_GAUGES[0] },
+  { type: 'gauge', gauge: RIGHT_PANEL_GAUGES[1] },
+  { type: 'gauge', gauge: RIGHT_PANEL_GAUGES[2] },
+  { type: 'stats' },
+  {
+    type: 'scatter',
+    title: 'TC RPM (x10) vs Load',
+    xKey: 'tc_rpm',
+    xLabel: 'tc_rpm',
+    yKey: 'load_kw',
+    yLabel: 'load',
+    yScale: 10,
+  },
+  {
+    type: 'scatter',
+    title: 'Fuel Rack Pos vs Load',
+    xKey: 'fpi',
+    xLabel: 'fpi',
+    yKey: 'load_kw',
+    yLabel: 'load',
+  },
+];
+
 function getLatestNumber(
   data: SensorDataPoint[],
   key: string
@@ -210,8 +247,8 @@ function TrendRightGauge({
       title={config.title}
       titleClassName="text-xs font-medium leading-4 text-gray-300"
       headerClassName="px-3 pb-1 pt-2"
-      className="overflow-hidden rounded-sm border border-muted bg-[#0f172a]"
-      bodyClassName="pb-1"
+      className="flex h-full flex-col overflow-hidden rounded-sm border border-muted bg-[#0f172a]"
+      bodyClassName="flex flex-1 items-center pb-1"
     >
       <SpeedMeter
         bare
@@ -225,9 +262,9 @@ function TrendRightGauge({
             ? `${formatNumber(gaugeValue, config.decimals)}${config.centerSuffix ?? ''}`
             : '0'
         }
-        gaugeHeight={155}
-        size="sm"
-        className="-mb-3 -mt-2"
+        gaugeHeight={250}
+        size="default"
+        className="w-full"
       />
     </PerfomaxCard>
   );
@@ -239,18 +276,18 @@ function TrendRightStatCard({ data }: { data: SensorDataPoint[] }) {
   const runningHours = getLatestNumber(data, 'sample_count') ?? 0;
 
   return (
-    <div className="overflow-hidden rounded-sm border border-muted">
+    <div className="flex h-full flex-col overflow-hidden rounded-sm border border-muted">
       <div className="grid grid-cols-2 bg-[#111827] text-[11px] font-medium text-gray-300">
         <div className="border-r border-[#1f2937] px-2 py-1">Fuel Rack Position</div>
         <div className="px-2 py-1">Total Running Hours</div>
       </div>
-      <div className="grid grid-cols-2">
-        <div className="flex h-[105px] items-center justify-center border-r border-[#1f2937] bg-gradient-to-b from-[#2d7eff] to-[#1e40af]">
+      <div className="grid flex-1 grid-cols-2">
+        <div className="flex h-full items-center justify-center border-r border-[#1f2937] bg-gradient-to-b from-[#2d7eff] to-[#1e40af]">
           <span className="text-4xl font-semibold text-white">
             {formatNumber(fuelRackPos, 0)}
           </span>
         </div>
-        <div className="flex h-[105px] items-center justify-center bg-gradient-to-b from-[#2d7eff] to-[#1e40af]">
+        <div className="flex h-full items-center justify-center bg-gradient-to-b from-[#2d7eff] to-[#1e40af]">
           <span className="text-4xl font-semibold text-white">
             {formatNumber(runningHours, 0)}
           </span>
@@ -295,10 +332,10 @@ function TrendMiniScatterCard({
       title={title}
       titleClassName="text-xs font-medium leading-4 text-gray-300"
       headerClassName="px-3 pb-1 pt-2"
-      className="rounded-sm border border-muted bg-[#0f172a]"
-      bodyClassName="px-2 pb-2"
+      className="flex h-full flex-col rounded-sm border border-muted bg-[#0f172a]"
+      bodyClassName="flex-1 px-2 pb-2"
     >
-      <div className="h-[130px]">
+      <div className="h-full min-h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 8, right: 8, left: -8, bottom: 4 }}>
             <CartesianGrid stroke="rgba(148,163,184,0.2)" />
@@ -387,6 +424,28 @@ export default function TrendAnalysisLayout() {
   const isInitialLoading = isLoading && !hasLoadedAtLeastOnce;
   const isRefreshing = isLoading && hasLoadedAtLeastOnce;
 
+  const renderRightWidget = (widget: RightRowWidget) => {
+    if (widget.type === 'gauge') {
+      return <TrendRightGauge config={widget.gauge} data={sensorData} />;
+    }
+
+    if (widget.type === 'stats') {
+      return <TrendRightStatCard data={sensorData} />;
+    }
+
+    return (
+      <TrendMiniScatterCard
+        title={widget.title}
+        data={sensorData}
+        xKey={widget.xKey}
+        xLabel={widget.xLabel}
+        yKey={widget.yKey}
+        yLabel={widget.yLabel}
+        yScale={widget.yScale}
+      />
+    );
+  };
+
   return (
     <div className="space-y-6">
       <AutoRefreshCountdown
@@ -395,51 +454,34 @@ export default function TrendAnalysisLayout() {
         intervalSeconds={AUTO_REFRESH_INTERVAL_SECONDS}
       />
 
-      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_220px]">
-        <div className="space-y-6">
-          {SENSOR_CHART_ROWS.map((row) => (
-            <SensorLineChart
+      <div className="space-y-6">
+        {SENSOR_CHART_ROWS.map((row, index) => {
+          const rightWidget = RIGHT_ROW_WIDGETS[index];
+
+          return (
+            <div
               key={row.title}
-              title={row.title}
-              yAxisLabel={row.yAxisLabel}
-              series={row.series}
-              data={sensorData}
-              isLoading={isInitialLoading}
-              thresholds={row.thresholds}
-              tooltipColumns={row.series.length > 5 ? 2 : undefined}
-            />
-          ))}
-        </div>
+              className={
+                rightWidget
+                  ? 'grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]'
+                  : 'grid grid-cols-1'
+              }
+            >
+              <SensorLineChart
+                title={row.title}
+                yAxisLabel={row.yAxisLabel}
+                series={row.series}
+                data={sensorData}
+                isLoading={isInitialLoading}
+                thresholds={row.thresholds}
+                tooltipColumns={row.series.length > 5 ? 2 : undefined}
+                className="h-full"
+              />
 
-        <aside className="space-y-2 2xl:sticky 2xl:top-24 2xl:self-start">
-          {RIGHT_PANEL_GAUGES.map((gauge) => (
-            <TrendRightGauge
-              key={gauge.title}
-              config={gauge}
-              data={sensorData}
-            />
-          ))}
-
-          <TrendRightStatCard data={sensorData} />
-
-          <TrendMiniScatterCard
-            title="TC RPM (x10) vs Load"
-            data={sensorData}
-            xKey="tc_rpm"
-            xLabel="tc_rpm"
-            yKey="load_kw"
-            yLabel="load"
-            yScale={10}
-          />
-          <TrendMiniScatterCard
-            title="Fuel Rack Pos vs Load"
-            data={sensorData}
-            xKey="fpi"
-            xLabel="fpi"
-            yKey="load_kw"
-            yLabel="load"
-          />
-        </aside>
+              {rightWidget && <div className="h-full">{renderRightWidget(rightWidget)}</div>}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
