@@ -1,7 +1,9 @@
 'use client';
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
+import ChartDownloadButtons from '@/components/charts/chart-download-buttons';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
+import { useMemo, useRef } from 'react';
 
 import cn from '@/utils/class-names';
 import {
@@ -106,6 +108,20 @@ export default function SensorLineChart({
   thresholds,
   tooltipColumns,
 }: SensorLineChartProps) {
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  // CSV column mapping: timestamp + each series
+  const csvColumns = useMemo(
+    () => [
+      { key: 'timestamp', label: 'Timestamp' },
+      ...series.map((s) => ({ key: s.dataKey, label: s.label })),
+    ],
+    [series]
+  );
+
+  // Sanitise title for filename
+  const fileName = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
   const formatVal = (v: number) => v.toFixed(2);
 
   // Round numeric values to 2 decimal places and convert nulls to 0
@@ -182,10 +198,16 @@ export default function SensorLineChart({
               {s.label}
             </span>
           ))}
+          <ChartDownloadButtons
+            chartRef={chartRef}
+            data={data as Record<string, unknown>[]}
+            fileName={fileName}
+            csvColumns={csvColumns}
+          />
         </div>
       }
     >
-      <div className="relative flex h-full min-h-[320px] w-full pb-1 pl-1 pt-1">
+      <div ref={chartRef} className="relative flex h-full min-h-[320px] w-full pb-1 pl-1 pt-1">
         {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 backdrop-blur-sm">
             <span className="animate-pulse text-sm font-medium text-muted-foreground">

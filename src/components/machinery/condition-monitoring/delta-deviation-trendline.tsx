@@ -1,9 +1,10 @@
 'use client';
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
+import ChartDownloadButtons from '@/components/charts/chart-download-buttons';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
 import type { DeltaDeviationResponse } from '@/types/api';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Area,
   CartesianGrid,
@@ -110,6 +111,17 @@ export default function DeltaDeviationTrendline({
 
   const band = response?.reference_band ?? { upper: 24, lower: 12 };
 
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  // CSV columns from series definitions
+  const csvColumns = useMemo(
+    () => [
+      { key: 'timestamp', label: 'Timestamp' },
+      ...SERIES_DEFS.map((s) => ({ key: s.key, label: s.label })),
+    ],
+    []
+  );
+
   // Show at most ~11 X-axis ticks regardless of data density (matches ocean pact)
   const xAxisInterval =
     chartData.length > 11 ? Math.ceil(chartData.length / 11) - 1 : 0;
@@ -119,8 +131,16 @@ export default function DeltaDeviationTrendline({
       title="Delta Deviation Trendline"
       className={className}
       bodyClassName="p-5"
+      action={
+        <ChartDownloadButtons
+          chartRef={chartRef}
+          data={chartData}
+          fileName="delta-deviation-trendline"
+          csvColumns={csvColumns}
+        />
+      }
     >
-      <div className="flex h-full">
+      <div ref={chartRef} className="flex h-full">
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span

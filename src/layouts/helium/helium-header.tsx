@@ -9,6 +9,19 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import toast from 'react-hot-toast';
+import { PiCameraBold, PiFileCsvBold, PiSpinnerBold } from 'react-icons/pi';
+import { Tooltip } from 'rizzui';
+import { toPng } from 'html-to-image';
+import { useAtomValue } from 'jotai';
+import {
+  selectedEngineAtom,
+  selectedShipAtom,
+  selectedTimeAtom,
+  dateRangeAtom,
+} from '@/store/condition-monitoring-atoms';
+import { exportSensorDataCSV } from '@/services/api';
 import Sidebar from './helium-sidebar';
 
 const ConditionMonitoringHeaderSelectors = dynamic(
@@ -36,26 +49,53 @@ const OperationOverviewHeaderSelectors = dynamic(
   { ssr: false }
 );
 
-function HeaderMenuRight() {
+function HeaderMenuRight({
+  showDownloads,
+  isExporting,
+  snapshotting,
+  onSnapshot,
+  onCsvExport,
+}: {
+  showDownloads: boolean;
+  isExporting: boolean;
+  snapshotting: boolean;
+  onSnapshot: () => void;
+  onCsvExport: () => void;
+}) {
   return (
-    <div className="ms-auto grid shrink-0 grid-cols-2 items-center gap-2 text-gray-700 xs:gap-3 xl:gap-4">
-      {/* <NotificationDropdown>
-        <ActionIcon
-          aria-label="Notification"
-          variant="text"
-          className={cn(
-            'relative h-[34px] w-[34px] overflow-hidden rounded-full shadow backdrop-blur-md before:absolute before:h-full before:w-full before:-rotate-45 before:rounded-full before:bg-gradient-to-l before:from-orange-dark/25 before:via-orange-dark/0 before:to-orange-dark/0 dark:bg-gray-100 md:h-9 md:w-9 3xl:h-10 3xl:w-10'
-          )}
-        >
-          <PiBellSimpleRingingFill className="h-[18px] w-auto 3xl:h-5" />
-          <Badge
-            renderAsDot
-            color="warning"
-            enableOutlineRing
-            className="absolute right-1 top-2.5 -translate-x-1 -translate-y-1/4"
-          />
-        </ActionIcon>
-      </NotificationDropdown> */}
+    <div className="ms-auto flex shrink-0 items-center gap-2 text-gray-700 xs:gap-3 xl:gap-4">
+      {showDownloads && (
+        <div className="flex items-center gap-0.5">
+          <Tooltip content="Download page snapshot" placement="bottom">
+            <button
+              onClick={onSnapshot}
+              disabled={snapshotting || isExporting}
+              className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-50"
+              aria-label="Download page as PNG"
+            >
+              {snapshotting ? (
+                <PiSpinnerBold className="h-5 w-5 animate-spin" />
+              ) : (
+                <PiCameraBold className="h-5 w-5" />
+              )}
+            </button>
+          </Tooltip>
+          <Tooltip content="Export page data as CSV" placement="bottom">
+            <button
+              onClick={onCsvExport}
+              disabled={isExporting || snapshotting}
+              className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-50"
+              aria-label="Export page data as CSV"
+            >
+              {isExporting ? (
+                <PiSpinnerBold className="h-5 w-5 animate-spin" />
+              ) : (
+                <PiFileCsvBold className="h-5 w-5" />
+              )}
+            </button>
+          </Tooltip>
+        </div>
+      )}
       <ProfileMenu />
     </div>
   );
@@ -73,6 +113,93 @@ export default function Header() {
   const isRealTimeData = pathname.startsWith('/real-time-data');
   // const isAlarmMonitoring = pathname.startsWith('/alarm-monitoring');
   const isOperationOverview = pathname.startsWith('/operation-overview');
+
+  // Only show header-level downloads on trend analysis
+  // (condition monitoring has its own download buttons in header-selectors)
+  const showDownloads = pathname === '/real-time-data/trend-analysis';
+
+  const [snapshotting, setSnapshotting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const selectedShip = useAtomValue(selectedShipAtom);
+  const selectedTime = useAtomValue(selectedTimeAtom);
+  const selectedEngine = useAtomValue(selectedEngineAtom);
+  const dateRange = useAtomValue(dateRangeAtom);
+
+  const handlePageSnapshot = useCallback(async () => {
+    if (snapshotting || isExporting) return;
+    setSnapshotting(true);
+    try {
+      const mainEl = document.querySelector('main') as HTMLElement | null;
+      const target = mainEl ?? document.body;
+      const dataUrl = await toPng(target, {
+        cacheBust: true,
+        backgroundColor: '#111827',
+        pixelRatio: 2,
+      });
+      const link = document.createElement('a');
+      const pageName =
+        window.location.pathname.replace(/\//g, '-').replace(/^-/, '') ||
+        'page';
+      link.download = `${pageName}-snapshot.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success('Page snapshot downloaded');
+    } catch (err) {
+      console.error('Page snapshot failed:', err);
+      toast.error('Page snapshot failed');
+    } finally {
+      setSnapshotting(false);
+    }
+  }, [snapshotting, isExporting]);
+
+  const handlePageCsvExport = useCallback(async () => {
+    if (snapshotting || isExporting) return;
+    
+    if (!selectedShip) {
+      toast.error('Please select a vessel first');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // Derive from/to from the selected time preset or custom date range
+      const now = new Date();
+      let from: Date;
+      if (selectedTime === 'Custom Time' && dateRange[0] && dateRange[1]) {
+        from = dateRange[0];
+      } else {
+        // Parse presets like '5 min', '30 min', '2 hours', '12h', '24h', '48h', '1h', '1d', '7d', '1m', '3m'
+        const match = selectedTime.match(/^(\d+)\s*(min|hour|h|d|m)s?$/i);
+        if (match) {
+          const num = parseInt(match[1]);
+          const unit = match[2].toLowerCase();
+          from = new Date(now);
+          if (unit === 'min') from.setMinutes(from.getMinutes() - num);
+          else if (unit === 'hour' || unit === 'h') from.setHours(from.getHours() - num);
+          else if (unit === 'd') from.setDate(from.getDate() - num);
+          else if (unit === 'm') from.setMonth(from.getMonth() - num);
+          else from.setDate(from.getDate() - 1);
+        } else {
+          from = new Date(now);
+          from.setDate(from.getDate() - 1);
+        }
+      }
+
+      const to =
+        selectedTime === 'Custom Time' && dateRange[1]
+          ? dateRange[1].toISOString()
+          : now.toISOString();
+
+      await exportSensorDataCSV(selectedShip.id, from.toISOString(), to, selectedEngine?.value);
+      toast.success('CSV downloaded successfully');
+    } catch (err) {
+      console.error('CSV export failed:', err);
+      toast.error('Failed to download CSV data');
+    } finally {
+      setIsExporting(false);
+    }
+  }, [snapshotting, isExporting, selectedShip, selectedTime, selectedEngine, dateRange]);
 
   return (
     <header
@@ -137,7 +264,13 @@ export default function Header() {
         </div>
       )}
 
-      <HeaderMenuRight />
+      <HeaderMenuRight
+        showDownloads={showDownloads}
+        isExporting={isExporting}
+        snapshotting={snapshotting}
+        onSnapshot={handlePageSnapshot}
+        onCsvExport={handlePageCsvExport}
+      />
     </header>
   );
 }

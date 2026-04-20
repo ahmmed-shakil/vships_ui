@@ -2,7 +2,9 @@
 
 import HealthScoreHeader from '@/components/cards/health-score-header';
 import PerfomaxCard from '@/components/cards/perfomax-card';
+import ChartDownloadButtons from '@/components/charts/chart-download-buttons';
 import type { SfocResponse } from '@/types/api';
+import { useMemo, useRef } from 'react';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -68,25 +70,44 @@ export default function SfocScatterCard({
 }) {
   const modes = response?.modes ?? [];
   const hasSfocData = modes.some((mode) => (mode.data?.length ?? 0) > 0);
+
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  // Flatten all mode data for CSV export
+  const csvData = useMemo(() => {
+    const rows: Record<string, unknown>[] = [];
+    modes.forEach((m) => {
+      (m.data ?? []).forEach((d) => {
+        rows.push({ time: d.x, sfoc: d.y, mode: m.mode });
+      });
+    });
+    return rows;
+  }, [modes]);
+
+  const csvColumns = useMemo(
+    () => [
+      { key: 'time', label: 'Time (min)' },
+      { key: 'sfoc', label: 'SFOC (g/kWh)' },
+      { key: 'mode', label: 'Mode' },
+    ],
+    []
+  );
+
   return (
     <PerfomaxCard
       className={className}
       title="SFOC Scatter"
-      //   action={
-      //     <div className="flex flex-col items-end gap-2">
-      //       <div className="invisible">
-      //         <HealthScoreHeader score={80} />
-      //       </div>
-      //     </div>
-      //   }
-      //   headerFooter={
-      //     <div className="px-5 pb-1 text-sm font-medium">
-      //       <span className="invisible">Placeholder</span>
-      //     </div>
-      //   }
+      action={
+        <ChartDownloadButtons
+          chartRef={chartRef}
+          data={csvData}
+          fileName="sfoc-scatter"
+          csvColumns={csvColumns}
+        />
+      }
       bodyClassName="px-2 border-t border-muted/50"
     >
-      <div className="mt-2 flex h-full">
+      <div ref={chartRef} className="mt-2 flex h-full">
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span

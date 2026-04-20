@@ -115,13 +115,11 @@ export default function ConditionMonitoringHeaderSelectors() {
     if (snapshotting) return;
     setSnapshotting(true);
     try {
-      const pageContent = document.getElementById(
-        'condition-monitoring-content'
-      );
-      if (!pageContent) return;
-      const dataUrl = await toPng(pageContent, {
+      const mainEl = document.querySelector('main') as HTMLElement | null;
+      const target = mainEl ?? document.body;
+      const dataUrl = await toPng(target, {
         cacheBust: true,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#111827',
         pixelRatio: 2,
       });
       const link = document.createElement('a');

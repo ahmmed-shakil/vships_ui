@@ -1,8 +1,9 @@
 'use client';
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
+import ChartDownloadButtons from '@/components/charts/chart-download-buttons';
 import type { ParameterScatterResponse } from '@/types/api';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -179,6 +180,25 @@ export default function ParameterScatterChart({
     return { normalData: normalPts, abnormalData: abnormalPts };
   }, [response, opt1.value, opt2.value]);
 
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  // CSV data: combine normal + abnormal with a 'mode' column
+  const csvData = useMemo(() => {
+    const rows: Record<string, unknown>[] = [];
+    normalData.forEach((p) => rows.push({ x: p.x, y: p.y, mode: 'Baseline' }));
+    abnormalData.forEach((p) => rows.push({ x: p.x, y: p.y, mode: 'Trendline' }));
+    return rows;
+  }, [normalData, abnormalData]);
+
+  const csvColumns = useMemo(
+    () => [
+      { key: 'x', label: opt1?.label ?? 'Parameter X' },
+      { key: 'y', label: opt2?.label ?? 'Parameter Y' },
+      { key: 'mode', label: 'Mode' },
+    ],
+    [opt1, opt2]
+  );
+
   return (
     <PerfomaxCard
       className={className}
@@ -200,6 +220,12 @@ export default function ParameterScatterChart({
             />
             <span className="text-foreground">{opt2.label}</span>
           </span>
+          <ChartDownloadButtons
+            chartRef={chartRef}
+            data={csvData}
+            fileName="parameter-scatter"
+            csvColumns={csvColumns}
+          />
         </div>
       }
       headerFooter={
@@ -226,7 +252,7 @@ export default function ParameterScatterChart({
       bodyClassName="px-3 pb-4"
     >
       {/* Chart with axis labels */}
-      <div className="mt-4 flex h-full">
+      <div ref={chartRef} className="mt-4 flex h-full">
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span

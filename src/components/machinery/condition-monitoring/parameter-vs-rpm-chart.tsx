@@ -1,10 +1,12 @@
 'use client';
 
 import PerfomaxCard from '@/components/cards/perfomax-card';
+import ChartDownloadButtons from '@/components/charts/chart-download-buttons';
 import type {
   ParameterScatterPoint,
   ParameterScatterResponse,
 } from '@/types/api';
+import { useMemo, useRef } from 'react';
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -78,6 +80,25 @@ export default function ParameterVsRpmChart({
     });
   }
 
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  // CSV data: combine normal + abnormal with a 'mode' column
+  const csvData = useMemo(() => {
+    const rows: Record<string, unknown>[] = [];
+    normalData.forEach((p) => rows.push({ tc_rpm: p.x, [parameterName]: p.y, mode: 'Normal' }));
+    abnormalData.forEach((p) => rows.push({ tc_rpm: p.x, [parameterName]: p.y, mode: 'Abnormal' }));
+    return rows;
+  }, [normalData, abnormalData, parameterName]);
+
+  const csvColumns = useMemo(
+    () => [
+      { key: 'tc_rpm', label: 'TC RPM' },
+      { key: parameterName, label: parameterName },
+      { key: 'mode', label: 'Mode' },
+    ],
+    [parameterName]
+  );
+
   return (
     <PerfomaxCard
       title="Scatter"
@@ -101,10 +122,16 @@ export default function ParameterVsRpmChart({
             />
             Trendline
           </span>
+          <ChartDownloadButtons
+            chartRef={chartRef}
+            data={csvData}
+            fileName={`parameter-vs-rpm-${parameterName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+            csvColumns={csvColumns}
+          />
         </div>
       }
     >
-      <div className="flex h-full pt-2">
+      <div ref={chartRef} className="flex h-full pt-2">
         {/* Y-axis label */}
         <div className="flex max-w-[4.5rem] flex-col items-center justify-center gap-1 pr-1">
           <span
