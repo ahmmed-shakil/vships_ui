@@ -70,6 +70,9 @@ export const authOptions: NextAuthOptions = {
         user: {
           ...session.user,
           id: token.idToken as string,
+          role: (token.user as any)?.role,
+          role_code: (token.user as any)?.role_code,
+          role_name: (token.user as any)?.role_name,
         },
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,
@@ -108,6 +111,9 @@ export const authOptions: NextAuthOptions = {
               id: res.user.id,
               email: res.user.email,
               name: res.user.name,
+              role: res.user.role,
+              role_code: res.user.role_code,
+              role_name: res.user.role_name,
               accessToken: res.accessToken,
               refreshToken: res.refreshToken,
             };

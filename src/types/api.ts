@@ -18,6 +18,8 @@ export interface ApiUser {
   email: string;
   name: string;
   role: string;
+  role_code?: string;
+  role_name?: string;
   avatar?: string;
 }
 

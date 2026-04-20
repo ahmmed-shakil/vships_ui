@@ -9,13 +9,23 @@ import { Fragment } from 'react';
 import { PiCaretDownBold } from 'react-icons/pi';
 import { Collapse } from 'rizzui/collapse';
 import { Title } from 'rizzui/typography';
+import { useSession } from 'next-auth/react';
 
 export function SidebarMenu() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role_code;
+
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (item.name === 'Operation Overview') {
+      return userRole !== 'owner' && userRole !== 'vessel';
+    }
+    return true;
+  });
 
   return (
     <div className="mt-4 pb-3 3xl:mt-6">
-      {(menuItems as any[]).map((item, index) => {
+      {(filteredMenuItems as any[]).map((item, index) => {
         const isActive = pathname === (item?.href as string);
         const pathnameExistInDropdowns: any = item?.dropdownItems?.filter(
           (dropdownItem: any) => dropdownItem.href === pathname

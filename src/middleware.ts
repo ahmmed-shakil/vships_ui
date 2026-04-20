@@ -25,6 +25,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/fleet-overview', req.url));
   }
 
+  // RBAC for Operation Overview
+  if (pathname === '/operation-overview') {
+    const role = (token.user as any)?.role_code;
+    if (role === 'owner' || role === 'vessel') {
+      return NextResponse.redirect(new URL('/access-denied', req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
