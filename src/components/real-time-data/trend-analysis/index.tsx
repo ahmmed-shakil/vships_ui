@@ -58,7 +58,9 @@ const SENSOR_CHART_ROWS: {
         { dataKey: 'eg_temp_7', label: 'Cyl 7', color: '#06B6D4' },
         { dataKey: 'eg_temp_8', label: 'Cyl 8', color: '#F97316' },
         { dataKey: 'eg_temp_9', label: 'Cyl 9', color: '#14B8A6' },
-        { dataKey: 'eg_temp_out_turbo', label: 'TC Out', color: '#FFFFFF' },
+        { dataKey: 'eg_temp_mean', label: 'Mean', color: '#FACC15' },
+        { dataKey: 'eg_temp_tc_in', label: 'TC In', color: '#FFFFFF' },
+        { dataKey: 'eg_temp_tc_out', label: 'TC Out', color: '#94A3B8' },
       ],
       thresholds: { min: 100, max: 400 },
     },
@@ -66,16 +68,15 @@ const SENSOR_CHART_ROWS: {
       title: 'H.T. Cooling Water Temperatures',
       yAxisLabel: 'Temp (°C)',
       series: [
-        { dataKey: 'ht_cw_temp', label: 'HT CW Temp', color: '#06B6D4' },
         {
           dataKey: 'ht_cw_inlet_temp',
           label: 'HT CW Inlet Temp',
-          color: '#F59E0B',
+          color: '#06B6D4',
         },
         {
           dataKey: 'ht_cw_temp_out',
           label: 'HT CW Temp Out',
-          color: '#A855F7',
+          color: '#F59E0B',
         },
       ],
       thresholds: { min: 0, max: 110 },
@@ -83,7 +84,7 @@ const SENSOR_CHART_ROWS: {
     {
       title: 'L.T. Cooling Water Temperature',
       yAxisLabel: 'Temp (°C)',
-      series: [{ dataKey: 'lt_cw_temp', label: 'LT CW Temp' }],
+      series: [{ dataKey: 'lt_cw_temp_in', label: 'LT CW Temp In' }],
       thresholds: { min: 0, max: 110 },
     },
     {
@@ -106,10 +107,13 @@ const SENSOR_CHART_ROWS: {
       title: 'Pressures (HT CW / LT CW / LO / FO)',
       yAxisLabel: 'Pressure (bar)',
       series: [
+        { dataKey: 'fo_press_filter_in', label: 'FO Press Filter In', color: '#3B82F6' },
+        { dataKey: 'fo_press_inlet', label: 'FO Press Inlet', color: '#EF4444' },
         { dataKey: 'ht_cw_press', label: 'HT CW Press', color: '#06B6D4' },
-        { dataKey: 'lt_cw_press', label: 'LT CW Press', color: '#F59E0B' },
-        { dataKey: 'lo_press', label: 'LO Press', color: '#A855F7' },
-        { dataKey: 'fo_press_inlet', label: 'FO Press Inlet', color: '#EC4899' },
+        { dataKey: 'lo_press_filter_in', label: 'LO Press Filter In', color: '#22C55E' },
+        { dataKey: 'lo_press_in', label: 'LO Press In', color: '#F59E0B' },
+        { dataKey: 'lo_press_tc', label: 'LO Press TC', color: '#A855F7' },
+        { dataKey: 'lt_cw_press', label: 'LT CW Press', color: '#EC4899' },
       ],
       thresholds: { min: 0, max: 20 },
     },
@@ -117,7 +121,6 @@ const SENSOR_CHART_ROWS: {
       title: 'TC RPM & Fuel Rack Pos Trend',
       yAxisLabel: 'Value',
       series: [
-        { dataKey: 'tc_rpm', label: 'TC RPM', color: '#3B82F6' },
         { dataKey: 'fpi', label: 'Fuel Rack Pos', color: '#F97316' },
       ],
     },
@@ -272,8 +275,7 @@ function TrendRightGauge({
 
 function TrendRightStatCard({ data }: { data: SensorDataPoint[] }) {
   const fuelRackPos = getLatestNumber(data, 'fpi') ?? 0;
-  // UI-only for now: this placeholder uses sample_count until final mapping is provided.
-  const runningHours = getLatestNumber(data, 'sample_count') ?? 0;
+  const runningHours = getLatestNumber(data, 'rh') ?? 0;
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-sm border border-muted">
