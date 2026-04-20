@@ -1,17 +1,29 @@
 'use client';
 
 import AutoRefreshCountdown from '@/components/auto-refresh-countdown';
+import PerfomaxCard from '@/components/cards/perfomax-card';
 import SensorLineChart, {
   type SensorSeries,
 } from '@/components/machinery/condition-monitoring/sensor-line-chart';
+import SpeedMeter from '@/components/speed-meter/speed-meter';
 import { useSensorDataApi } from '@/hooks/use-machinery-data';
 import {
   refreshTriggerAtom,
   selectedShipAtom,
   selectedTimeAtom,
 } from '@/store/condition-monitoring-atoms';
+import type { SensorDataPoint } from '@/types/api';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  CartesianGrid,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 const AUTO_REFRESH_INTERVAL_SECONDS = 30;
 
@@ -122,6 +134,225 @@ const TREND_HEADER_TIME_PRESETS = new Set([
   'Custom Time',
 ]);
 
+interface RightGaugeConfig {
+  title: string;
+  dataKey: string;
+  min?: number;
+  max: number;
+  fillColor: string;
+  unit?: string;
+  decimals?: number;
+  valueScale?: number;
+  centerSuffix?: string;
+}
+
+const RIGHT_PANEL_GAUGES: RightGaugeConfig[] = [
+  {
+    title: 'Alternator Load (eKW)',
+    dataKey: 'load_kw',
+    min: 0,
+    max: 1500,
+    fillColor: '#65D16E',
+    decimals: 0,
+  },
+  {
+    title: 'Engine RPM',
+    dataKey: 'rpm',
+    min: 0,
+    max: 900,
+    fillColor: '#EAB308',
+    unit: 'Engine Speed',
+    decimals: 0,
+    centerSuffix: ' rpm',
+  },
+  {
+    title: 'TC RPM',
+    dataKey: 'tc_rpm',
+    min: 0,
+    max: 2000,
+    fillColor: '#65D16E',
+    unit: 'x 10',
+    decimals: 0,
+    valueScale: 10,
+  },
+];
+
+function getLatestNumber(
+  data: SensorDataPoint[],
+  key: string
+): number | undefined {
+  const latest = data[data.length - 1];
+  if (!latest) return undefined;
+  const value = latest[key];
+  return typeof value === 'number' ? value : undefined;
+}
+
+function formatNumber(value: number, decimals = 0): string {
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
+function TrendRightGauge({
+  config,
+  data,
+}: {
+  config: RightGaugeConfig;
+  data: SensorDataPoint[];
+}) {
+  const rawValue = getLatestNumber(data, config.dataKey);
+  const gaugeValue =
+    rawValue !== undefined ? rawValue / (config.valueScale ?? 1) : undefined;
+
+  return (
+    <PerfomaxCard
+      title={config.title}
+      titleClassName="text-xs font-medium leading-4 text-gray-300"
+      headerClassName="px-3 pb-1 pt-2"
+      className="overflow-hidden rounded-sm border border-muted bg-[#0f172a]"
+      bodyClassName="pb-1"
+    >
+      <SpeedMeter
+        bare
+        value={gaugeValue}
+        min={config.min}
+        max={config.max}
+        fillColor={config.fillColor}
+        unit={config.unit}
+        centerLabel={
+          gaugeValue !== undefined
+            ? `${formatNumber(gaugeValue, config.decimals)}${config.centerSuffix ?? ''}`
+            : '0'
+        }
+        gaugeHeight={155}
+        size="sm"
+        className="-mb-3 -mt-2"
+      />
+    </PerfomaxCard>
+  );
+}
+
+function TrendRightStatCard({ data }: { data: SensorDataPoint[] }) {
+  const fuelRackPos = getLatestNumber(data, 'fpi') ?? 0;
+  // UI-only for now: this placeholder uses sample_count until final mapping is provided.
+  const runningHours = getLatestNumber(data, 'sample_count') ?? 0;
+
+  return (
+    <div className="overflow-hidden rounded-sm border border-muted">
+      <div className="grid grid-cols-2 bg-[#111827] text-[11px] font-medium text-gray-300">
+        <div className="border-r border-[#1f2937] px-2 py-1">Fuel Rack Position</div>
+        <div className="px-2 py-1">Total Running Hours</div>
+      </div>
+      <div className="grid grid-cols-2">
+        <div className="flex h-[105px] items-center justify-center border-r border-[#1f2937] bg-gradient-to-b from-[#2d7eff] to-[#1e40af]">
+          <span className="text-4xl font-semibold text-white">
+            {formatNumber(fuelRackPos, 0)}
+          </span>
+        </div>
+        <div className="flex h-[105px] items-center justify-center bg-gradient-to-b from-[#2d7eff] to-[#1e40af]">
+          <span className="text-4xl font-semibold text-white">
+            {formatNumber(runningHours, 0)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TrendMiniScatterCard({
+  title,
+  data,
+  xKey,
+  xLabel,
+  yKey,
+  yLabel,
+  yScale = 1,
+}: {
+  title: string;
+  data: SensorDataPoint[];
+  xKey: string;
+  xLabel: string;
+  yKey: string;
+  yLabel: string;
+  yScale?: number;
+}) {
+  const plotData = useMemo(
+    () =>
+      data
+        .map((point) => {
+          const xRaw = point[xKey];
+          const yRaw = point[yKey];
+          if (typeof xRaw !== 'number' || typeof yRaw !== 'number') return null;
+          return { x: xRaw, y: yRaw / yScale };
+        })
+        .filter((point): point is { x: number; y: number } => point !== null),
+    [data, xKey, yKey, yScale]
+  );
+
+  return (
+    <PerfomaxCard
+      title={title}
+      titleClassName="text-xs font-medium leading-4 text-gray-300"
+      headerClassName="px-3 pb-1 pt-2"
+      className="rounded-sm border border-muted bg-[#0f172a]"
+      bodyClassName="px-2 pb-2"
+    >
+      <div className="h-[130px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart margin={{ top: 8, right: 8, left: -8, bottom: 4 }}>
+            <CartesianGrid stroke="rgba(148,163,184,0.2)" />
+            <XAxis
+              dataKey="x"
+              type="number"
+              tick={{ fill: '#94a3b8', fontSize: 9 }}
+              axisLine={{ stroke: '#334155' }}
+              tickLine={false}
+              label={{
+                value: xLabel,
+                position: 'insideBottom',
+                fill: '#94a3b8',
+                offset: -2,
+                fontSize: 9,
+              }}
+            />
+            <YAxis
+              dataKey="y"
+              type="number"
+              tick={{ fill: '#94a3b8', fontSize: 9 }}
+              axisLine={false}
+              tickLine={false}
+              label={{
+                value: yLabel,
+                angle: -90,
+                position: 'insideLeft',
+                fill: '#94a3b8',
+                fontSize: 9,
+              }}
+            />
+            <Tooltip
+              cursor={{ strokeDasharray: '3 3' }}
+              contentStyle={{
+                background: '#0b1220',
+                border: '1px solid #334155',
+                borderRadius: 8,
+                color: '#e2e8f0',
+                fontSize: 12,
+              }}
+            />
+            <Scatter
+              data={plotData}
+              fill="#65D16E"
+              fillOpacity={0.8}
+              shape="circle"
+            />
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+    </PerfomaxCard>
+  );
+}
+
 export default function TrendAnalysisLayout() {
   const selectedShip = useAtomValue(selectedShipAtom);
   const [selectedTime, setSelectedTime] = useAtom(selectedTimeAtom);
@@ -164,18 +395,52 @@ export default function TrendAnalysisLayout() {
         intervalSeconds={AUTO_REFRESH_INTERVAL_SECONDS}
       />
 
-      {SENSOR_CHART_ROWS.map((row) => (
-        <SensorLineChart
-          key={row.title}
-          title={row.title}
-          yAxisLabel={row.yAxisLabel}
-          series={row.series}
-          data={sensorData}
-          isLoading={isInitialLoading}
-          thresholds={row.thresholds}
-          tooltipColumns={row.series.length > 5 ? 2 : undefined}
-        />
-      ))}
+      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_220px]">
+        <div className="space-y-6">
+          {SENSOR_CHART_ROWS.map((row) => (
+            <SensorLineChart
+              key={row.title}
+              title={row.title}
+              yAxisLabel={row.yAxisLabel}
+              series={row.series}
+              data={sensorData}
+              isLoading={isInitialLoading}
+              thresholds={row.thresholds}
+              tooltipColumns={row.series.length > 5 ? 2 : undefined}
+            />
+          ))}
+        </div>
+
+        <aside className="space-y-2 2xl:sticky 2xl:top-24 2xl:self-start">
+          {RIGHT_PANEL_GAUGES.map((gauge) => (
+            <TrendRightGauge
+              key={gauge.title}
+              config={gauge}
+              data={sensorData}
+            />
+          ))}
+
+          <TrendRightStatCard data={sensorData} />
+
+          <TrendMiniScatterCard
+            title="TC RPM (x10) vs Load"
+            data={sensorData}
+            xKey="tc_rpm"
+            xLabel="tc_rpm"
+            yKey="load_kw"
+            yLabel="load"
+            yScale={10}
+          />
+          <TrendMiniScatterCard
+            title="Fuel Rack Pos vs Load"
+            data={sensorData}
+            xKey="fpi"
+            xLabel="fpi"
+            yKey="load_kw"
+            yLabel="load"
+          />
+        </aside>
+      </div>
     </div>
   );
 }
