@@ -33,98 +33,104 @@ const SENSOR_CHART_ROWS: {
   series: SensorSeries[];
   thresholds?: { min?: number; max?: number };
 }[] = [
-    {
-      title: 'Load (eKW) Trendline',
-      yAxisLabel: 'Load (eKW)',
-      series: [{ dataKey: 'load_kw', label: 'Load (eKW)' }],
-      thresholds: { min: 0 },
-    },
-    {
-      title: 'Engine RPM Trend',
-      yAxisLabel: 'RPM',
-      series: [{ dataKey: 'rpm', label: 'RPM' }],
-      thresholds: { max: 700 },
-    },
-    {
-      title: 'Exhaust Gas Temperatures — Cylinders + TC',
-      yAxisLabel: 'EG Temp (°C)',
-      series: [
-        { dataKey: 'eg_temp_1', label: 'Cyl 1', color: '#3B82F6' },
-        { dataKey: 'eg_temp_2', label: 'Cyl 2', color: '#EF4444' },
-        { dataKey: 'eg_temp_3', label: 'Cyl 3', color: '#22C55E' },
-        { dataKey: 'eg_temp_4', label: 'Cyl 4', color: '#F59E0B' },
-        { dataKey: 'eg_temp_5', label: 'Cyl 5', color: '#A855F7' },
-        { dataKey: 'eg_temp_6', label: 'Cyl 6', color: '#EC4899' },
-        { dataKey: 'eg_temp_7', label: 'Cyl 7', color: '#06B6D4' },
-        { dataKey: 'eg_temp_8', label: 'Cyl 8', color: '#F97316' },
-        { dataKey: 'eg_temp_9', label: 'Cyl 9', color: '#14B8A6' },
-        { dataKey: 'eg_temp_mean', label: 'Mean', color: '#FACC15' },
-        { dataKey: 'eg_temp_tc_in', label: 'TC In', color: '#FFFFFF' },
-        { dataKey: 'eg_temp_tc_out', label: 'TC Out', color: '#94A3B8' },
-      ],
-      thresholds: { min: 100, max: 400 },
-    },
-    {
-      title: 'H.T. Cooling Water Temperatures',
-      yAxisLabel: 'Temp (°C)',
-      series: [
-        {
-          dataKey: 'ht_cw_inlet_temp',
-          label: 'HT CW Inlet Temp',
-          color: '#06B6D4',
-        },
-        {
-          dataKey: 'ht_cw_temp_out',
-          label: 'HT CW Temp Out',
-          color: '#F59E0B',
-        },
-      ],
-      thresholds: { min: 0, max: 110 },
-    },
-    {
-      title: 'L.T. Cooling Water Temperature',
-      yAxisLabel: 'Temp (°C)',
-      series: [{ dataKey: 'lt_cw_temp_in', label: 'LT CW Temp In' }],
-      thresholds: { min: 0, max: 110 },
-    },
-    {
-      title: 'Other Temperatures (LO / FO / Charge Air / Ambient)',
-      yAxisLabel: 'Temp (°C)',
-      series: [
-        { dataKey: 'air_temp', label: 'Ambient Temp', color: '#3B82F6' },
-        {
-          dataKey: 'chargeair_temp_ac_out',
-          label: 'Charge Air Temp AC Out',
-          color: '#22C55E',
-        },
-        { dataKey: 'fo_temp_in', label: 'FO Temp In', color: '#EF4444' },
-        { dataKey: 'lo_tc_temp', label: 'LO TC Temp', color: '#A855F7' },
-        { dataKey: 'lo_temp_in', label: 'LO Temp In', color: '#F59E0B' },
-      ],
-      thresholds: { min: 0, max: 120 },
-    },
-    {
-      title: 'Pressures (HT CW / LT CW / LO / FO)',
-      yAxisLabel: 'Pressure (bar)',
-      series: [
-        { dataKey: 'fo_press_filter_in', label: 'FO Press Filter In', color: '#3B82F6' },
-        { dataKey: 'fo_press_inlet', label: 'FO Press Inlet', color: '#EF4444' },
-        { dataKey: 'ht_cw_press', label: 'HT CW Press', color: '#06B6D4' },
-        { dataKey: 'lo_press_filter_in', label: 'LO Press Filter In', color: '#22C55E' },
-        { dataKey: 'lo_press_in', label: 'LO Press In', color: '#F59E0B' },
-        { dataKey: 'lo_press_tc', label: 'LO Press TC', color: '#A855F7' },
-        { dataKey: 'lt_cw_press', label: 'LT CW Press', color: '#EC4899' },
-      ],
-      thresholds: { min: 0, max: 20 },
-    },
-    {
-      title: 'TC RPM & Fuel Rack Pos Trend',
-      yAxisLabel: 'Value',
-      series: [
-        { dataKey: 'fpi', label: 'Fuel Rack Pos', color: '#F97316' },
-      ],
-    },
-  ];
+  {
+    title: 'Load (eKW) Trendline',
+    yAxisLabel: 'Load (eKW)',
+    series: [{ dataKey: 'load_kw', label: 'Load (eKW)' }],
+    thresholds: { min: 0 },
+  },
+  {
+    title: 'Engine RPM Trend',
+    yAxisLabel: 'RPM',
+    series: [{ dataKey: 'rpm', label: 'RPM' }],
+    thresholds: { max: 700 },
+  },
+  {
+    title: 'Exhaust Gas Temperatures — Cylinders + TC',
+    yAxisLabel: 'EG Temp (°C)',
+    series: [
+      { dataKey: 'eg_temp_1', label: 'Cyl 1', color: '#3B82F6' },
+      { dataKey: 'eg_temp_2', label: 'Cyl 2', color: '#EF4444' },
+      { dataKey: 'eg_temp_3', label: 'Cyl 3', color: '#22C55E' },
+      { dataKey: 'eg_temp_4', label: 'Cyl 4', color: '#F59E0B' },
+      { dataKey: 'eg_temp_5', label: 'Cyl 5', color: '#A855F7' },
+      { dataKey: 'eg_temp_6', label: 'Cyl 6', color: '#EC4899' },
+      { dataKey: 'eg_temp_7', label: 'Cyl 7', color: '#06B6D4' },
+      { dataKey: 'eg_temp_8', label: 'Cyl 8', color: '#F97316' },
+      { dataKey: 'eg_temp_9', label: 'Cyl 9', color: '#14B8A6' },
+      { dataKey: 'eg_temp_mean', label: 'Mean', color: '#FACC15' },
+      { dataKey: 'eg_temp_tc_in', label: 'TC In', color: '#FFFFFF' },
+      { dataKey: 'eg_temp_tc_out', label: 'TC Out', color: '#94A3B8' },
+    ],
+    thresholds: { min: 100, max: 400 },
+  },
+  {
+    title: 'H.T. Cooling Water Temperatures',
+    yAxisLabel: 'Temp (°C)',
+    series: [
+      {
+        dataKey: 'ht_cw_inlet_temp',
+        label: 'HT CW Inlet Temp',
+        color: '#06B6D4',
+      },
+      {
+        dataKey: 'ht_cw_temp_out',
+        label: 'HT CW Temp Out',
+        color: '#F59E0B',
+      },
+    ],
+    thresholds: { min: 0, max: 110 },
+  },
+  {
+    title: 'L.T. Cooling Water Temperature',
+    yAxisLabel: 'Temp (°C)',
+    series: [{ dataKey: 'lt_cw_temp_in', label: 'LT CW Temp In' }],
+    thresholds: { min: 0, max: 110 },
+  },
+  {
+    title: 'Other Temperatures (LO / FO / Charge Air / Ambient)',
+    yAxisLabel: 'Temp (°C)',
+    series: [
+      { dataKey: 'air_temp', label: 'Ambient Temp', color: '#3B82F6' },
+      {
+        dataKey: 'chargeair_temp_ac_out',
+        label: 'Charge Air Temp AC Out',
+        color: '#22C55E',
+      },
+      { dataKey: 'fo_temp_in', label: 'FO Temp In', color: '#EF4444' },
+      { dataKey: 'lo_tc_temp', label: 'LO TC Temp', color: '#A855F7' },
+      { dataKey: 'lo_temp_in', label: 'LO Temp In', color: '#F59E0B' },
+    ],
+    thresholds: { min: 0, max: 120 },
+  },
+  {
+    title: 'Pressures (HT CW / LT CW / LO / FO)',
+    yAxisLabel: 'Pressure (bar)',
+    series: [
+      {
+        dataKey: 'fo_press_filter_in',
+        label: 'FO Press Filter In',
+        color: '#3B82F6',
+      },
+      { dataKey: 'fo_press_inlet', label: 'FO Press Inlet', color: '#EF4444' },
+      { dataKey: 'ht_cw_press', label: 'HT CW Press', color: '#06B6D4' },
+      {
+        dataKey: 'lo_press_filter_in',
+        label: 'LO Press Filter In',
+        color: '#22C55E',
+      },
+      { dataKey: 'lo_press_in', label: 'LO Press In', color: '#F59E0B' },
+      { dataKey: 'lo_press_tc', label: 'LO Press TC', color: '#A855F7' },
+      { dataKey: 'lt_cw_press', label: 'LT CW Press', color: '#EC4899' },
+    ],
+    thresholds: { min: 0, max: 20 },
+  },
+  {
+    title: 'TC RPM & Fuel Rack Pos Trend',
+    yAxisLabel: 'Value',
+    series: [{ dataKey: 'fpi', label: 'Fuel Rack Pos', color: '#F97316' }],
+  },
+];
 
 /** Must match `timeOptions` in real-time-data header-selectors */
 const TREND_HEADER_TIME_PRESETS = new Set([
@@ -278,23 +284,29 @@ function TrendRightStatCard({ data }: { data: SensorDataPoint[] }) {
   const runningHours = getLatestNumber(data, 'rh') ?? 0;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-sm border border-muted">
-      <div className="grid grid-cols-2 bg-[#111827] text-[11px] font-medium text-gray-300">
-        <div className="border-r border-[#1f2937] px-2 py-1">Fuel Rack Position</div>
-        <div className="px-2 py-1">Total Running Hours</div>
-      </div>
-      <div className="grid flex-1 grid-cols-2">
-        <div className="flex h-full items-center justify-center border-r border-[#1f2937] bg-gradient-to-b from-[#2d7eff] to-[#1e40af]">
-          <span className="text-4xl font-semibold text-white">
-            {formatNumber(fuelRackPos, 0)}
-          </span>
-        </div>
-        <div className="flex h-full items-center justify-center bg-gradient-to-b from-[#2d7eff] to-[#1e40af]">
-          <span className="text-4xl font-semibold text-white">
-            {formatNumber(runningHours, 0)}
-          </span>
-        </div>
-      </div>
+    <div className="grid h-full grid-cols-2 gap-4">
+      <PerfomaxCard
+        title="Fuel Rack Position"
+        titleClassName="text-xs font-medium leading-4 text-gray-300"
+        headerClassName="px-3 pb-1 pt-2"
+        className="flex flex-col overflow-hidden rounded-sm border border-muted"
+        bodyClassName="flex flex-1 items-center justify-center"
+      >
+        <span className="text-4xl font-semibold">
+          {formatNumber(fuelRackPos, 0)}
+        </span>
+      </PerfomaxCard>
+      <PerfomaxCard
+        title="Total Running Hours"
+        titleClassName="text-xs font-medium leading-4 text-gray-300"
+        headerClassName="px-3 pb-1 pt-2"
+        className="flex flex-col overflow-hidden rounded-sm border border-muted"
+        bodyClassName="flex flex-1 items-center justify-center"
+      >
+        <span className="text-4xl font-semibold">
+          {formatNumber(runningHours, 0)}
+        </span>
+      </PerfomaxCard>
     </div>
   );
 }
@@ -480,7 +492,9 @@ export default function TrendAnalysisLayout() {
                 className="h-full"
               />
 
-              {rightWidget && <div className="h-full">{renderRightWidget(rightWidget)}</div>}
+              {rightWidget && (
+                <div className="h-full">{renderRightWidget(rightWidget)}</div>
+              )}
             </div>
           );
         })}

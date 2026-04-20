@@ -5,7 +5,6 @@ import BasicTableWidget from '@/components/controlled-table/basic-table-widget';
 import { HeaderCell } from '@/components/legacy-table';
 import {
   type AlarmEntry,
-  getAlarmUnit,
   getSeverityLabel,
 } from '@/data/nura/alarm-data';
 import cn from '@/utils/class-names';
@@ -137,15 +136,6 @@ export const getAlarmColumns = ({ sortConfig, onHeaderCellClick }: any) => [
   //   },
   // },
   {
-    title: <HeaderCell title="Unit" sortable={false} />,
-    dataIndex: 'alarm_text',
-    key: 'unit',
-    width: 60,
-    render: (alarmText: string, record: AlarmEntry & { unit?: string }) => (
-      <Text className="text-sm">{record.unit || getAlarmUnit(alarmText)}</Text>
-    ),
-  },
-  {
     title: (
       <HeaderCell
         title="Severity"
@@ -229,7 +219,6 @@ function buildAlarmsCsv(rows: AlarmEntry[]): string {
     'Time',
     'Alarm Text',
     'Engine',
-    'Unit',
     'Severity',
     'Status',
   ];
@@ -243,7 +232,6 @@ function buildAlarmsCsv(rows: AlarmEntry[]): string {
         : r.engine === 'AE2'
           ? 'Genset 2'
           : r.engine,
-      (r as AlarmEntry & { unit?: string }).unit || getAlarmUnit(r.alarm_text),
       getSeverityLabel(r.severity),
       r.status,
     ]
