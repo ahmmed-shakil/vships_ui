@@ -201,6 +201,7 @@ export default function ParameterScatterChart({
 
   return (
     <PerfomaxCard
+      ref={chartRef}
       className={className}
       title="Scatter"
       // titleClassName="text-lg font-bold"
@@ -252,7 +253,7 @@ export default function ParameterScatterChart({
       bodyClassName="px-3 pb-4"
     >
       {/* Chart with axis labels */}
-      <div ref={chartRef} className="mt-4 flex h-full">
+      <div className="mt-4 flex h-full">
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span

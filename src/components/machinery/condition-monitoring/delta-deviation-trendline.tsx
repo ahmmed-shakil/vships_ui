@@ -128,6 +128,7 @@ export default function DeltaDeviationTrendline({
 
   return (
     <PerfomaxCard
+      ref={chartRef}
       title="Delta Deviation Trendline"
       className={className}
       bodyClassName="p-5"
@@ -140,7 +141,7 @@ export default function DeltaDeviationTrendline({
         />
       }
     >
-      <div ref={chartRef} className="flex h-full">
+      <div className="flex h-full">
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span

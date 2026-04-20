@@ -95,6 +95,7 @@ export default function SfocScatterCard({
 
   return (
     <PerfomaxCard
+      ref={chartRef}
       className={className}
       title="SFOC Scatter"
       action={
@@ -107,7 +108,7 @@ export default function SfocScatterCard({
       }
       bodyClassName="px-2 border-t border-muted/50"
     >
-      <div ref={chartRef} className="mt-2 flex h-full">
+      <div className="mt-2 flex h-full">
         {/* Y-axis label */}
         <div className="flex flex-col items-center justify-center gap-1 pr-1">
           <span

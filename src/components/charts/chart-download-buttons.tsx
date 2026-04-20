@@ -91,6 +91,12 @@ export default function ChartDownloadButtons({
         cacheBust: true,
         backgroundColor: '#111827', // dark bg matching the app theme
         pixelRatio: 2,
+        filter: (el) => {
+          if (el instanceof HTMLElement && el.classList.contains('ignore-on-export')) {
+            return false;
+          }
+          return true;
+        },
       });
       const link = document.createElement('a');
       link.download = `${fileName}.png`;
@@ -121,7 +127,7 @@ export default function ChartDownloadButtons({
   }, [data, csvColumns, fileName]);
 
   return (
-    <div className={`flex items-center gap-0.5 ${className ?? ''}`}>
+    <div className={`flex items-center gap-0.5 ignore-on-export ${className ?? ''}`}>
       <Tooltip content="Download as PNG" placement="bottom">
         <button
           onClick={handlePngDownload}

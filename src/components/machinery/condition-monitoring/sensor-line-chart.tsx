@@ -178,6 +178,7 @@ export default function SensorLineChart({
 
   return (
     <PerfomaxCard
+      ref={chartRef}
       title={title}
       className={cn('flex flex-col', className)}
       bodyClassName="flex-1"
@@ -207,7 +208,7 @@ export default function SensorLineChart({
         </div>
       }
     >
-      <div ref={chartRef} className="relative flex h-full min-h-[320px] w-full pb-1 pl-1 pt-1">
+      <div className="relative flex h-full min-h-[320px] w-full pb-1 pl-1 pt-1">
         {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 backdrop-blur-sm">
             <span className="animate-pulse text-sm font-medium text-muted-foreground">

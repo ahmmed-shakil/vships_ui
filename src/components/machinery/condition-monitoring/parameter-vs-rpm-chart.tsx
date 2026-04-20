@@ -101,6 +101,7 @@ export default function ParameterVsRpmChart({
 
   return (
     <PerfomaxCard
+      ref={chartRef}
       title="Scatter"
       headerFooter="Parameter vs RPM"
       headerFooterClassName="px-4"
@@ -131,7 +132,7 @@ export default function ParameterVsRpmChart({
         </div>
       }
     >
-      <div ref={chartRef} className="flex h-full pt-2">
+      <div className="flex h-full pt-2">
         {/* Y-axis label */}
         <div className="flex max-w-[4.5rem] flex-col items-center justify-center gap-1 pr-1">
           <span
