@@ -3,7 +3,7 @@
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import ChartDownloadButtons from '@/components/charts/chart-download-buttons';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 import cn from '@/utils/class-names';
 import {
@@ -11,6 +11,7 @@ import {
   CartesianGrid,
   ComposedChart,
   ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -96,6 +97,14 @@ interface SensorLineChartProps {
   className?: string;
   thresholds?: { min?: number; max?: number };
   tooltipColumns?: number;
+  /** Unique index for this chart in a synced group */
+  chartIndex?: number;
+  /** Which chart is currently being hovered (-1 or undefined = none) */
+  activeChartIndex?: number;
+  /** Synced timestamp from the actively hovered chart */
+  syncedTimestamp?: string | null;
+  /** Callback when hovering over this chart */
+  onTimestampHover?: (timestamp: string | null, chartIndex: number) => void;
 }
 
 export default function SensorLineChart({
@@ -107,8 +116,37 @@ export default function SensorLineChart({
   className,
   thresholds,
   tooltipColumns,
+  chartIndex,
+  activeChartIndex,
+  syncedTimestamp,
+  onTimestampHover,
 }: SensorLineChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
+  const isThisChartActive = activeChartIndex === chartIndex;
+  const showSyncLine =
+    syncedTimestamp != null &&
+    !isThisChartActive &&
+    activeChartIndex != null &&
+    activeChartIndex >= 0;
+
+  const handleMouseMove = useCallback(
+    (state: any) => {
+      if (
+        onTimestampHover &&
+        chartIndex !== undefined &&
+        state?.activeLabel
+      ) {
+        onTimestampHover(state.activeLabel, chartIndex);
+      }
+    },
+    [onTimestampHover, chartIndex]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    if (onTimestampHover && chartIndex !== undefined) {
+      onTimestampHover(null, chartIndex);
+    }
+  }, [onTimestampHover, chartIndex]);
 
   // CSV column mapping: timestamp + each series
   const csvColumns = useMemo(
@@ -233,6 +271,8 @@ export default function SensorLineChart({
               <ComposedChart
                 data={chartData}
                 margin={{ top: 5, right: 20, left: -15, bottom: 0 }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
               >
                 <defs>
                   {hasThresholds &&
@@ -368,6 +408,15 @@ export default function SensorLineChart({
                     y2={tMin}
                     fill="rgba(239, 68, 68, 0.15)"
                     strokeOpacity={0}
+                  />
+                )}
+                {showSyncLine && (
+                  <ReferenceLine
+                    x={syncedTimestamp}
+                    stroke="rgba(250, 250, 250, 0.5)"
+                    strokeWidth={1}
+                    strokeDasharray="4 3"
+                    ifOverflow="extendDomain"
                   />
                 )}
                 {series.map((s, i) => {

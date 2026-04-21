@@ -415,6 +415,18 @@ export default function TrendAnalysisLayout() {
   const { data: sensorData, isLoading } = useSensorDataApi();
   const [hasLoadedAtLeastOnce, setHasLoadedAtLeastOnce] = useState(false);
 
+  // ── Synchronized cursor state ──────────────────────────────────────────
+  const [syncedTimestamp, setSyncedTimestamp] = useState<string | null>(null);
+  const [activeChartIndex, setActiveChartIndex] = useState<number>(-1);
+
+  const handleTimestampHover = useCallback(
+    (timestamp: string | null, chartIndex: number) => {
+      setSyncedTimestamp(timestamp);
+      setActiveChartIndex(timestamp != null ? chartIndex : -1);
+    },
+    []
+  );
+
   useEffect(() => {
     if (!TREND_HEADER_TIME_PRESETS.has(selectedTime)) {
       setSelectedTime('24h');
@@ -490,6 +502,10 @@ export default function TrendAnalysisLayout() {
                 thresholds={row.thresholds}
                 tooltipColumns={row.series.length > 5 ? 2 : undefined}
                 className="h-full"
+                chartIndex={index}
+                activeChartIndex={activeChartIndex}
+                syncedTimestamp={syncedTimestamp}
+                onTimestampHover={handleTimestampHover}
               />
 
               {rightWidget && (
@@ -502,3 +518,4 @@ export default function TrendAnalysisLayout() {
     </div>
   );
 }
+
