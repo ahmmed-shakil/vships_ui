@@ -234,8 +234,7 @@ export default function SensorLineChart({
 
   // Fill color (always the base color, independent of danger state).
   const fillFor = useMemo(
-    () =>
-      series.map((s, i) => s.color ?? LINE_COLORS[i % LINE_COLORS.length]!),
+    () => series.map((s, i) => s.color ?? LINE_COLORS[i % LINE_COLORS.length]!),
     [series]
   );
 

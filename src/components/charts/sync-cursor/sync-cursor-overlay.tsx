@@ -20,10 +20,7 @@
 
 import { useEffect, useLayoutEffect, useRef } from 'react';
 
-import {
-  useSyncCursorStore,
-  type SyncCursorState,
-} from './sync-cursor-store';
+import { useSyncCursorStore, type SyncCursorState } from './sync-cursor-store';
 
 interface SyncCursorOverlayProps {
   /** Ref to the relatively-positioned container that wraps the Recharts SVG. */
@@ -134,6 +131,12 @@ export function SyncCursorOverlay({
   const padRight = xAxisPadding?.right ?? 0;
 
   // Render a frame based on the latest known state + plot dimensions.
+  //
+  // NOTE: `paint` is redefined on every render so it captures the freshest
+  // `timestamps`, `chartId`, padding, etc. The subscription below routes
+  // through `paintRef.current` so it always invokes the latest closure —
+  // otherwise the subscriber would hold onto the first render's empty
+  // timestamps array and never draw the line.
   const paint = () => {
     const line = lineRef.current;
     if (!line) return;
@@ -146,7 +149,13 @@ export function SyncCursorOverlay({
       return;
     }
 
-    const plot = plotRef.current ?? measurePlotArea(containerRef.current!);
+    const container = containerRef.current;
+    if (!container) {
+      line.style.opacity = '0';
+      return;
+    }
+
+    const plot = plotRef.current ?? measurePlotArea(container);
     if (!plot) {
       line.style.opacity = '0';
       return;
@@ -173,36 +182,38 @@ export function SyncCursorOverlay({
     line.style.transform = `translate3d(${x}px, ${plot.top}px, 0)`;
   };
 
-  // Subscribe to the store. The store itself is RAF-throttled, so `paint` is
-  // effectively called at most once per animation frame.
+  const paintRef = useRef(paint);
+  paintRef.current = paint;
+
+  // Subscribe to the store. The store itself is RAF-throttled, so the
+  // subscription fires at most once per animation frame. We go through
+  // `paintRef.current` so data updates (new timestamps) are reflected
+  // without needing to re-subscribe.
   useEffect(() => {
     if (!store) return;
 
     latestStateRef.current = store.getState();
-    paint();
+    paintRef.current();
 
     const unsubscribe = store.subscribe((next) => {
       latestStateRef.current = next;
-      paint();
+      paintRef.current();
     });
 
     return unsubscribe;
-    // `paint` is defined inline and only reads refs, so we intentionally omit
-    // it from deps; re-subscribing on chartId / timestamps is handled below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, chartId]);
 
   // Re-measure when timestamps change (new data arrived) or on resize.
   useLayoutEffect(() => {
     plotRef.current = null;
-    paint();
+    paintRef.current();
 
     const container = containerRef.current;
     if (!container || typeof ResizeObserver === 'undefined') return;
 
     const ro = new ResizeObserver(() => {
       plotRef.current = null;
-      paint();
+      paintRef.current();
     });
     ro.observe(container);
 
