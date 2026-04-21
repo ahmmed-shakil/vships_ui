@@ -2,6 +2,7 @@
 
 import HealthScoreHeader from '@/components/cards/health-score-header';
 import PerfomaxCard from '@/components/cards/perfomax-card';
+import { SyncCursorProvider } from '@/components/charts/sync-cursor';
 import {
   useDeltaDeviation,
   useFuelRate,
@@ -330,47 +331,50 @@ export default function ConditionMonitoringLayout() {
       </div> */}
 
       {/* ─── Sensor Chart Rows (8 rows: chart + health score + pcharge) ──── */}
-      {SENSOR_CHART_ROWS.map((row) => {
-        const paramStats = computeParameterStats(
-          sensorData,
-          row.primaryDataKey,
-          row.fallbackDataKey
-        );
-        const paramValues = extractParameterValues(
-          sensorData,
-          row.primaryDataKey,
-          row.fallbackDataKey
-        );
-        return (
-          <div
-            key={row.title}
-            className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11"
-          >
-            <SensorLineChart
-              title={row.title}
-              yAxisLabel={row.yAxisLabel}
-              series={row.series}
-              data={sensorData}
-              isLoading={isLoading}
-              className="col-span-5"
-              thresholds={row.thresholds}
-            />
-            <HealthScoreCard
-              className="col-span-3"
-              isLoading={isLoading}
-              paramStats={paramStats}
-              paramValues={paramValues}
-            />
-            <ParameterVsRpmChart
-              className="col-span-3"
-              parameterName={row.title}
-              yAxisLabel={row.yAxisLabel}
-              response={scatterResponse}
-              isLoading={scatterLoading}
-            />
-          </div>
-        );
-      })}
+      <SyncCursorProvider>
+        {SENSOR_CHART_ROWS.map((row, index) => {
+          const paramStats = computeParameterStats(
+            sensorData,
+            row.primaryDataKey,
+            row.fallbackDataKey
+          );
+          const paramValues = extractParameterValues(
+            sensorData,
+            row.primaryDataKey,
+            row.fallbackDataKey
+          );
+          return (
+            <div
+              key={row.title}
+              className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-11"
+            >
+              <SensorLineChart
+                title={row.title}
+                yAxisLabel={row.yAxisLabel}
+                series={row.series}
+                data={sensorData}
+                isLoading={isLoading}
+                className="col-span-5"
+                thresholds={row.thresholds}
+                syncCursorId={`cm-row-${index}`}
+              />
+              <HealthScoreCard
+                className="col-span-3"
+                isLoading={isLoading}
+                paramStats={paramStats}
+                paramValues={paramValues}
+              />
+              <ParameterVsRpmChart
+                className="col-span-3"
+                parameterName={row.title}
+                yAxisLabel={row.yAxisLabel}
+                response={scatterResponse}
+                isLoading={scatterLoading}
+              />
+            </div>
+          );
+        })}
+      </SyncCursorProvider>
     </>
   );
 }
