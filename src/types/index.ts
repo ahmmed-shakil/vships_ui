@@ -153,6 +153,14 @@ export interface MachineryAlarms {
   critical: number;
 }
 
+export interface MachineryAlarmTooltipRow {
+  timestamp: number | string;
+  alarm_text: string;
+  category: keyof MachineryAlarms;
+  value: number | null;
+  unit: string;
+}
+
 export interface MachineryMetric {
   label: string;
   value: string;
@@ -176,6 +184,8 @@ export interface MachineryCardProps {
   status: MachineryStatus;
   /** alarm counts by severity */
   alarms: MachineryAlarms;
+  /** alarm rows used by tooltip content */
+  alarmRows?: MachineryAlarmTooltipRow[];
   /** engine metrics list */
   metrics: MachineryMetric[];
 }
