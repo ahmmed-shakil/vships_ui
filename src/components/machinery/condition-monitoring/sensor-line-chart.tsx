@@ -21,6 +21,28 @@ import {
   YAxis,
 } from 'recharts';
 
+function formatTooltipTimestampLabel(label: unknown): string {
+  if (label == null) return '';
+  if (typeof label === 'number' && !Number.isNaN(label)) {
+    const d = new Date(label);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+    }
+  }
+  const s = String(label);
+  const d = new Date(s);
+  if (!Number.isNaN(d.getTime())) {
+    return d.toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  }
+  return s;
+}
+
 /** Custom X-axis tick — date on top, time below */
 function DateTimeTick({ x, y, payload }: any) {
   const raw = payload.value as string;
@@ -414,10 +436,7 @@ export default function SensorLineChart({
                   content={(props) => (
                     <CustomTooltip
                       {...props}
-                      // Hide the x-axis (timestamp) header on the hovered chart
-                      // per UX spec — the values speak for themselves and the
-                      // sync line communicates position on other charts.
-                      label=""
+                      label={formatTooltipTimestampLabel(props.label)}
                       columns={tooltipColumns}
                     />
                   )}
