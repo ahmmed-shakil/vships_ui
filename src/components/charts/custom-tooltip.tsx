@@ -66,6 +66,9 @@ export function CustomTooltip({
     </div>
   ));
 
+  const hasLabel =
+    label !== undefined && label !== null && String(label).trim() !== '';
+
   return (
     <div
       className={cn(
@@ -73,9 +76,11 @@ export function CustomTooltip({
         className
       )}
     >
-      <Text className="label mb-0.5 block bg-gray-100 p-2 px-2.5 text-center font-lexend text-xs font-semibold capitalize text-gray-600 dark:bg-gray-200/60 dark:text-gray-700">
-        {label}
-      </Text>
+      {hasLabel && (
+        <Text className="label mb-0.5 block bg-gray-100 p-2 px-2.5 text-center font-lexend text-xs font-semibold capitalize text-gray-600 dark:bg-gray-200/60 dark:text-gray-700">
+          {label}
+        </Text>
+      )}
       {columns > 1 ? (
         <div
           className="px-3 py-1.5 text-xs"

@@ -85,8 +85,12 @@ export default function ParameterVsRpmChart({
   // CSV data: combine normal + abnormal with a 'mode' column
   const csvData = useMemo(() => {
     const rows: Record<string, unknown>[] = [];
-    normalData.forEach((p) => rows.push({ tc_rpm: p.x, [parameterName]: p.y, mode: 'Normal' }));
-    abnormalData.forEach((p) => rows.push({ tc_rpm: p.x, [parameterName]: p.y, mode: 'Abnormal' }));
+    normalData.forEach((p) =>
+      rows.push({ tc_rpm: p.x, [parameterName]: p.y, mode: 'Trendline' })
+    );
+    abnormalData.forEach((p) =>
+      rows.push({ tc_rpm: p.x, [parameterName]: p.y, mode: 'Baseline' })
+    );
     return rows;
   }, [normalData, abnormalData, parameterName]);
 
@@ -114,14 +118,14 @@ export default function ParameterVsRpmChart({
               className="inline-block h-0.5 w-4"
               style={{ backgroundColor: '#22C55E' }}
             />
-            Baseline
+            Trendline
           </span>
           <span className="flex items-center gap-1">
             <span
               className="inline-block h-2 w-2 rounded-full"
               style={{ backgroundColor: '#A855F7' }}
             />
-            Trendline
+            Baseline
           </span>
           <ChartDownloadButtons
             chartRef={chartRef}
@@ -201,13 +205,13 @@ export default function ParameterVsRpmChart({
                     cursor={{ strokeDasharray: '3 3' }}
                   />
                   <Scatter
-                    name="Normal"
+                    name="Trendline"
                     data={normalData}
                     fill="#22C55E"
                     shape="circle"
                   />
                   <Scatter
-                    name="Abnormal"
+                    name="Baseline"
                     data={abnormalData}
                     fill="#A855F7"
                     shape="circle"

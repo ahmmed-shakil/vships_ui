@@ -6,13 +6,16 @@ import PerfomaxCard from '@/components/cards/perfomax-card';
 import StatusGauge from '@/components/machinery-overview/status-gauge';
 import { routes } from '@/config/routes';
 import { engineData } from '@/data/nura/ships';
-import { useMachineryOverview } from '@/hooks/use-machinery-data';
+import {
+  useAlarmsWithSummary,
+  useMachineryOverview,
+} from '@/hooks/use-machinery-data';
 import {
   selectedEngineAtom,
   selectedShipAtom,
 } from '@/store/condition-monitoring-atoms';
 import type { MachineryCardProps, MachineryMetric } from '@/types';
-import type { EngineOverviewCard } from '@/types/api';
+import type { AlarmWithUnit, EngineOverviewCard } from '@/types/api';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useRouter } from 'next/navigation';
 import { Box } from 'rizzui/box';
@@ -22,6 +25,27 @@ import { Box } from 'rizzui/box';
 
 /** Neutral accent while health scores are N/A (matches HealthScoreHeader with no score). */
 const HEALTH_SCORE_NA_ACCENT = '#9CA3AF';
+const EMPTY_ALARM_COUNTS: MachineryCardProps['alarms'] = {
+  critical: 0,
+  warning: 0,
+  notice: 0,
+  info: 0,
+};
+
+function normalizeAlarmCategory(
+  value: string
+): keyof MachineryCardProps['alarms'] | null {
+  const normalized = value.trim().toLowerCase();
+  if (
+    normalized === 'critical' ||
+    normalized === 'warning' ||
+    normalized === 'notice' ||
+    normalized === 'info'
+  ) {
+    return normalized;
+  }
+  return null;
+}
 
 // ─── Convert API engine card to the shape MachineryCardBody expects ──────────
 
@@ -107,6 +131,7 @@ export default function MachineryOverviewPage() {
   const setSelectedEngine = useSetAtom(selectedEngineAtom);
   const router = useRouter();
   const { engines: apiEngines, loading } = useMachineryOverview();
+  const { alarms: apiAlarms } = useAlarmsWithSummary();
 
   if (!selectedShip) {
     return (
@@ -127,6 +152,27 @@ export default function MachineryOverviewPage() {
   }
 
   const cards = apiEngines.map(toCardProps);
+  const alarmsByEngine = apiAlarms.reduce<Record<string, AlarmWithUnit[]>>(
+    (acc, alarm) => {
+      const key = alarm.engine.trim().toLowerCase();
+      if (!acc[key]) acc[key] = [];
+      const category = normalizeAlarmCategory(alarm.category);
+      if (!category) return acc;
+      acc[key].push({ ...alarm, category });
+      return acc;
+    },
+    {}
+  );
+  const alarmCountsByEngine = Object.entries(alarmsByEngine).reduce<
+    Record<string, MachineryCardProps['alarms']>
+  >((acc, [engineKey, engineAlarms]) => {
+    const counts = { ...EMPTY_ALARM_COUNTS };
+    for (const alarm of engineAlarms) {
+      counts[alarm.category] += 1;
+    }
+    acc[engineKey] = counts;
+    return acc;
+  }, {});
 
   const mainEngineCards = cards.filter((item) =>
     item.engineValue.startsWith('me')
@@ -156,19 +202,29 @@ export default function MachineryOverviewPage() {
     router.push(routes.machinery.conditionMonitoring);
   };
 
-  const renderCard = (item: (typeof cards)[number]) => (
-    <PerfomaxCard
-      key={item.engineValue}
-      title={item.title}
-      accentColor={HEALTH_SCORE_NA_ACCENT}
-      headerRight={<StatusGauge status={item.status} />}
-      action={<HealthScoreHeader score={null} />}
-      onClick={() => handleCardClick(item)}
-      className="cursor-pointer transition-opacity hover:opacity-90"
-    >
-      <MachineryCardBody data={item} engineValue={item.engineValue} />
-    </PerfomaxCard>
-  );
+  const renderCard = (item: (typeof cards)[number]) => {
+    const engineKey = item.engineValue.trim().toLowerCase();
+    return (
+      <PerfomaxCard
+        key={item.engineValue}
+        title={item.title}
+        accentColor={HEALTH_SCORE_NA_ACCENT}
+        headerRight={<StatusGauge status={item.status} />}
+        action={<HealthScoreHeader score={null} />}
+        onClick={() => handleCardClick(item)}
+        className="cursor-pointer transition-opacity hover:opacity-90"
+      >
+        <MachineryCardBody
+          data={{
+            ...item,
+            alarms: alarmCountsByEngine[engineKey] ?? { ...EMPTY_ALARM_COUNTS },
+            alarmRows: alarmsByEngine[engineKey] ?? [],
+          }}
+          engineValue={item.engineValue}
+        />
+      </PerfomaxCard>
+    );
+  };
 
   const gridClass =
     'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4';

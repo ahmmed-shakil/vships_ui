@@ -39,102 +39,48 @@ const severityColors: Record<string, { icon: string; bg: string }> = {
   info: { icon: '#E19C4D', bg: 'rgba(225,156,77,0.15)' },
 };
 
-/* ------------------------------------------------------------------ */
-/*  Dummy alarm tooltip data                                           */
-/* ------------------------------------------------------------------ */
+type TooltipAlarmRow = {
+  severity: keyof MachineryAlarms;
+  date: string;
+  time: string;
+  description: string;
+  value: string;
+  unit: string;
+};
 
-const dummyAlarmRows = [
-  {
-    severity: 'critical',
-    date: '01.05.25',
-    time: '21:02:14',
-    description: 'High exhaust temp cyl 3',
-    value: '5.0',
-    unit: 'kPa',
-    level: 'L --',
-  },
-  {
-    severity: 'critical',
-    date: '01.05.25',
-    time: '17:44:30',
-    description: 'Vibration spike bearing #2',
-    value: '12.4',
-    unit: 'mm/s',
-    level: 'L --',
-  },
-  {
-    severity: 'warning',
-    date: '01.05.25',
-    time: '20:48:07',
-    description: 'Oil pressure low ME port',
-    value: '2.1',
-    unit: 'bar',
-    level: 'L 1',
-  },
-  {
-    severity: 'warning',
-    date: '01.05.25',
-    time: '15:22:18',
-    description: 'Coolant level below minimum',
-    value: '3.2',
-    unit: 'L',
-    level: 'L 1',
-  },
-  {
-    severity: 'notice',
-    date: '01.05.25',
-    time: '19:35:42',
-    description: 'Coolant temp deviation cyl 5',
-    value: '88.3',
-    unit: '°C',
-    level: 'L 2',
-  },
-  {
-    severity: 'notice',
-    date: '01.05.25',
-    time: '14:10:33',
-    description: 'Air filter differential pressure',
-    value: '45',
-    unit: 'mbar',
-    level: 'L 2',
-  },
-  {
-    severity: 'info',
-    date: '01.05.25',
-    time: '18:12:55',
-    description: 'Scheduled maintenance reminder',
-    value: '--',
-    unit: '--',
-    level: 'L --',
-  },
-  {
-    severity: 'info',
-    date: '01.05.25',
-    time: '16:30:10',
-    description: 'Fuel filter replacement due',
-    value: '--',
-    unit: '--',
-    level: 'L --',
-  },
-  {
-    severity: 'info',
-    date: '01.05.25',
-    time: '13:45:22',
-    description: 'Engine hours milestone reached',
-    value: '5000',
-    unit: 'hrs',
-    level: 'L --',
-  },
-  {
-    severity: 'info',
-    date: '01.05.25',
-    time: '11:20:05',
-    description: 'System diagnostics completed',
-    value: '--',
-    unit: '--',
-    level: 'L --',
-  },
-];
+function formatAlarmDateTime(timestamp: number | string | null | undefined) {
+  if (timestamp == null) {
+    return { date: '--', time: '--' };
+  }
+
+  const date = (() => {
+    if (typeof timestamp === 'number') {
+      const ms =
+        Math.abs(timestamp) < 1_000_000_000_000 ? timestamp * 1000 : timestamp;
+      return new Date(ms);
+    }
+
+    const raw = timestamp.trim();
+    const isNumeric = /^-?\d+(\.\d+)?$/.test(raw);
+    if (isNumeric) {
+      const asNumber = Number.parseFloat(raw);
+      const ms =
+        Math.abs(asNumber) < 1_000_000_000_000 ? asNumber * 1000 : asNumber;
+      return new Date(ms);
+    }
+
+    return new Date(raw);
+  })();
+
+  if (Number.isNaN(date.getTime())) {
+    return { date: '--', time: '--' };
+  }
+
+  return {
+    date: date.toLocaleDateString('en-GB'),
+    time: date.toLocaleTimeString('en-GB', { hour12: false }),
+  };
+}
 
 /* ------------------------------------------------------------------ */
 /*  Alarm Tooltip Content (filtered by severity)                       */
@@ -143,14 +89,26 @@ const dummyAlarmRows = [
 function AlarmTooltipContent({
   severity,
   count,
+  alarmRows = [],
 }: {
   severity: keyof MachineryAlarms;
   count: number;
+  alarmRows?: MachineryCardProps['alarmRows'];
 }) {
-  // Filter by severity and take only as many as the count
-  const filtered = dummyAlarmRows
-    .filter((r) => r.severity === severity)
-    .slice(0, count);
+  const filtered: TooltipAlarmRow[] = alarmRows
+    .filter((row) => row.category === severity)
+    .slice(0, count)
+    .map((row) => {
+      const formatted = formatAlarmDateTime(row.timestamp);
+      return {
+        severity,
+        date: formatted.date,
+        time: formatted.time,
+        description: row.alarm_text,
+        value: row.value == null ? '--' : String(row.value),
+        unit: row.unit || '--',
+      };
+    });
 
   if (count === 0 || filtered.length === 0) {
     return (
@@ -164,37 +122,38 @@ function AlarmTooltipContent({
 
   return (
     <div className="min-w-[480px] rounded-lg border border-muted bg-gray-0 p-3 shadow-xl dark:bg-gray-100">
-      <table className="w-full text-xs">
-        <tbody>
-          {filtered.map((row, i) => {
-            const sc = severityColors[row.severity] ?? severityColors.info;
-            return (
-              <tr key={i} className="border-b border-muted/50 last:border-b-0">
-                <td className="py-2 pr-2">
-                  <span
-                    className="flex size-5 items-center justify-center rounded-full"
-                    style={{
-                      background: sc.bg,
-                      border: `0.5px solid ${sc.icon}`,
-                    }}
-                  >
-                    <PiWarningFill
-                      className="size-3"
-                      style={{ color: sc.icon }}
-                    />
-                  </span>
-                </td>
-                <td className="py-2 pr-3 text-muted-foreground">{row.date}</td>
-                <td className="py-2 pr-3 text-muted-foreground">{row.time}</td>
-                <td className="py-2 pr-3 font-medium">{row.description}</td>
-                <td className="py-2 pr-2 text-right">{row.value}</td>
-                <td className="py-2 pr-2">{row.unit}</td>
-                {/* <td className="py-2">{row.level}</td> */}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="max-h-72 overflow-y-auto">
+        <table className="w-full text-xs">
+          <tbody>
+            {filtered.map((row, i) => {
+              const sc = severityColors[row.severity] ?? severityColors.info;
+              return (
+                <tr key={i} className="border-b border-muted/50 last:border-b-0">
+                  <td className="py-2 pr-2">
+                    <span
+                      className="flex size-5 items-center justify-center rounded-full"
+                      style={{
+                        background: sc.bg,
+                        border: `0.5px solid ${sc.icon}`,
+                      }}
+                    >
+                      <PiWarningFill
+                        className="size-3"
+                        style={{ color: sc.icon }}
+                      />
+                    </span>
+                  </td>
+                  <td className="py-2 pr-3 text-muted-foreground">{row.date}</td>
+                  <td className="py-2 pr-3 text-muted-foreground">{row.time}</td>
+                  <td className="py-2 pr-3 font-medium">{row.description}</td>
+                  <td className="py-2 pr-2 text-right">{row.value}</td>
+                  <td className="py-2 pr-2">{row.unit}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -381,6 +340,7 @@ export default function MachineryCardBody({
             <AlarmTooltipContent
               severity={hoveredSeverity}
               count={data.alarms[hoveredSeverity]}
+              alarmRows={data.alarmRows}
             />
           </div>,
           document.body

@@ -2,6 +2,7 @@
 
 import AutoRefreshCountdown from '@/components/auto-refresh-countdown';
 import PerfomaxCard from '@/components/cards/perfomax-card';
+import { SyncCursorProvider } from '@/components/charts/sync-cursor';
 import SensorLineChart, {
   type SensorSeries,
 } from '@/components/machinery/condition-monitoring/sensor-line-chart';
@@ -461,44 +462,48 @@ export default function TrendAnalysisLayout() {
   };
 
   return (
-    <div className="space-y-6">
-      <AutoRefreshCountdown
-        isRefreshing={isRefreshing}
-        onRefresh={handleRefresh}
-        intervalSeconds={AUTO_REFRESH_INTERVAL_SECONDS}
-      />
-
+    <SyncCursorProvider>
       <div className="space-y-6">
-        {SENSOR_CHART_ROWS.map((row, index) => {
-          const rightWidget = RIGHT_ROW_WIDGETS[index];
+        <AutoRefreshCountdown
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          intervalSeconds={AUTO_REFRESH_INTERVAL_SECONDS}
+        />
 
-          return (
-            <div
-              key={row.title}
-              className={
-                rightWidget
-                  ? 'grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]'
-                  : 'grid grid-cols-1'
-              }
-            >
-              <SensorLineChart
-                title={row.title}
-                yAxisLabel={row.yAxisLabel}
-                series={row.series}
-                data={sensorData}
-                isLoading={isInitialLoading}
-                thresholds={row.thresholds}
-                tooltipColumns={row.series.length > 5 ? 2 : undefined}
-                className="h-full"
-              />
+        <div className="space-y-6">
+          {SENSOR_CHART_ROWS.map((row, index) => {
+            const rightWidget = RIGHT_ROW_WIDGETS[index];
 
-              {rightWidget && (
-                <div className="h-full">{renderRightWidget(rightWidget)}</div>
-              )}
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={row.title}
+                className={
+                  rightWidget
+                    ? 'grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]'
+                    : 'grid grid-cols-1'
+                }
+              >
+                <SensorLineChart
+                  title={row.title}
+                  yAxisLabel={row.yAxisLabel}
+                  series={row.series}
+                  data={sensorData}
+                  isLoading={isInitialLoading}
+                  thresholds={row.thresholds}
+                  tooltipColumns={row.series.length > 5 ? 2 : undefined}
+                  className="h-full"
+                  syncCursorId={`trend-row-${index}`}
+                />
+
+                {rightWidget && (
+                  <div className="h-full">{renderRightWidget(rightWidget)}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </SyncCursorProvider>
   );
 }
+

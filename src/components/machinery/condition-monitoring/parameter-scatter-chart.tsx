@@ -207,6 +207,7 @@ export default function ParameterScatterChart({
       // titleClassName="text-lg font-bold"
       action={
         <div className="flex items-center gap-8 whitespace-nowrap pt-1 text-xs">
+          {/* Dynamic legend labels (kept for easy rollback if needed)
           <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
             <span
               className="inline-block h-2.5 w-4 rounded-sm"
@@ -220,6 +221,21 @@ export default function ParameterScatterChart({
               style={{ backgroundColor: '#A855F7' }}
             />
             <span className="text-foreground">{opt2.label}</span>
+          </span>
+          */}
+          <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
+            <span
+              className="inline-block h-2.5 w-4 rounded-sm"
+              style={{ backgroundColor: '#22C55E' }}
+            />
+            <span className="text-foreground">Static</span>
+          </span>
+          <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
+            <span
+              className="inline-block h-2.5 w-2.5 rotate-45 rounded-sm"
+              style={{ backgroundColor: '#A855F7' }}
+            />
+            <span className="text-foreground">Ref</span>
           </span>
           <ChartDownloadButtons
             chartRef={chartRef}

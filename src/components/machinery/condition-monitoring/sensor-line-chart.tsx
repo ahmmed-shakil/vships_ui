@@ -3,7 +3,11 @@
 import PerfomaxCard from '@/components/cards/perfomax-card';
 import ChartDownloadButtons from '@/components/charts/chart-download-buttons';
 import { CustomTooltip } from '@/components/charts/custom-tooltip';
-import { useMemo, useRef } from 'react';
+import {
+  SyncCursorOverlay,
+  useSyncCursorStore,
+} from '@/components/charts/sync-cursor';
+import { useCallback, useMemo, useRef } from 'react';
 
 import cn from '@/utils/class-names';
 import {
@@ -17,7 +21,6 @@ import {
   YAxis,
 } from 'recharts';
 
-/** Tooltip header: parse API UTC / ISO timestamps into local, human-readable text */
 function formatTooltipTimestampLabel(label: unknown): string {
   if (label == null) return '';
   if (typeof label === 'number' && !Number.isNaN(label)) {
@@ -78,6 +81,8 @@ const LINE_COLORS = [
   '#84CC16', // lime
 ];
 
+const X_AXIS_PADDING = { left: 10, right: 10 };
+
 export interface SensorSeries {
   /** The data key to extract from each SensorDataPoint, e.g. 'tc_rpm' */
   dataKey: string;
@@ -96,6 +101,12 @@ interface SensorLineChartProps {
   className?: string;
   thresholds?: { min?: number; max?: number };
   tooltipColumns?: number;
+  /**
+   * Unique id within a <SyncCursorProvider>. When provided, this chart will
+   * publish hover timestamps to the shared store and display a sync line
+   * when another chart in the same group is hovered.
+   */
+  syncCursorId?: string;
 }
 
 export default function SensorLineChart({
@@ -107,10 +118,149 @@ export default function SensorLineChart({
   className,
   thresholds,
   tooltipColumns,
+  syncCursorId,
 }: SensorLineChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const syncStore = useSyncCursorStore();
 
-  // CSV column mapping: timestamp + each series
+  // ── Memoized chart data processing ─────────────────────────────────────
+  // All the heavy work (rounding, min/max, gradient stops, Y-axis domain,
+  // timestamp index) lives inside one memo so the chart does not recompute
+  // on every render — e.g. when a parent re-renders for an unrelated reason.
+  const {
+    chartData,
+    timestamps,
+    overallMin,
+    overallMax,
+    domainMin,
+    domainMax,
+    seriesRanges,
+  } = useMemo(() => {
+    const keys = series.map((s) => s.dataKey);
+    let oMin = Infinity;
+    let oMax = -Infinity;
+
+    // Per-series min/max, collected in a single pass.
+    const perSeries: Record<string, { min: number; max: number }> = {};
+    for (const key of keys) perSeries[key] = { min: Infinity, max: -Infinity };
+
+    const ts: string[] = new Array(data.length);
+    const processed: Record<string, unknown>[] = new Array(data.length);
+
+    for (let i = 0; i < data.length; i++) {
+      const point = data[i] as Record<string, unknown>;
+      const rounded: Record<string, unknown> = { ...point };
+      for (const key of keys) {
+        const v = point[key];
+        if (typeof v === 'number') {
+          const val = Math.round(v * 100) / 100;
+          rounded[key] = val;
+          if (val < oMin) oMin = val;
+          if (val > oMax) oMax = val;
+          const r = perSeries[key]!;
+          if (val < r.min) r.min = val;
+          if (val > r.max) r.max = val;
+        } else {
+          rounded[key] = undefined;
+        }
+      }
+      processed[i] = rounded;
+      const t = point.timestamp;
+      ts[i] = typeof t === 'string' ? t : String(t ?? '');
+    }
+
+    if (oMin === Infinity) oMin = 0;
+    if (oMax === -Infinity) oMax = 100;
+
+    const tMin = thresholds?.min;
+    const tMax = thresholds?.max;
+    let effMin = oMin;
+    let effMax = oMax;
+    if (tMin !== undefined && tMin < effMin) effMin = tMin;
+    if (tMax !== undefined && tMax > effMax) effMax = tMax;
+
+    const padding = (effMax - effMin) * 0.05 || 5;
+    const dMin = Math.floor(effMin - padding);
+    const dMax = Math.ceil(effMax + padding);
+
+    return {
+      chartData: processed,
+      timestamps: ts,
+      overallMin: oMin,
+      overallMax: oMax,
+      domainMin: dMin,
+      domainMax: dMax,
+      seriesRanges: perSeries,
+    };
+  }, [data, series, thresholds]);
+
+  const hasThresholds =
+    thresholds !== undefined &&
+    (thresholds.min !== undefined || thresholds.max !== undefined);
+  const tMin = thresholds?.min;
+  const tMax = thresholds?.max;
+  const domainRange = domainMax - domainMin || 1;
+
+  // ── Gradient stop configs per series, memoized ────────────────────────
+  const gradientDefs = useMemo(() => {
+    if (!hasThresholds) return null;
+    return series.map((s, i) => {
+      const color = s.color ?? LINE_COLORS[i % LINE_COLORS.length]!;
+      const range = seriesRanges[s.dataKey];
+      if (!range || range.min === Infinity) return null;
+
+      const { min: lineMin, max: lineMax } = range;
+      const effMin = Math.min(lineMin, tMin ?? lineMin);
+      const effMax = Math.max(lineMax, tMax ?? lineMax);
+      const lineRange = effMax - effMin || 1;
+
+      const topOffset =
+        tMax !== undefined
+          ? Math.max(0, Math.min(1, (effMax - tMax) / lineRange))
+          : 0;
+      const bottomOffset =
+        tMin !== undefined
+          ? Math.max(0, Math.min(1, (effMax - tMin) / lineRange))
+          : 1;
+
+      return {
+        key: s.dataKey,
+        color,
+        topOffset,
+        bottomOffset,
+        showTopDanger: tMax !== undefined && lineMax >= tMax,
+        showBottomDanger: tMin !== undefined && lineMin <= tMin,
+      };
+    });
+  }, [hasThresholds, series, seriesRanges, tMin, tMax]);
+
+  // Stroke per series (cached so we don't recompute every render).
+  const strokeFor = useMemo(() => {
+    return series.map((s, i) => {
+      const color = s.color ?? LINE_COLORS[i % LINE_COLORS.length]!;
+      if (!hasThresholds) return color;
+
+      const range = seriesRanges[s.dataKey];
+      if (!range || range.min === Infinity) return color;
+      const isFullySafe =
+        (tMax === undefined || range.max < tMax) &&
+        (tMin === undefined || range.min > tMin);
+      const isFullyAbove = tMax !== undefined && range.min >= tMax;
+      const isFullyBelow = tMin !== undefined && range.max <= tMin;
+      if (isFullySafe) return color;
+      if (isFullyAbove || isFullyBelow) return '#EF4444';
+      return `url(#grad-${s.dataKey})`;
+    });
+  }, [series, seriesRanges, hasThresholds, tMin, tMax]);
+
+  // Fill color (always the base color, independent of danger state).
+  const fillFor = useMemo(
+    () => series.map((s, i) => s.color ?? LINE_COLORS[i % LINE_COLORS.length]!),
+    [series]
+  );
+
+  // Stable CSV columns + filename.
   const csvColumns = useMemo(
     () => [
       { key: 'timestamp', label: 'Timestamp' },
@@ -118,63 +268,54 @@ export default function SensorLineChart({
     ],
     [series]
   );
+  const fileName = useMemo(
+    () => title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    [title]
+  );
 
-  // Sanitise title for filename
-  const fileName = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  // ── Publish hover state to sync store (no React re-render) ─────────────
+  const handleMouseMove = useCallback(
+    (state: any) => {
+      if (!syncStore || !syncCursorId) return;
+      const label = state?.activeLabel;
+      if (typeof label !== 'string' || !label) return;
+      syncStore.setState({ timestamp: label, sourceChartId: syncCursorId });
+    },
+    [syncStore, syncCursorId]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    if (!syncStore || !syncCursorId) return;
+    // Only clear if this chart is currently the source. Prevents a race when
+    // moving between charts: next chart's mousemove may have already fired.
+    const current = syncStore.getState();
+    if (current.sourceChartId === syncCursorId) {
+      syncStore.setState({ timestamp: null, sourceChartId: null });
+    }
+  }, [syncStore, syncCursorId]);
 
   const formatVal = (v: number) => v.toFixed(2);
 
-  // Round numeric values to 2 decimal places and convert nulls to 0
-  const dataKeys = series.map((s) => s.dataKey);
+  // ── Legend / header (memoized so headers don't rebuild every frame) ────
+  const legend = useMemo(
+    () =>
+      series.map((s, i) => (
+        <span key={s.dataKey} className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-0.5 w-4"
+            style={{
+              backgroundColor: s.color ?? LINE_COLORS[i % LINE_COLORS.length],
+            }}
+          />
+          {s.label}
+        </span>
+      )),
+    [series]
+  );
 
-  const hasThresholds =
-    thresholds &&
-    (thresholds.min !== undefined || thresholds.max !== undefined);
-  const { min: tMin, max: tMax } = thresholds || {};
-
-  let overallMin = Infinity;
-  let overallMax = -Infinity;
-
-  const chartData = data.map((point) => {
-    const rounded: Record<string, unknown> = { ...point };
-    for (const key of dataKeys) {
-      const v = (point as Record<string, unknown>)[key];
-      if (typeof v === 'number') {
-        const val = Math.round(v * 100) / 100;
-        rounded[key] = val;
-        if (val < overallMin) overallMin = val;
-        if (val > overallMax) overallMax = val;
-      } else {
-        // Keep null/undefined as undefined so connectNulls skips them
-        rounded[key] = undefined;
-      }
-    }
-    return rounded;
-  });
-
-  if (overallMin === Infinity) overallMin = 0;
-  if (overallMax === -Infinity) overallMax = 100;
-
-  // Ensure thresholds are visible in the Y-axis range
-  if (tMin !== undefined && tMin < overallMin) overallMin = tMin;
-  if (tMax !== undefined && tMax > overallMax) overallMax = tMax;
-
-  // Add 5% padding to the Y axis domain
-  const padding = (overallMax - overallMin) * 0.05 || 5;
-  const domainMin = Math.floor(overallMin - padding);
-  const domainMax = Math.ceil(overallMax + padding);
-  const domainRange = domainMax - domainMin || 1;
-
-  // Gradient offset percentages (top of chart = 0%, bottom = 100%)
-  const topOffset =
-    hasThresholds && tMax !== undefined
-      ? Math.max(0, Math.min(1, (domainMax - tMax) / domainRange))
-      : 0;
-
-  const bottomOffset =
-    hasThresholds && tMin !== undefined
-      ? Math.max(0, Math.min(1, (domainMax - tMin) / domainRange))
-      : 1;
+  // Avoid "unused variable" warnings when thresholds feature is off.
+  void overallMin;
+  void overallMax;
 
   return (
     <PerfomaxCard
@@ -184,21 +325,7 @@ export default function SensorLineChart({
       bodyClassName="flex-1"
       action={
         <div className="flex flex-wrap items-center gap-4 text-xs">
-          {series.map((s, i) => (
-            <span
-              key={s.dataKey as string}
-              className="flex items-center gap-1.5"
-            >
-              <span
-                className="inline-block h-0.5 w-4"
-                style={{
-                  backgroundColor:
-                    s.color ?? LINE_COLORS[i % LINE_COLORS.length],
-                }}
-              />
-              {s.label}
-            </span>
-          ))}
+          {legend}
           <ChartDownloadButtons
             chartRef={chartRef}
             data={data as Record<string, unknown>[]}
@@ -228,101 +355,60 @@ export default function SensorLineChart({
         </div>
 
         <div className="flex flex-1 flex-col">
-          <div className="flex-1">
+          <div ref={chartContainerRef} className="relative flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart
                 data={chartData}
                 margin={{ top: 5, right: 20, left: -15, bottom: 0 }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
               >
                 <defs>
-                  {hasThresholds &&
-                    series.map((s, i) => {
-                      const color =
-                        s.color ?? LINE_COLORS[i % LINE_COLORS.length];
-                      const vals = chartData
-                        .map((d) => d[s.dataKey] as number | undefined)
-                        .filter((v): v is number => v !== undefined);
-
-                      if (vals.length === 0) return null;
-
-                      const lineMin = Math.min(...vals);
-                      const lineMax = Math.max(...vals);
-
-                      // Include thresholds in the range calculation to ensure the gradient
-                      // stretches enough to cover the transition points if the line crosses them.
-                      const effectiveMin = Math.min(lineMin, tMin ?? lineMin);
-                      const effectiveMax = Math.max(lineMax, tMax ?? lineMax);
-                      const lineRange = effectiveMax - effectiveMin || 1;
-
-                      // Calculate offsets relative to the line's own bounding box
-                      // Recharts stretches the gradient from the line's maximum Y to its minimum Y.
-                      const lineTopOffset =
-                        tMax !== undefined
-                          ? Math.max(
-                              0,
-                              Math.min(1, (effectiveMax - tMax) / lineRange)
-                            )
-                          : 0;
-
-                      const lineBottomOffset =
-                        tMin !== undefined
-                          ? Math.max(
-                              0,
-                              Math.min(1, (effectiveMax - tMin) / lineRange)
-                            )
-                          : 1;
-
-                      return (
-                        <linearGradient
-                          key={`grad-${s.dataKey}`}
-                          id={`grad-${s.dataKey}`}
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          {/* Top danger zone: only include if threshold is reached/crossed */}
-                          {tMax !== undefined && lineMax >= tMax && (
-                            <>
-                              <stop offset="0%" stopColor="#EF4444" />
-                              <stop
-                                offset={`${lineTopOffset * 100}%`}
-                                stopColor="#EF4444"
-                              />
-                            </>
-                          )}
-
-                          {/* Safe zone: spans from the top or top threshold to the bottom or bottom threshold */}
-                          <stop
-                            offset={
-                              tMax !== undefined && lineMax >= tMax
-                                ? `${lineTopOffset * 100}%`
-                                : '0%'
-                            }
-                            stopColor={color}
-                          />
-                          <stop
-                            offset={
-                              tMin !== undefined && lineMin <= tMin
-                                ? `${lineBottomOffset * 100}%`
-                                : '100%'
-                            }
-                            stopColor={color}
-                          />
-
-                          {/* Bottom danger zone: only include if threshold is reached/crossed */}
-                          {tMin !== undefined && lineMin <= tMin && (
-                            <>
-                              <stop
-                                offset={`${lineBottomOffset * 100}%`}
-                                stopColor="#EF4444"
-                              />
-                              <stop offset="100%" stopColor="#EF4444" />
-                            </>
-                          )}
-                        </linearGradient>
-                      );
-                    })}
+                  {gradientDefs?.map((g) =>
+                    g ? (
+                      <linearGradient
+                        key={`grad-${g.key}`}
+                        id={`grad-${g.key}`}
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        {g.showTopDanger && (
+                          <>
+                            <stop offset="0%" stopColor="#EF4444" />
+                            <stop
+                              offset={`${g.topOffset * 100}%`}
+                              stopColor="#EF4444"
+                            />
+                          </>
+                        )}
+                        <stop
+                          offset={
+                            g.showTopDanger ? `${g.topOffset * 100}%` : '0%'
+                          }
+                          stopColor={g.color}
+                        />
+                        <stop
+                          offset={
+                            g.showBottomDanger
+                              ? `${g.bottomOffset * 100}%`
+                              : '100%'
+                          }
+                          stopColor={g.color}
+                        />
+                        {g.showBottomDanger && (
+                          <>
+                            <stop
+                              offset={`${g.bottomOffset * 100}%`}
+                              stopColor="#EF4444"
+                            />
+                            <stop offset="100%" stopColor="#EF4444" />
+                          </>
+                        )}
+                      </linearGradient>
+                    ) : null
+                  )}
                 </defs>
                 <CartesianGrid
                   vertical={false}
@@ -336,16 +422,17 @@ export default function SensorLineChart({
                   height={30}
                   axisLine={{ stroke: '#374151' }}
                   tickLine={false}
-                  padding={{ left: 10, right: 10 }}
+                  padding={X_AXIS_PADDING}
                 />
-          <YAxis
-            domain={[0, hasThresholds ? domainMax : 'auto']}
-            tick={{ fontSize: 10, fill: '#9FA6B5' }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={formatVal}
-          />
+                <YAxis
+                  domain={[0, hasThresholds ? domainMax : 'auto']}
+                  tick={{ fontSize: 10, fill: '#9FA6B5' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={formatVal}
+                />
                 <Tooltip
+                  isAnimationActive={false}
                   content={(props) => (
                     <CustomTooltip
                       {...props}
@@ -370,56 +457,32 @@ export default function SensorLineChart({
                     strokeOpacity={0}
                   />
                 )}
-                {series.map((s, i) => {
-                  const vals = chartData
-                    .map((d) => d[s.dataKey] as number | undefined)
-                    .filter((v): v is number => v !== undefined);
-
-                  if (vals.length === 0) return null;
-
-                  const lineMin = Math.min(...vals);
-                  const lineMax = Math.max(...vals);
-                  const color = s.color ?? LINE_COLORS[i % LINE_COLORS.length];
-
-                  // Determine if the line is entirely within one zone to avoid
-                  // the SVG gradient "horizontal line" bug (where the gradient
-                  // colors the thickness of the line instead of its height).
-                  let stroke = `url(#grad-${s.dataKey})`;
-
-                  if (hasThresholds) {
-                    const isFullySafe =
-                      (tMax === undefined || lineMax < tMax) &&
-                      (tMin === undefined || lineMin > tMin);
-                    const isFullyAbove = tMax !== undefined && lineMin >= tMax;
-                    const isFullyBelow = tMin !== undefined && lineMax <= tMin;
-
-                    if (isFullySafe) {
-                      stroke = color;
-                    } else if (isFullyAbove || isFullyBelow) {
-                      stroke = '#EF4444';
-                    }
-                  } else {
-                    stroke = color;
-                  }
-
-                  return (
-                    <Area
-                      key={s.dataKey as string}
-                      type="natural"
-                      dataKey={s.dataKey as string}
-                      name={s.label}
-                      stroke={stroke}
-                      strokeWidth={1.5}
-                      fill={color}
-                      fillOpacity={0.08}
-                      dot={false}
-                      connectNulls
-                      isAnimationActive={false}
-                    />
-                  );
-                })}
+                {series.map((s, i) => (
+                  <Area
+                    key={s.dataKey}
+                    type="natural"
+                    dataKey={s.dataKey}
+                    name={s.label}
+                    stroke={strokeFor[i]}
+                    strokeWidth={1.5}
+                    fill={fillFor[i]}
+                    fillOpacity={0.08}
+                    dot={false}
+                    connectNulls
+                    isAnimationActive={false}
+                  />
+                ))}
               </ComposedChart>
             </ResponsiveContainer>
+
+            {syncCursorId && (
+              <SyncCursorOverlay
+                containerRef={chartContainerRef}
+                timestamps={timestamps}
+                chartId={syncCursorId}
+                xAxisPadding={X_AXIS_PADDING}
+              />
+            )}
           </div>
           <div className="mt-1 flex items-center justify-center">
             <span className="text-[10px] font-medium text-muted-foreground">
