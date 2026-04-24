@@ -22,10 +22,10 @@ const alarmLevels: {
   color: string;
   circleBg: string;
 }[] = [
-  { key: 'critical', color: '#FF7270', circleBg: 'rgba(240,80,110,0.2)' },
+  { key: 'critical', color: '#E19C4D', circleBg: 'rgba(225,156,77,0.2)' },
   { key: 'warning', color: '#E19C4D', circleBg: 'rgba(225,156,77,0.2)' },
-  { key: 'notice', color: '#B8A80D', circleBg: 'rgba(219,213,30,0.2)' },
-  { key: 'info', color: '#2785E0', circleBg: 'rgba(30,135,240,0.2)' },
+  { key: 'notice', color: '#E19C4D', circleBg: 'rgba(225,156,77,0.2)' },
+  { key: 'info', color: '#E19C4D', circleBg: 'rgba(225,156,77,0.2)' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -33,10 +33,10 @@ const alarmLevels: {
 /* ------------------------------------------------------------------ */
 
 const severityColors: Record<string, { icon: string; bg: string }> = {
-  critical: { icon: '#FF7270', bg: 'rgba(240,80,110,0.15)' },
+  critical: { icon: '#E19C4D', bg: 'rgba(225,156,77,0.15)' },
   warning: { icon: '#E19C4D', bg: 'rgba(225,156,77,0.15)' },
-  notice: { icon: '#B8A80D', bg: 'rgba(219,213,30,0.15)' },
-  info: { icon: '#2785E0', bg: 'rgba(30,135,240,0.12)' },
+  notice: { icon: '#E19C4D', bg: 'rgba(225,156,77,0.15)' },
+  info: { icon: '#E19C4D', bg: 'rgba(225,156,77,0.15)' },
 };
 
 /* ------------------------------------------------------------------ */
