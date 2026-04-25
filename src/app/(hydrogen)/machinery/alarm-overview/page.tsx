@@ -24,10 +24,10 @@ const STATUS_OPTIONS = [
 // ─── Severity color config ────────────────────────────────────────────────────
 
 const severityConfig = {
-  critical: { color: '#E19C4D', bgColor: 'rgba(225,156,77,0.2)' },
+  critical: { color: '#EF4444', bgColor: 'rgba(239,68,68,0.2)' },
   warning: { color: '#E19C4D', bgColor: 'rgba(225,156,77,0.2)' },
-  notice: { color: '#E19C4D', bgColor: 'rgba(225,156,77,0.2)' },
-  info: { color: '#E19C4D', bgColor: 'rgba(225,156,77,0.2)' },
+  notice: { color: '#EAB308', bgColor: 'rgba(234,179,8,0.2)' },
+  info: { color: '#2785E0', bgColor: 'rgba(30,135,240,0.2)' },
 };
 
 // ─── Summary card ─────────────────────────────────────────────────────────────
