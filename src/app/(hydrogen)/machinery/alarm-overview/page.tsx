@@ -24,9 +24,9 @@ const STATUS_OPTIONS = [
 // ─── Severity color config ────────────────────────────────────────────────────
 
 const severityConfig = {
-  critical: { color: '#FF7270', bgColor: 'rgba(240,80,110,0.2)' },
+  critical: { color: '#EF4444', bgColor: 'rgba(239,68,68,0.2)' },
   warning: { color: '#E19C4D', bgColor: 'rgba(225,156,77,0.2)' },
-  notice: { color: '#B8A80D', bgColor: 'rgba(219,213,30,0.2)' },
+  notice: { color: '#EAB308', bgColor: 'rgba(234,179,8,0.2)' },
   info: { color: '#2785E0', bgColor: 'rgba(30,135,240,0.2)' },
 };
 
@@ -69,9 +69,10 @@ export default function AlarmOverviewPage() {
   const selectedEngine = useAtomValue(selectedEngineAtom);
 
   // Status filter — local state; 'all' means no status param sent to the API
-  const [statusFilter, setStatusFilter] = useState<{ label: string; value: string }>(
-    STATUS_OPTIONS[0]
-  );
+  const [statusFilter, setStatusFilter] = useState<{
+    label: string;
+    value: string;
+  }>(STATUS_OPTIONS[0]);
 
   const queryParams = useMemo(() => {
     const params: { engine?: string; status?: string } = {};
@@ -85,10 +86,7 @@ export default function AlarmOverviewPage() {
   }, [selectedEngine, statusFilter]);
 
   const [refreshTick, setRefreshTick] = useState(0);
-  const handleRefresh = useCallback(
-    () => setRefreshTick((v) => v + 1),
-    []
-  );
+  const handleRefresh = useCallback(() => setRefreshTick((v) => v + 1), []);
   const { alarms, summary, isLoading } = useAlarmsWithSummary(
     queryParams,
     refreshTick

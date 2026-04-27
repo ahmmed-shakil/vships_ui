@@ -22,9 +22,9 @@ const alarmLevels: {
   color: string;
   circleBg: string;
 }[] = [
-  { key: 'critical', color: '#FF7270', circleBg: 'rgba(240,80,110,0.2)' },
+  { key: 'critical', color: '#EF4444', circleBg: 'rgba(239,68,68,0.2)' },
   { key: 'warning', color: '#E19C4D', circleBg: 'rgba(225,156,77,0.2)' },
-  { key: 'notice', color: '#B8A80D', circleBg: 'rgba(219,213,30,0.2)' },
+  { key: 'notice', color: '#EAB308', circleBg: 'rgba(234,179,8,0.2)' },
   { key: 'info', color: '#2785E0', circleBg: 'rgba(30,135,240,0.2)' },
 ];
 
@@ -33,9 +33,9 @@ const alarmLevels: {
 /* ------------------------------------------------------------------ */
 
 const severityColors: Record<string, { icon: string; bg: string }> = {
-  critical: { icon: '#FF7270', bg: 'rgba(240,80,110,0.15)' },
+  critical: { icon: '#EF4444', bg: 'rgba(239,68,68,0.15)' },
   warning: { icon: '#E19C4D', bg: 'rgba(225,156,77,0.15)' },
-  notice: { icon: '#B8A80D', bg: 'rgba(219,213,30,0.15)' },
+  notice: { icon: '#EAB308', bg: 'rgba(234,179,8,0.15)' },
   info: { icon: '#2785E0', bg: 'rgba(30,135,240,0.12)' },
 };
 
@@ -128,7 +128,10 @@ function AlarmTooltipContent({
             {filtered.map((row, i) => {
               const sc = severityColors[row.severity] ?? severityColors.info;
               return (
-                <tr key={i} className="border-b border-muted/50 last:border-b-0">
+                <tr
+                  key={i}
+                  className="border-b border-muted/50 last:border-b-0"
+                >
                   <td className="py-2 pr-2">
                     <span
                       className="flex size-5 items-center justify-center rounded-full"
@@ -143,8 +146,12 @@ function AlarmTooltipContent({
                       />
                     </span>
                   </td>
-                  <td className="py-2 pr-3 text-muted-foreground">{row.date}</td>
-                  <td className="py-2 pr-3 text-muted-foreground">{row.time}</td>
+                  <td className="py-2 pr-3 text-muted-foreground">
+                    {row.date}
+                  </td>
+                  <td className="py-2 pr-3 text-muted-foreground">
+                    {row.time}
+                  </td>
                   <td className="py-2 pr-3 font-medium">{row.description}</td>
                   <td className="py-2 pr-2 text-right">{row.value}</td>
                   <td className="py-2 pr-2">{row.unit}</td>
