@@ -7,7 +7,7 @@ import {
   SyncCursorOverlay,
   useSyncCursorStore,
 } from '@/components/charts/sync-cursor';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import cn from '@/utils/class-names';
 import {
@@ -41,6 +41,41 @@ function formatTooltipTimestampLabel(label: unknown): string {
     });
   }
   return s;
+}
+
+function normalizeTimestampValue(
+  value: unknown
+): { timestamp: string; timestampMs: number } | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return {
+      timestamp: new Date(value).toISOString(),
+      timestampMs: value,
+    };
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    // Support numeric timestamp strings (epoch milliseconds).
+    if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+      const ms = Number(trimmed);
+      if (!Number.isFinite(ms)) return null;
+      return {
+        timestamp: new Date(ms).toISOString(),
+        timestampMs: ms,
+      };
+    }
+
+    const parsedMs = new Date(trimmed).getTime();
+    if (Number.isNaN(parsedMs)) return null;
+    return {
+      timestamp: trimmed,
+      timestampMs: parsedMs,
+    };
+  }
+
+  return null;
 }
 
 /** Custom X-axis tick — date on top, time below */
@@ -123,6 +158,12 @@ export default function SensorLineChart({
   const chartRef = useRef<HTMLDivElement>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const syncStore = useSyncCursorStore();
+  const [xDomain, setXDomain] = useState<[number | 'dataMin', number | 'dataMax']>([
+    'dataMin',
+    'dataMax',
+  ]);
+  const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
+  const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
 
   // ── Memoized chart data processing ─────────────────────────────────────
   // All the heavy work (rounding, min/max, gradient stops, Y-axis domain,
@@ -145,11 +186,15 @@ export default function SensorLineChart({
     const perSeries: Record<string, { min: number; max: number }> = {};
     for (const key of keys) perSeries[key] = { min: Infinity, max: -Infinity };
 
-    const ts: string[] = new Array(data.length);
-    const processed: Record<string, unknown>[] = new Array(data.length);
+    const ts: string[] = [];
+    const processed: Record<string, unknown>[] = [];
 
     for (let i = 0; i < data.length; i++) {
       const point = data[i] as Record<string, unknown>;
+      const normalizedTs = normalizeTimestampValue(point.timestamp);
+      if (!normalizedTs) continue;
+      const { timestamp, timestampMs } = normalizedTs;
+
       const rounded: Record<string, unknown> = { ...point };
       for (const key of keys) {
         const v = point[key];
@@ -165,9 +210,10 @@ export default function SensorLineChart({
           rounded[key] = undefined;
         }
       }
-      processed[i] = rounded;
-      const t = point.timestamp;
-      ts[i] = typeof t === 'string' ? t : String(t ?? '');
+      rounded.timestamp = timestamp;
+      rounded.timestampMs = timestampMs;
+      processed.push(rounded);
+      ts.push(timestamp);
     }
 
     if (oMin === Infinity) oMin = 0;
@@ -276,15 +322,24 @@ export default function SensorLineChart({
   // ── Publish hover state to sync store (no React re-render) ─────────────
   const handleMouseMove = useCallback(
     (state: any) => {
+      const activeLabel = state?.activeLabel;
+      const activeTs =
+        state?.activePayload?.[0]?.payload?.timestamp ??
+        (typeof activeLabel === 'string' ? activeLabel : null);
+
+      if (refAreaLeft !== null && typeof activeLabel === 'number') {
+        setRefAreaRight(activeLabel);
+      }
+
       if (!syncStore || !syncCursorId) return;
-      const label = state?.activeLabel;
-      if (typeof label !== 'string' || !label) return;
-      syncStore.setState({ timestamp: label, sourceChartId: syncCursorId });
+      if (typeof activeTs !== 'string' || !activeTs) return;
+      syncStore.setState({ timestamp: activeTs, sourceChartId: syncCursorId });
     },
-    [syncStore, syncCursorId]
+    [syncStore, syncCursorId, refAreaLeft]
   );
 
   const handleMouseLeave = useCallback(() => {
+    setRefAreaRight((prev) => (refAreaLeft !== null ? prev : null));
     if (!syncStore || !syncCursorId) return;
     // Only clear if this chart is currently the source. Prevents a race when
     // moving between charts: next chart's mousemove may have already fired.
@@ -292,7 +347,56 @@ export default function SensorLineChart({
     if (current.sourceChartId === syncCursorId) {
       syncStore.setState({ timestamp: null, sourceChartId: null });
     }
-  }, [syncStore, syncCursorId]);
+  }, [syncStore, syncCursorId, refAreaLeft]);
+
+  const applyZoom = useCallback((left: number, right: number) => {
+    const [min, max] = left < right ? [left, right] : [right, left];
+    if (min === max) return;
+    setXDomain([min, max]);
+  }, []);
+
+  const handleMouseDown = useCallback(
+    (state: any) => {
+      const label = state?.activeLabel;
+      if (typeof label !== 'number') return;
+
+      if (refAreaLeft !== null && refAreaLeft !== label) {
+        applyZoom(refAreaLeft, label);
+        setRefAreaLeft(null);
+        setRefAreaRight(null);
+        return;
+      }
+
+      setRefAreaLeft(label);
+      setRefAreaRight(null);
+    },
+    [applyZoom, refAreaLeft]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    if (
+      refAreaLeft !== null &&
+      refAreaRight !== null &&
+      refAreaLeft !== refAreaRight
+    ) {
+      applyZoom(refAreaLeft, refAreaRight);
+      setRefAreaLeft(null);
+      setRefAreaRight(null);
+      return;
+    }
+
+    if (refAreaLeft === null) {
+      setRefAreaRight(null);
+    }
+  }, [applyZoom, refAreaLeft, refAreaRight]);
+
+  const resetZoom = useCallback(() => {
+    setXDomain(['dataMin', 'dataMax']);
+    setRefAreaLeft(null);
+    setRefAreaRight(null);
+  }, []);
+
+  const isZoomed = xDomain[0] !== 'dataMin' || xDomain[1] !== 'dataMax';
 
   const formatVal = (v: number) => v.toFixed(2);
 
@@ -332,6 +436,19 @@ export default function SensorLineChart({
             fileName={fileName}
             csvColumns={csvColumns}
           />
+          <button
+            type="button"
+            onClick={resetZoom}
+            disabled={!isZoomed}
+            className={cn(
+              'rounded border px-2 py-1 text-[11px] font-medium transition-colors',
+              isZoomed
+                ? 'border-primary/40 text-primary hover:bg-primary/10'
+                : 'cursor-not-allowed border-muted text-muted-foreground opacity-50'
+            )}
+          >
+            Reset Zoom
+          </button>
         </div>
       }
     >
@@ -360,7 +477,9 @@ export default function SensorLineChart({
               <ComposedChart
                 data={chartData}
                 margin={{ top: 5, right: 20, left: -15, bottom: 0 }}
+                onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
               >
                 <defs>
@@ -416,7 +535,10 @@ export default function SensorLineChart({
                   strokeDasharray="3 3"
                 />
                 <XAxis
-                  dataKey="timestamp"
+                  dataKey="timestampMs"
+                  type="number"
+                  domain={xDomain}
+                  allowDataOverflow
                   tick={<DateTimeTick />}
                   interval={Math.max(0, Math.floor(chartData.length / 8))}
                   height={30}
@@ -455,6 +577,14 @@ export default function SensorLineChart({
                     y2={tMin}
                     fill="rgba(239, 68, 68, 0.15)"
                     strokeOpacity={0}
+                  />
+                )}
+                {refAreaLeft !== null && refAreaRight !== null && (
+                  <ReferenceArea
+                    x1={refAreaLeft}
+                    x2={refAreaRight}
+                    fill="rgba(59, 130, 246, 0.18)"
+                    stroke="rgba(59, 130, 246, 0.45)"
                   />
                 )}
                 {series.map((s, i) => (
