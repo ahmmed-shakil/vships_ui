@@ -2,7 +2,7 @@ import OperationOverviewLayout from '@/components/operation-overview';
 import { metaObject } from '@/config/site.config';
 
 export const metadata = {
-  ...metaObject('Opreation Overview'),
+  ...metaObject('Operation Overview'),
 };
 
 // const pageHeader = {
@@ -18,7 +18,7 @@ export const metadata = {
 //   ],
 // };
 
-export default function RealTimeDataPage() {
+export default function OperationOverviewPage() {
   return (
     <>
       {/* <PageHeader title={pageHeader.title} breadcrumb={pageHeader.breadcrumb}>
