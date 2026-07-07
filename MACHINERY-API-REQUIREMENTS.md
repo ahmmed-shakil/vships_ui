@@ -803,7 +803,39 @@ Authorization: Bearer <token>
 - `condition ≤ 50` → `"caution"`
 - `condition > 50` → `"ok"`
 
+### 3.9 Parameter Baseline Curves
+
+```
+GET /api/vessels/{vessel_id}/condition-monitoring/baselines?engine={engine_id}
+Authorization: Bearer <token>
+```
+
+**Query params:**
+
+| Param    | Type   | Required | Description                                                    |
+| -------- | ------ | -------- | -------------------------------------------------------------- |
+| `engine` | string | No       | `me1`, `me2`, `me3`, `ae1`, `ae2`. Defaults to `all`           |
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "parameter_key": "rpm",
+      "x_values": [1974, 3159, 3611, 4176],
+      "y_values": [556, 585, 591, 597]
+    }
+  ]
+}
+```
+
+**Data derivation:**
+* Returns the baseline curves for the selected vessel and engine scope configured centrally.
+* In the frontend, the coordinates must be sorted in ascending order of X (`x_values` / Brake Power).
+
 ---
+
 
 ## 4. Alarm Overview Page
 
@@ -985,6 +1017,7 @@ Available columns in `sensor_data` and `nmea_data` tables for mapping API respon
 | 7   | GET    | `/api/vessels/{id}/condition-monitoring/fuel-rate?engine=&from=&to=`         | Condition Monitoring | Fuel consumption rate with limits                             |
 | 8   | GET    | `/api/vessels/{id}/condition-monitoring/health-scores?engine=`               | Condition Monitoring | Health score per sensor parameter                             |
 | 9   | GET    | `/api/vessels/{id}/condition-monitoring/spare-parts?engine=`                 | Condition Monitoring | Condition based analysis table                                |
+| 10  | GET    | `/api/vessels/{id}/condition-monitoring/baselines?engine=`                   | Condition Monitoring | Parameter baseline curves (dynamic)                            |
 
 **Authentication:** All endpoints use `Authorization: Bearer <JWT>` (same token from `POST /api/auth/login`).
 
