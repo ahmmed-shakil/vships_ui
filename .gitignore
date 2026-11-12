@@ -56,3 +56,14 @@ tasks
 /tasks
 /tasks/
 /task/*
+# Local-only plan/docs (not published)
+API-REQUIREMENTS.md
+MACHINERY-API-REQUIREMENTS.md
+OCEANPACT-AUTH-ISOLATION-FIX.md
+REFRESH-TOKEN-API.md
+SECURITY-INCIDENT-REPORT.md
+SENSOR-DATA-CSV-EXPORT-API.md
+STATS-GUIDE.md
+WEBSOCKET-REQUIREMENTS.md
+api_list.md
+columns.md
